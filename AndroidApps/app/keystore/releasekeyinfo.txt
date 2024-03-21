@@ -1,0 +1,15 @@
+keytool -genkey -v -keystore release.keystore -storepass srmukdw -alias srmmobilereleasekey -keypass srmukdw -keyalg RSA -keysize 2048 -validity 10000
+What is your first and last name?
+  [Unknown]:  srm ukdw
+What is the name of your organizational unit?
+  [Unknown]:  fti
+What is the name of your organization?
+  [Unknown]:  ukdw
+What is the name of your City or Locality?
+  [Unknown]:  yogyakarta
+What is the name of your State or Province?
+  [Unknown]:  yogyakarta
+What is the two-letter country code for this unit?
+  [Unknown]:  ID
+Is CN=srm ukdw, OU=fti, O=ukdw, L=yogyakarta, ST=yogyakarta, C=ID correct?
+  [no]:  yes

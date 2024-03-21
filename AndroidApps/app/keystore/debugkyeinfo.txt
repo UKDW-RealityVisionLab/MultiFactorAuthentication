@@ -1,0 +1,15 @@
+keytool -genkey -v -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000
+What is your first and last name?
+  [Unknown]:  srm mobile
+What is the name of your organizational unit?
+  [Unknown]:  fti
+What is the name of your organization?
+  [Unknown]:  ukdw
+What is the name of your City or Locality?
+  [Unknown]:  yogyakarta
+What is the name of your State or Province?
+  [Unknown]:  yogyakarta
+What is the two-letter country code for this unit?
+  [Unknown]:  ID
+Is CN=srm mobile, OU=fti, O=ukdw, L=yogyakarta, ST=yogyakarta, C=ID correct?
+  [no]:  yes
