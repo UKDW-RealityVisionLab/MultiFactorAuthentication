@@ -1,6 +1,7 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -33,6 +34,27 @@ android {
     buildFeatures {
         viewBinding = true
     }
+
+    signingConfigs {
+        getByName("debug") {
+            storeFile = file("keystore/debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
+
+
+        create("release") {
+            storeFile = file("keystore/release.keystore")
+            storePassword = "srmukdw"
+            keyAlias = "srmmobilereleasekey"
+            keyPassword = "srmukdw"
+
+            // Optional, specify signing versions used
+            //v1SigningEnabled true
+            //v2SigningEnabled true
+        }
+    }
 }
 
 dependencies {
@@ -41,6 +63,14 @@ dependencies {
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("com.google.android.material:material:1.9.0")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
+
+    implementation(platform("com.google.firebase:firebase-bom:32.7.4"))
+    implementation("com.google.firebase:firebase-database")
+    implementation("com.firebaseui:firebase-ui-auth:7.2.0")
+    implementation("com.google.android.gms:play-services-location:21.2.0")
+    implementation("androidx.preference:preference-ktx:1.2.1")
+    implementation("com.google.code.gson:gson:2.10")
+
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
