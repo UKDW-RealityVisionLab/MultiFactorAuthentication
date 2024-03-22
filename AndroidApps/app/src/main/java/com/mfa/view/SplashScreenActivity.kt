@@ -17,7 +17,7 @@ import com.mfa.databinding.ActivitySplashScreenBinding
 import com.mfa.utils.PreferenceUtils
 import java.util.*
 
-class SplashScreen : AppCompatActivity() {
+class SplashScreenActivity : AppCompatActivity() {
     private lateinit var binding: ActivitySplashScreenBinding
 
     private val signInLauncher = registerForActivityResult(
@@ -68,6 +68,7 @@ class SplashScreen : AppCompatActivity() {
                         }
                         PreferenceUtils.saveFaceEmbeddings(applicationContext, embedingFloatList)
                         //todo : need to encapsulate this face registration process
+
                     }
                 }
 
