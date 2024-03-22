@@ -4,11 +4,10 @@ import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
-
 import androidx.appcompat.app.AppCompatActivity
+import androidx.camera.core.ImageCapture
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import com.mfa.R
 import com.mfa.camerax.CameraManager
 import com.mfa.databinding.ActivityRegisterFaceBinding
 
@@ -36,14 +35,19 @@ class RegisterFaceActivity : AppCompatActivity() {
         binding.buttonTurnCamera.setOnClickListener {
             cameraManager.changeCamera()
         }
-        binding.buttonStopCamera.setOnClickListener {
-            cameraManager.cameraStop()
-            buttonVisibility(false)
-        }
-        binding.buttonStartCamera.setOnClickListener {
-            cameraManager.cameraStart()
-            buttonVisibility(true)
-        }
+        binding.buttonStopCamera.setOnClickListener(this::onTakeImageClicked)
+//        binding.buttonStopCamera.setOnClickListener {
+//            cameraManager.cameraStop()
+//            buttonVisibility(false)
+//        }
+//        binding.buttonStartCamera.setOnClickListener {
+//            cameraManager.cameraStart()
+//            buttonVisibility(true)
+//        }
+    }
+
+    private fun onTakeImageClicked(view: View) {
+        cameraManager.onTakeImage()
     }
 
     private fun buttonVisibility(forStart : Boolean) {
