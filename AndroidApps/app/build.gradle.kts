@@ -35,6 +35,12 @@ android {
         viewBinding = true
     }
 
+    androidResources {
+        noCompress += "tflite"
+        noCompress += "lite"
+    }
+
+
     signingConfigs {
         getByName("debug") {
             storeFile = file("keystore/debug.keystore")
@@ -64,12 +70,28 @@ dependencies {
     implementation("com.google.android.material:material:1.9.0")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
 
+    //google
     implementation(platform("com.google.firebase:firebase-bom:32.7.4"))
     implementation("com.google.firebase:firebase-database")
     implementation("com.firebaseui:firebase-ui-auth:7.2.0")
     implementation("com.google.android.gms:play-services-location:21.2.0")
     implementation("androidx.preference:preference-ktx:1.2.1")
     implementation("com.google.code.gson:gson:2.10")
+    implementation("com.google.guava:guava:31.0.1-android")
+
+    //mlkit
+    implementation("com.google.mlkit:face-detection:16.1.6")
+
+    // CameraX
+    implementation("androidx.camera:camera-core:1.3.2")
+    implementation("androidx.camera:camera-camera2:1.3.2")
+    implementation("androidx.camera:camera-lifecycle:1.3.2")
+    implementation("androidx.camera:camera-view:1.3.2")
+    implementation("com.google.android.gms:play-services-vision-common:19.1.3")
+
+    //tensorflow
+    implementation("org.tensorflow:tensorflow-lite:2.14.0")
+    implementation("org.tensorflow:tensorflow-lite-gpu:2.14.0")
 
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
