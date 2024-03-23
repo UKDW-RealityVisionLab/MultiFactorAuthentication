@@ -5,7 +5,6 @@ import android.app.Activity
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.RectF
-import android.util.Log
 import androidx.camera.core.*
 import androidx.camera.core.ImageCapture.OnImageCapturedCallback
 import androidx.camera.lifecycle.ProcessCameraProvider
@@ -26,101 +25,130 @@ class CameraManager(
     private val lifecycleOwner: LifecycleOwner
 ) {
 
-    private lateinit var imageCapture: ImageCapture
+    private lateinit var imageAnalyzer: MlKitAnalyzer
     private lateinit var cameraProvider: ProcessCameraProvider
+
+    //usecases
+    private lateinit var imageCapture: ImageCapture
     private lateinit var imageAnalysis: ImageAnalysis
+    private lateinit var previewUseCase: Preview
     private lateinit var camera: Camera
     private var cameraExecutor: ExecutorService = Executors.newSingleThreadExecutor()
 
-    private var cameraSelector: CameraSelector
-
-    init {
-        cameraSelector = CameraSelector.Builder()
-            .requireLensFacing(cameraOption)
-            .build()
-    }
+    private lateinit var cameraSelector: CameraSelector
+    var flipX: Boolean = false
 
     fun cameraStart() {
         val cameraProcessProvider = ProcessCameraProvider.getInstance(context)
-
+        //After requesting a CameraProvider, verify that its initialization succeeded when the view is created.
         cameraProcessProvider.addListener(
             {
+                // Camera provider is now guaranteed to be available
                 cameraProvider = cameraProcessProvider.get()
-                /*   previewUseCase = Preview.Builder().build()*/
 
-                imageAnalysis = ImageAnalysis.Builder()
-                    .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                // Choose the camera by requiring a lens facing
+                cameraSelector = CameraSelector.Builder()
+                    .requireLensFacing(cameraOption)
                     .build()
-                    .also {
-                        it.setAnalyzer(cameraExecutor, MlKitAnalyzer(graphicOverlay))
-                    }
+                //clear prev usecase binding
+                cameraProvider.unbindAll()
 
-                setCameraConfig()
+                bindPreviewUseCase()
+                bindImageCaptureUseCase()
+                bindImageAnalysisUseCase()
             },
             ContextCompat.getMainExecutor(context)
         )
     }
 
-    fun bindPreviewUseCase() {
-        val previewUseCase: Preview = Preview.Builder().build()
+    private fun bindPreviewUseCase() {
+        /*            camera = cameraProvider.bindToLifecycle(
+                          lifecycleOwner,
+                          cameraSelector,
+                          previewUseCase,
+                          imageAnalysis
+                      )
+                      previewUseCase.setSurfaceProvider(previewView.surfaceProvider)
+          */
+        previewUseCase = Preview.Builder().build()
         previewUseCase.setSurfaceProvider(previewView.surfaceProvider)
-        cameraProvider.bindToLifecycle(lifecycleOwner, cameraSelector, previewUseCase)
+        camera = cameraProvider.bindToLifecycle(lifecycleOwner, cameraSelector, previewUseCase)
     }
 
-    fun bindAnalysisUseCase() {
+    private fun bindImageCaptureUseCase() {
         val activity: Activity = context as Activity
         imageCapture = ImageCapture.Builder()
             .setTargetRotation(activity.windowManager.defaultDisplay.rotation)
             .build()
-        cameraProvider.bindToLifecycle(lifecycleOwner, cameraSelector, imageCapture)
+        camera = cameraProvider.bindToLifecycle(lifecycleOwner, cameraSelector, imageCapture)
     }
 
-    fun onTakeImage() {
+    private fun bindImageAnalysisUseCase() {
+        imageAnalyzer = MlKitAnalyzer(graphicOverlay)
+        imageAnalysis = ImageAnalysis.Builder()
+            .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+            .build()
+            .also {
+                it.setAnalyzer(cameraExecutor, imageAnalyzer)
+            }
+        camera = cameraProvider.bindToLifecycle(lifecycleOwner, cameraSelector, imageAnalysis)
+    }
+
+    fun onTakeImage(callback: OnTakeImageCallback) {
         imageCapture.takePicture(cameraExecutor, object : OnImageCapturedCallback() {
             override fun onCaptureSuccess(imageProxy: ImageProxy) {
                 @SuppressLint("UnsafeOptInUsageError")
                 val image = imageProxy.image
-                var inputImage: InputImage? = null
-                val sourceImageBitmap: Bitmap = BitmapUtils.convertJPEGImageProxyJPEGToBitmap(imageProxy)
-                val imageRotation = imageProxy.imageInfo.rotationDegrees
                 if (image != null) {
-                    inputImage = InputImage.fromBitmap(sourceImageBitmap, imageRotation)
+                    val sourceImageBitmap: Bitmap = BitmapUtils.convertJPEGImageProxyJPEGToBitmap(imageProxy)
+                    val imageRotation = imageProxy.imageInfo.rotationDegrees
+                    val inputImage = InputImage.fromBitmap(sourceImageBitmap, imageRotation)
+                    imageAnalyzer.detectInImage(inputImage).addOnSuccessListener {
+                        if (it.size > 0) {
+                            val face: Face = it.get(0) //Get first face from detected faces
+                            //Adjust orientation of Face
+                            val frameBitmap = BitmapUtils.rotateBitmap(sourceImageBitmap, imageRotation, false, false)
+                            //Get bounding box of face
+                            val boundingBox = RectF(face.boundingBox)
+                            //Crop out bounding box from whole Bitmap(image)
+                            var cropped_face = BitmapUtils.getCropBitmapByCPU(frameBitmap, boundingBox)
+                            if (flipX)
+                                cropped_face = BitmapUtils.rotateBitmap(cropped_face, 0, flipX, false)
+                            callback.onTakeImageSuccess(cropped_face)
+                        }
+                    }
                 }
             }
 
             override fun onError(exception: ImageCaptureException) {
+                callback.onTakeImageError(exception)
             }
         })
     }
 
-    private fun setCameraConfig() {
-        try {
-            cameraProvider.unbindAll()
-            /*            camera = cameraProvider.bindToLifecycle(
-                            lifecycleOwner,
-                            cameraSelector,
-                            previewUseCase,
-                            imageAnalysis
-                        )
-                        previewUseCase.setSurfaceProvider(previewView.surfaceProvider)
-                        */
-            bindPreviewUseCase()
-            bindAnalysisUseCase()
-        } catch (e: Exception) {
-            Log.e(TAG, "setCameraConfig : $e")
-        }
-    }
-
     fun changeCamera() {
         cameraStop()
-        cameraOption = if (cameraOption == CameraSelector.LENS_FACING_BACK) CameraSelector.LENS_FACING_FRONT
-        else CameraSelector.LENS_FACING_BACK
+//        cameraOption = if (cameraOption == CameraSelector.LENS_FACING_BACK) CameraSelector.LENS_FACING_FRONT
+//        else CameraSelector.LENS_FACING_BACK
+        if (cameraOption == CameraSelector.LENS_FACING_BACK) {
+            cameraOption = CameraSelector.LENS_FACING_FRONT
+            flipX = true
+        } else {
+            cameraOption = CameraSelector.LENS_FACING_BACK
+            flipX = false
+        }
+
         CameraUtils.toggleSelector()
         cameraStart()
     }
 
     fun cameraStop() {
         cameraProvider.unbindAll()
+    }
+
+    interface OnTakeImageCallback {
+        fun onTakeImageSuccess(image : Bitmap)
+        fun onTakeImageError(exception: ImageCaptureException)
     }
 
     companion object {

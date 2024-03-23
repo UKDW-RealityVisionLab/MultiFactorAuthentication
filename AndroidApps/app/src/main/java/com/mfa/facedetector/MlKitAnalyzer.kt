@@ -7,13 +7,18 @@ import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.face.Face
 import com.google.mlkit.vision.face.FaceDetection
 import com.google.mlkit.vision.face.FaceDetectorOptions
-import com.mfa.camerax.BaseCameraAnalyzer
+import com.mfa.camerax.BaseFaceAnalyzer
 import com.mfa.camerax.GraphicOverlay
 import com.mfa.camerax.RectangleOverlay
 
+/*ML Kit Analyzer is an implementation of the ImageAnalysis.Analyzer interface.
+ It overrides the default target resolution (if needed) to optimize for ML Kit usage,
+  handles the coordinate transformations, and passes the frames to ML Kit,
+   which returns the aggregated analysis results.
+   https://developer.android.com/media/camera/camerax/mlkitanalyzer*/
 class MlKitAnalyzer(
     private val overlay: GraphicOverlay<*>
-) : BaseCameraAnalyzer<List<Face>>(){
+) : BaseFaceAnalyzer<List<Face>>(){
 
     override val graphicOverlay: GraphicOverlay<*>
         get() = overlay

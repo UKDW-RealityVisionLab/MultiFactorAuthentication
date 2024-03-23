@@ -35,6 +35,12 @@ android {
         viewBinding = true
     }
 
+    androidResources {
+        noCompress += "tflite"
+        noCompress += "lite"
+    }
+
+
     signingConfigs {
         getByName("debug") {
             storeFile = file("keystore/debug.keystore")
@@ -77,11 +83,15 @@ dependencies {
     implementation("com.google.mlkit:face-detection:16.1.6")
 
     // CameraX
-    implementation ("androidx.camera:camera-core:1.3.2")
+    implementation("androidx.camera:camera-core:1.3.2")
     implementation("androidx.camera:camera-camera2:1.3.2")
     implementation("androidx.camera:camera-lifecycle:1.3.2")
-    implementation ("androidx.camera:camera-view:1.3.2")
-    implementation ("com.google.android.gms:play-services-vision-common:19.1.3")
+    implementation("androidx.camera:camera-view:1.3.2")
+    implementation("com.google.android.gms:play-services-vision-common:19.1.3")
+
+    //tensorflow
+    implementation("org.tensorflow:tensorflow-lite:2.14.0")
+    implementation("org.tensorflow:tensorflow-lite-gpu:2.14.0")
 
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")

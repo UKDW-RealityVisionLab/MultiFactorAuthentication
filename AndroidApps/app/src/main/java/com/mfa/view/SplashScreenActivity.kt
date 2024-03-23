@@ -1,5 +1,6 @@
 package com.mfa.view
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -15,16 +16,19 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.mfa.databinding.ActivitySplashScreenBinding
 import com.mfa.utils.PreferenceUtils
+import com.mfa.utils.Utils
 import java.util.*
 
+@SuppressLint("CustomSplashScreen")
 class SplashScreenActivity : AppCompatActivity() {
     private lateinit var binding: ActivitySplashScreenBinding
-
+    private val TAG = "SplashScreenActivity"
     private val signInLauncher = registerForActivityResult(
         FirebaseAuthUIActivityResultContract()
     ) { result ->
         this.onSignInResult(result)
     }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivitySplashScreenBinding.inflate(layoutInflater)
@@ -45,6 +49,7 @@ class SplashScreenActivity : AppCompatActivity() {
             .build()
         signInLauncher.launch(signInIntent)
     }
+
     private fun onSignInResult(result: FirebaseAuthUIAuthenticationResult) {
         val response = result.idpResponse
         if (result.resultCode == RESULT_OK) {
@@ -52,12 +57,11 @@ class SplashScreenActivity : AppCompatActivity() {
             // Successfully signed in
             val user = FirebaseAuth.getInstance().currentUser
             Log.d("FIREBASE", "onSignInResult: " + user!!.email)
+            //create session
             PreferenceUtils.saveUsername(this, user.displayName)
-            val userName = user.uid + "_" + user.displayName!!.replace(" ", "")
-            val email = user.email
-            intent.putExtra("email", email)
-            val embeddingReference =
-                FirebaseDatabase.getInstance().getReference("faceantispooflog/$userName/faceEmbeddings")
+
+            //check embeddings
+            val embeddingReference = Utils.getFirebaseEmbedding()
             embeddingReference.addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     if (snapshot.exists()) {
@@ -67,17 +71,17 @@ class SplashScreenActivity : AppCompatActivity() {
                             embedingFloatList.add(data)
                         }
                         PreferenceUtils.saveFaceEmbeddings(applicationContext, embedingFloatList)
-                        //todo : need to encapsulate this face registration process
-
                     }
+                    startActivity(intent)
+                    finish()
                 }
 
                 override fun onCancelled(error: DatabaseError) {
                     // Failed, how to handle?
+                    Log.e(TAG, "onCancelled: " + error.message)
+                    finish()
                 }
             })
-            startActivity(intent)
-            finish()
         } else {
             // Sign in failed. If response is null the user canceled the
             // sign-in flow using the back button. Otherwise check

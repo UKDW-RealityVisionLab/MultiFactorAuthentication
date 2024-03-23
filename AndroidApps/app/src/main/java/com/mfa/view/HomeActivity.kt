@@ -19,6 +19,8 @@ class HomeActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityHomeBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        binding.namaUser.text = PreferenceUtils.getUsername(this)
+
         binding.btnKeluar.setOnClickListener {
             AuthUI.getInstance().signOut(this)
                 .addOnCompleteListener { task: Task<Void?>? ->
