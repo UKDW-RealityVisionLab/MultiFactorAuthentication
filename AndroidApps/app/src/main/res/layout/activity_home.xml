@@ -1,104 +1,127 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        xmlns:tools="http://schemas.android.com/tools"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
+        android:layout_height="wrap_content"
         tools:context=".view.HomeActivity">
 
-    <androidx.cardview.widget.CardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="5dp">
 
-        <LinearLayout
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cardView"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+
+            android:layout_marginBottom="10dp"
+            app:layout_constraintBottom_toTopOf="@+id/rvJadwal"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@drawable/bg"
+                android:background="@drawable/bg_new"
                 android:orientation="vertical"
                 android:padding="16dp">
 
-            <LinearLayout
-                    android:layout_width="match_parent"
+                <TextView
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal">
+                    android:text="Selamat Datang"
+                    android:textColor="#ffff"
+                    android:textSize="18sp" />
 
                 <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Selamat Datang"
-                        android:textColor="#ffff"
-                        android:textSize="18sp" />
-            </LinearLayout>
-
-            <LinearLayout
-                    android:layout_width="match_parent"
+                    android:id="@+id/namaUser"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal">
-
-                <TextView
-                        android:id="@+id/namaUser"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="5dp"
-                        android:text="Nama User"
-                        android:textColor="#ffff"
-                        android:textSize="24dp" />
+                    android:layout_marginTop="5dp"
+                    android:text="Nama User"
+                    android:textColor="#ffff"
+                    android:textSize="24dp" />
 
                 <RelativeLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content">
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
 
                     <TextView
-                            android:id="@+id/tvSampingCard"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_alignParentRight="true"
-                            android:text="21 C"
-                            android:textColor="#ffff"
-                            android:textSize="18sp" />
-
+                        android:id="@+id/tgl_card"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:text="tanggal"
+                        android:textColor="@color/white"
+                        android:textSize="18sp" />
                 </RelativeLayout>
 
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="30dp"
+                    android:layout_marginTop="23dp"
+                    android:layout_marginEnd="0dp"
+                    android:text="@string/motivation"
+                    android:textColor="@color/white"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent" />
             </LinearLayout>
+        </androidx.cardview.widget.CardView>
 
-        </LinearLayout>
-
-    </androidx.cardview.widget.CardView>
-
-    <androidx.recyclerview.widget.RecyclerView
+        <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rvJadwal"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
             android:layout_margin="10dp"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            app:layout_constraintTop_toBottomOf="@id/cardView"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
 
-    <Button
+        <Button
             android:id="@+id/btn_spoof_test"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:visibility="gone"
-            android:text="Spoof face Test"/>
+            android:text="Spoof face Test"
+            app:layout_constraintTop_toBottomOf="@id/rvJadwal"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
 
-    <Button
+        <Button
             android:id="@+id/btn_real_test"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:visibility="gone"
-            android:text="REAL face Test"/>
+            android:text="REAL face Test"
+            app:layout_constraintTop_toBottomOf="@id/btn_spoof_test"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
 
-    <Button
+        <Button
             android:id="@+id/btn_add_face"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:visibility="gone"
-            android:text="Add Face To DB" />
+            android:text="Add Face To DB"
+            app:layout_constraintTop_toBottomOf="@id/btn_real_test"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
 
-    <Button
+        <!-- Uncomment below lines if you want to add exit button -->
+        <!--
+        <Button
             android:id="@+id/btn_keluar"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:backgroundTint="@color/red"
-            android:text="Keluar" />
-</LinearLayout>
+            android:text="Keluar"
+            app:layout_constraintTop_toBottomOf="@id/btn_add_face"
+            app:layout_constraintEnd_toEndOf="parent" />
+        -->
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</ScrollView>
