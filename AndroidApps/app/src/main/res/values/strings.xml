@@ -111,4 +111,5 @@
     <string name="motivation">"Kuliah memang berat tapi jangan lupa presensi"</string>
     <string name="alertAddregisFace">Bagi pengguna baru dimohon untuk  scan wajah terlebih dulu agar dapat melakukan presensi</string>
     <string name="pertemuan">Pertemuan</string>
+    <string name="profile">profile</string>
 </resources>

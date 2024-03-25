@@ -71,7 +71,9 @@ class HomeActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when(item.itemId){
-            R.id.buttonLogout ->{
+            R.id.profile ->{
+
+//                ganti ini ke halaman profile untuk proses logout
                 AuthUI.getInstance().signOut(this)
                     .addOnCompleteListener { task: Task<Void?>? ->
                         PreferenceUtils.clearData(applicationContext)
@@ -83,6 +85,9 @@ class HomeActivity : AppCompatActivity() {
                     .addOnFailureListener { e: Exception ->
                         Toast.makeText(this, "Gagal keluar Applikasi :" + e.message, Toast.LENGTH_LONG).show()
                     }
+
+//                untuk yg baru
+//                startActivity(Intent(this,ProfileActivity::class.java))
                 return true
             }
             else ->  return super.onOptionsItemSelected(item)
