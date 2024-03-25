@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">AndroidApps</string>
+    <string name="app_name">MFA app</string>
     <!-- Menu related strings. -->
     <string name="menu_item_settings" translatable="false">Settings</string>
     <!-- Settings related strings. -->
@@ -104,5 +104,12 @@
     <string name="title_activity_jadwal">JadwalActivity</string>
     <string name="title_activity_kelas">KelasActivity</string>
     <string name="turn_camera">Turn Camera</string>
-    <string name="capture_image">Take Capture</string>
+    <string name="stop_camera">Stop Camera</string>
+    <string name="start_camera">Start Camera</string>
+    <string name="logout">Logout</string>
+
+    <string name="motivation">"Kuliah memang berat tapi jangan lupa presensi"</string>
+    <string name="alertAddregisFace">Bagi pengguna baru dimohon untuk  scan wajah terlebih dulu agar dapat melakukan presensi</string>
+    <string name="pertemuan">Pertemuan</string>
+    <string name="profile">profile</string>
 </resources>
