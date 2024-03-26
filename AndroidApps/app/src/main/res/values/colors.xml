@@ -9,4 +9,6 @@
     <color name="white">#FFFFFFFF</color>
     <color name="blue">#4286f4</color>
     <color name="red">#EE1000</color>
+    <color name="blue_normal">#3C39D5</color>
+    <color name="blue_dashboard">#2D2BA0</color>
 </resources>
