@@ -129,5 +129,35 @@ class Utils {
                 .child("faceEmbeddings")
                 .setValue(embedingFloatList)
         }
+
+        /**
+         * Convert image to grayscale
+         * @param bitmap
+         * @return Grayscale data
+         */
+        fun convertGreyImg(bitmap: Bitmap): Array<IntArray> {
+            val w = bitmap.width
+            val h = bitmap.height
+
+            val pixels = IntArray(h * w)
+            bitmap.getPixels(pixels, 0, w, 0, 0, w, h)
+
+            val result = Array(h) { IntArray(w) }
+            val alpha = 0xFF shl 24
+            for (i in 0 until h) {
+                for (j in 0 until w) {
+                    val data = pixels[w * i + j]
+
+                    val red = ((data shr 16) and 0xFF)
+                    val green = ((data shr 8) and 0xFF)
+                    val blue = (data and 0xFF)
+
+                    var grey = (red.toFloat() * 0.3 + green.toFloat() * 0.59 + blue.toFloat() * 0.11).toInt()
+                    grey = alpha or (grey shl 16) or (grey shl 8) or grey
+                    result[i][j] = grey
+                }
+            }
+            return result
+        }
     }
 }
