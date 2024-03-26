@@ -1,10 +1,10 @@
 package com.mfa.view
 
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.os.Bundle
 import android.util.Log
-import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -12,29 +12,32 @@ import androidx.camera.core.ImageCaptureException
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.mfa.camerax.CameraManager
-import com.mfa.databinding.ActivityRegisterFaceBinding
+import com.mfa.databinding.ActivityCaptureFaceBinding
 import com.mfa.databinding.DialogAddFaceBinding
-import com.mfa.facedetector.TFLiteFaceRecognizer
-import com.mfa.utils.PreferenceUtils
-import com.mfa.utils.Utils
+import com.mfa.facedetector.FaceAntiSpoofing
+import com.mfa.facedetector.FaceRecognizer
 
-class RegisterFaceActivity : AppCompatActivity(), CameraManager.OnTakeImageCallback {
+class FaceProcessorActivity : AppCompatActivity(), CameraManager.OnTakeImageCallback {
     private val TAG = "RegisterFaceActivity"
-    private lateinit var binding: ActivityRegisterFaceBinding
+    private lateinit var binding: ActivityCaptureFaceBinding
     private lateinit var cameraManager: CameraManager
-    private lateinit var faceRecognizer: TFLiteFaceRecognizer
+
+    private lateinit var faceRecognizer: FaceRecognizer // face recognizer
+    private lateinit var fas: FaceAntiSpoofing // face antispoof
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityRegisterFaceBinding.inflate(layoutInflater)
+        binding = ActivityCaptureFaceBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        faceRecognizer = TFLiteFaceRecognizer(assets)
+        faceRecognizer = FaceRecognizer(assets)
+        fas = FaceAntiSpoofing(assets)
         cameraManager = CameraManager(
             this,
             binding.viewCameraPreview,
             binding.viewGraphicOverlay,
             this
         )
+
         askCameraPermission()
         buttonClicks()
     }
@@ -44,6 +47,7 @@ class RegisterFaceActivity : AppCompatActivity(), CameraManager.OnTakeImageCallb
             cameraManager.changeCamera()
         }
         binding.buttonStopCamera.setOnClickListener {
+            //todo : show loading screen when processing
             cameraManager.onTakeImage(this)
         }
 //        binding.buttonStopCamera.setOnClickListener {
@@ -54,17 +58,6 @@ class RegisterFaceActivity : AppCompatActivity(), CameraManager.OnTakeImageCallb
 //            cameraManager.cameraStart()
 //            buttonVisibility(true)
 //        }
-    }
-
-
-    private fun buttonVisibility(forStart: Boolean) {
-        if (forStart) {
-            binding.buttonStopCamera.visibility = View.VISIBLE
-            binding.buttonStartCamera.visibility = View.INVISIBLE
-        } else {
-            binding.buttonStopCamera.visibility = View.INVISIBLE
-            binding.buttonStartCamera.visibility = View.VISIBLE
-        }
     }
 
     private fun askCameraPermission() {
@@ -95,22 +88,29 @@ class RegisterFaceActivity : AppCompatActivity(), CameraManager.OnTakeImageCallb
     }
 
     override fun onTakeImageSuccess(image: Bitmap) {
+        //todo : dismiss loading screen
         val addFaceBinding = DialogAddFaceBinding.inflate(layoutInflater)
         addFaceBinding.capturedFace.setImageBitmap(image)
         AlertDialog.Builder(this)
             .setView(addFaceBinding.root)
             .setTitle("Confirm Face")
             .setPositiveButton("OK", { dialog, which ->
-                //add image to embeddings process
-                val embedings: Array<FloatArray> = faceRecognizer.getEmbeddingsOfImage(image)
-                Log.d(TAG, "embedings : " + embedings.toString())
-                val embedingFloatList: MutableList<String> = ArrayList()
-                for (value in embedings.get(0)) {
-                    embedingFloatList.add(value.toString())
+                //check face spoof
+                if (antiSpoofDetection(image)) {
+                    //add image to embeddings process
+                    val embedings: Array<FloatArray> = faceRecognizer.getEmbeddingsOfImage(image)
+                    Log.d(TAG, "embedings : " + embedings.toString())
+                    val embedingFloatList = ArrayList<String>()
+                    for (value in embedings.get(0)) {
+                        embedingFloatList.add(value.toString())
+                    }
+                    Toast.makeText(this, "Save Face Success", Toast.LENGTH_LONG).show()
+                    val intent = Intent()
+                    intent.putStringArrayListExtra(EXTRA_FACE_EMBEDDING, embedingFloatList)
+                    setResult(RESULT_OK, intent)
+                    finish()
                 }
-                Utils.setFirebaseEmbedding(embedingFloatList)
-                PreferenceUtils.saveFaceEmbeddings(applicationContext, embedingFloatList)
-                Toast.makeText(this, "Save Face Success", Toast.LENGTH_LONG).show()
+                setResult(RESULT_CANCELED)
                 finish()
             })
             .setNegativeButton("Cancel", { dialog, which ->
@@ -119,8 +119,31 @@ class RegisterFaceActivity : AppCompatActivity(), CameraManager.OnTakeImageCallb
             .show()
     }
 
+    private fun antiSpoofDetection(faceBitmap: Bitmap): Boolean {
+        //preprocessing part
+        val laplaceScore: Int = fas.laplacian(faceBitmap)
+        if (laplaceScore < FaceAntiSpoofing.LAPLACIAN_THRESHOLD) {
+            Toast.makeText(this, "Image too blurry!", Toast.LENGTH_LONG).show()
+        } else {
+            // Liveness detection
+            val start = System.currentTimeMillis()
+            val score = fas.antiSpoofing(faceBitmap)
+            val end = System.currentTimeMillis()
+            Log.d(TAG, "Spoof detection process time : " + (end - start))
+            if (score < FaceAntiSpoofing.THRESHOLD) {
+                return true
+            }
+            Toast.makeText(this, "Face are spoof!", Toast.LENGTH_LONG).show()
+        }
+        return false
+    }
+
 
     override fun onTakeImageError(exception: ImageCaptureException) {
         Toast.makeText(this, "onTakeImageError : " + exception.message, Toast.LENGTH_SHORT).show()
+    }
+
+    companion object {
+        val EXTRA_FACE_EMBEDDING = "EXTRA_FACE_EMBEDDING"
     }
 }

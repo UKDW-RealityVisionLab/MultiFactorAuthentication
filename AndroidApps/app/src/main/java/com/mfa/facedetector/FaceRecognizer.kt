@@ -2,13 +2,14 @@ package com.mfa.facedetector
 
 import android.content.res.AssetManager
 import android.graphics.Bitmap
-import androidx.camera.core.*
-import androidx.lifecycle.LifecycleOwner
 import com.mfa.utils.Utils
 import org.tensorflow.lite.Interpreter
+import java.io.IOException
+import kotlin.jvm.Throws
 
 
-class TFLiteFaceRecognizer(val assetManager: AssetManager) {
+class FaceRecognizer @Throws(IOException::class) constructor(assetManager: AssetManager) {
+    //this model only have 1 face output
     private val MODEL_FILE = "mobile_face_net.tflite"
 
     // The image width and height of the placeholder that requires feed data

@@ -34,8 +34,8 @@ class HomeActivity : AppCompatActivity() {
                     Toast.makeText(this, "Gagal keluar Applikasi :" + e.message, Toast.LENGTH_LONG).show()
                 }
         }
-        binding.btnAddFace.setOnClickListener {
-            val intent = Intent(this, RegisterFaceActivity::class.java)
+        binding.btnProfile.setOnClickListener {
+            val intent = Intent(this, UserProfileActivity::class.java)
             startActivity(intent)
         }
     }
@@ -43,13 +43,5 @@ class HomeActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         Log.d(TAG, "onResume: ")
-        val faceEmbedings = PreferenceUtils.getFaceEmbeddings(this)
-
-        //check if user embedding already exist
-        if (faceEmbedings.size > 0) {
-            binding.btnAddFace.setVisibility(View.GONE)
-        } else {
-            binding.btnAddFace.setVisibility(View.VISIBLE)
-        }
     }
 }
