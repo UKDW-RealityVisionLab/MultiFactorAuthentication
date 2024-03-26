@@ -120,4 +120,5 @@
     <string name="total_pertemuan">Total pertemuan</string>
     <string name="hadir">Hadir</string>
     <string name="alpha">alpha</string>
+    <string name="capture_image">Take Capture</string>
 </resources>
