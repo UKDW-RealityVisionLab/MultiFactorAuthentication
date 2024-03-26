@@ -112,4 +112,12 @@
     <string name="alertAddregisFace">Bagi pengguna baru dimohon untuk  scan wajah terlebih dulu agar dapat melakukan presensi</string>
     <string name="pertemuan">Pertemuan</string>
     <string name="profile">profile</string>
+    <string name="tanggal_pertemuan">26-03-2024</string>
+    <string name="position">Anda di luar kelas</string>
+    <string name="status">Status: Alpha</string>
+    <string name="scan_qr">Scan QR</string>
+    <string name="keluar">Keluar kelas</string>
+    <string name="total_pertemuan">Total pertemuan</string>
+    <string name="hadir">Hadir</string>
+    <string name="alpha">alpha</string>
 </resources>
