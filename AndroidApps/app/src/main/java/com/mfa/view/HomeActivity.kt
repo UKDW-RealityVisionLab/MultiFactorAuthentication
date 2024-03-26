@@ -28,38 +28,12 @@ class HomeActivity : AppCompatActivity() {
         setContentView(binding.root)
         binding.namaUser.text = PreferenceUtils.getUsername(this)
 
-//        binding.btnAddFace.setOnClickListener {
-//            val intent = Intent(this, RegisterFaceActivity::class.java)
-//            startActivity(intent)
-//        }
         setDate()
     }
 
     override fun onResume() {
         super.onResume()
         Log.d(TAG, "onResume: ")
-        val faceEmbedings = PreferenceUtils.getFaceEmbeddings(this)
-
-        //check if user embedding already exist
-        if (faceEmbedings.isNotEmpty()) {
-            binding.btnAddFace.visibility = View.GONE
-        } else {
-            binding.btnAddFace.visibility = View.VISIBLE
-        }
-//        if (faceEmbedings.size > 0){
-//            AlertDialog.Builder(this).apply {
-//                setTitle("PERHATIAN")
-//                setMessage(getString(R.string.alertAddregisFace))
-//                setPositiveButton("OKE") { _, _ ->
-//                    startActivity(Intent(this@HomeActivity,RegisterFaceActivity::class.java))
-//                }
-//                create()
-//                show()
-//            }
-//        }
-//        else{
-////            not show alert
-//        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
