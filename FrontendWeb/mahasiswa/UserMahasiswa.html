@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mahasiswa</title>
+  <link rel="stylesheet" href="Mhs.css">
+  <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+</head>
+<body>
+
+<div id="app">
+  <table border="1" id="tableMhs">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Nama</th>
+        <th>Nim</th>
+        <th>Kode Prodi</th>
+        <th>Tahun angkatan</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr v-for="(item, index) in items" :key="index">
+        <td>{{ item.id }}</td>
+        <td>{{ item.nama }}</td>
+        <td>{{ item.nim }}</td>
+        <td>{{ item.kodeProdi }}</td>
+        <td>{{ item.angkatan }}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<script>
+new Vue({
+  el:'#app',
+  data: {
+    items: [
+    {id:1, nama:'bob',nim:71210713,kodeProdi:71,angkatan:21},
+    {id:2, nama:'bobi',nim:71210717,kodeProdi:71,angkatan:21}
+    ]
+  }
+})
+</script>
+
+</body>
+</html>
