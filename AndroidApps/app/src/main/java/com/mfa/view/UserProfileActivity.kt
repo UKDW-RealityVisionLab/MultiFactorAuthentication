@@ -4,8 +4,11 @@ import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import com.firebase.ui.auth.AuthUI
+import com.google.android.gms.tasks.Task
 import com.mfa.databinding.ActivityUserProfileBinding
 import com.mfa.utils.PreferenceUtils
 import com.mfa.utils.Utils
@@ -47,6 +50,22 @@ class UserProfileActivity : AppCompatActivity() {
             val intent = Intent(this, FaceProcessorActivity::class.java)
             openFaceVerificationLauncher.launch(intent)
         }
+
+        binding.btnKeluar.setOnClickListener {
+            AuthUI.getInstance().signOut(this)
+                .addOnCompleteListener { task: Task<Void?>? ->
+                    PreferenceUtils.clearData(applicationContext)
+                    val intent =
+                        Intent(this, SplashScreenActivity::class.java)
+                    startActivity(intent)
+                    finish()
+                }
+                .addOnFailureListener { e: Exception ->
+                    Toast.makeText(this, "Gagal keluar Applikasi :" + e.message, Toast.LENGTH_LONG).show()
+                }
+        }
+
+
 
         binding.btnSimpanProfile.setOnClickListener {
             Utils.setFirebaseEmbedding(this.embedding)
