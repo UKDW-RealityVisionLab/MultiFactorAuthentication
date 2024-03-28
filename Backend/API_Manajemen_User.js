@@ -9,9 +9,33 @@ app.use(cors());
 
 const PORT = process.env.PORT || 8080;
 
+
+
+//Urusan DB
+const sqlite3 = require('sqlite3').verbose();
+
+// Open a database connection
+const db = new sqlite3.Database('./db/Mahasiswa.db', (err) => {
+  if (err) {
+      console.error('Error connecting to database:', err.message);
+  } else {
+      console.log('Connected to the SQLite database');
+  }
+});
+
+//buat tabel
+
+
+
 // GET request
 app.get('/', (req, res) => {
-  res.send('GET request to the homepage');
+  db.all("SELECT * FROM presensiMahasiswa", (err, rows) => {
+      if (err) {
+          res.status(500).json({ error: err.message });
+          return;
+      }
+      res.json(rows);
+  });
 });
 
 // POST request
