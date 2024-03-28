@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Mahasiswa</title>
+    <link rel="stylesheet" href="Mhs.css" />
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+</head>
+<body>
+    <h1>Edit Mahasiswa</h1>
+    <div id="appMhs">
+      <form @submit.prevent="editUser">
+        <label for="nama">Nama:</label>
+        <input type="text" id="nama" v-model="editedItem.nama" required><br>
+        <label for="nim">NIM:</label>
+        <input type="text" id="nim" v-model="editedItem.nim" required><br>
+        <label for="kodeProdi">Kode Prodi:</label>
+        <input type="text" id="kodeProdi" v-model="editedItem.kodeProdi" required><br>
+        <label for="angkatan">Tahun Angkatan:</label>
+        <input type="text" id="angkatan" v-model="editedItem.angkatan" required><br>
+        <button type="submit">Update Mahasiswa</button>
+      </form>
+    </div>
+
+    <script>
+        const dataDummy = {
+            data() {
+              return {
+                items: [
+                  {
+                    id: 1,
+                    nama: "bob",
+                    nim: 71210713,
+                    kodeProdi: 71,
+                    angkatan: 21,
+                  },
+                  {
+                    id: 2,
+                    nama: "bobi",
+                    nim: 71210717,
+                    kodeProdi: 71,
+                    angkatan: 21,
+                  },
+                ],
+                //ceritanya ini adalah objeck untuk menyimpan data yg diedit
+                editedItem: {} 
+              };
+            },
+            //mounted == lifecycle vue jadi ketika app.mount maka mounted akan dipanggil
+            mounted() {
+              // ambil ID dari URL setelah ? di urlnya
+              const urlParams = new URLSearchParams(window.location.search);
+              //ambil 'id' lalu di convert ke int
+              const id = parseInt(urlParams.get('id'));
+              
+              // nyari data mahasiswa dengan ID yang sesuai
+              this.editedItem = this.items.find(item => item.id === id);
+            },
+            methods: {
+              editUser() {
+                console.log('melakukan edit');
+              }
+            }
+          };
+        
+        const app = Vue.createApp(dataDummy);
+        app.mount('#appMhs');
+    </script>
+</body>
+</html>
