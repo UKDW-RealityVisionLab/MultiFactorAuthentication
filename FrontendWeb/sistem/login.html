@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login</title>
+  <link rel="stylesheet" href="login.css" />
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+</head>
+<body>
+  <div id="appLogin" class="login-container">
+    <h1>Login</h1>
+    <form @submit.prevent="login">
+      <div class="input-group">
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" v-model="username" required>
+      </div>
+      <div class="input-group">
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" v-model="password" required>
+      </div>
+      <button type="submit">Login</button>
+    </form>
+  </div>
+
+  <script>
+    const appLogin = Vue.createApp({
+      data() {
+        return {
+          username: '',
+          password: '',
+          dummyUsername: 'user',
+          dummyPassword: 'user'
+        };
+      },
+      methods: {
+        login() {
+          if (this.username === this.dummyUsername && this.password === this.dummyPassword) {
+            alert('Berhasil Login');
+          } else {
+            alert('Username atau Password salah !');
+            this.username = '';
+            this.password = '';
+          }
+        }
+      }
+    });
+    appLogin.mount('#appLogin');
+  </script>
+</body>
+</html>
