@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kelas</title>
+  <link rel="stylesheet" href="class.css" />
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+</head>
+<body>
+  <div id="appCls">
+    <center><h1>Tabel Kelas</h1></center>
+    <table id="tabelKelas" border="1">
+      <thead>
+        <tr>
+          <th>Kode Kelas</th>
+          <th>Mata Kuliah</th>
+          <th>Dosen</th>
+          <th>Bobot SKS</th>
+          <th colspan="2">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="item in items" :key="item.idKelas">
+          <td>{{item.idKelas}}</td>
+          <td>{{item.namaMatakuliah}}</td>
+          <td>{{item.namaDosen}}</td>
+          <td>{{item.bobotSKS}}</td>
+          <td>
+            <button id="editBtn" @click="navEdit(item.idKelas)">Edit</button>
+          </td>
+          <td><button id="delBtn" @click="removeData(item.idKelas)">Delete</button></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <center><button id="addBtn" @click="navAdd">Tambahkan Kelas</button></center>
+  </div>
+
+  <script>
+    const app = Vue.createApp({
+      data() {
+        return {
+          items: []
+        };
+      },
+      methods: {
+        navEdit(idKelas) {
+          window.location.href = "editClass.html?id=" + idKelas;
+        },
+        removeData(idKelas) {
+          this.items = this.items.filter(item => item.idKelas !== idKelas);
+        },
+        navAdd() {
+          window.location.href = "addClass.html";
+        }
+      },
+      mounted() {
+        const storedItems = localStorage.getItem('addedItems');
+        if (storedItems) {
+          this.items = JSON.parse(storedItems);
+        }
+      }
+    });
+
+    app.mount("#appCls");
+  </script>
+</body>
+</html>

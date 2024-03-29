@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tambah Kelas</title>
+  <link rel="stylesheet" href="class.css" />
+</head>
+<body>
+  <h1>Tambah Kelas</h1>
+  <div id="appCls">
+    <form @submit.prevent="addClass">
+      <label for="namaMataKuliah">Mata Kuliah :</label>
+      <input type="text" id="namaMataKuliah" v-model="newClass.namaMatakuliah" required><br>
+      <label for="namaDosen">Dosen :</label>
+      <input type="text" id="namaDosen" v-model="newClass.namaDosen" required><br>
+      <label for="bobotSKS">Bobot : </label>
+      <input type="text" id="bobotSKS" v-model="newClass.bobotSKS" required><br>
+      <button type="submit" id="btnTambahKelas">Tambahkan Kelas</button>
+    </form>
+  </div>
+
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <script>
+    const app = Vue.createApp({
+      data() {
+        return {
+          newClass: {
+            namaMatakuliah: "",
+            namaDosen: "",
+            bobotSKS: ""
+          }
+        };
+      },
+      methods: {
+        addClass() {
+          if (!this.newClass.namaMatakuliah || !this.newClass.namaDosen || !this.newClass.bobotSKS) {
+            alert("Silakan lengkapi semua!");
+            return;
+          }
+
+          const items = JSON.parse(localStorage.getItem('addedItems')) || [];
+          items.push({
+            idKelas: items.length + 1,
+            namaMatakuliah: this.newClass.namaMatakuliah,
+            namaDosen: this.newClass.namaDosen,
+            bobotSKS: this.newClass.bobotSKS
+          });
+          localStorage.setItem('addedItems', JSON.stringify(items));
+
+          alert("Berhasil tambah kelas");
+          window.location.href = "TableClass.html";
+        }
+      }
+    });
+
+    app.mount("#appCls");
+  </script>
+</body>
+</html>

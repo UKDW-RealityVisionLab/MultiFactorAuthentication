@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Kelas</title>
+    <link rel="stylesheet" href="class.css" />
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+</head>
+<body>
+    <h1>Edit Kelas</h1>
+    <div id="appCls">
+      <form @submit.prevent="editClass">
+        <label for="kodeKelas">Kode Kelas :</label>
+        <input type="text" id="kodeKelas" v-model="editedItem.idKelas" required><br>
+        <label for="namaMataKuliah">Mata Kuliah :</label>
+        <input type="text" id="namaMataKuliah" v-model="editedItem.namaMatakuliah" required><br>
+        <label for="namaDosen">Dosen :</label>
+        <input type="text" id="namaDosen" v-model="editedItem.namaDosen" required><br>
+        <label for="bobotSKS">Bobot : </label>
+        <input type="text" id="bobotSKS" v-model="editedItem.bobotSKS" required><br>
+        <button type="submit" id="btnEditKelas">Simpan Perubahan</button>
+      </form>
+    </div>
+
+    <script>
+        const app = Vue.createApp({
+            data() {
+                return {
+                    items: [],
+                    editedItem: {}
+                };
+            },
+            mounted() {
+                const storedItems = localStorage.getItem('addedItems');
+                if (storedItems) {
+                    this.items = JSON.parse(storedItems);
+                }
+
+                const urlParams = new URLSearchParams(window.location.search);
+                const idKelas = parseInt(urlParams.get('id'));
+                this.editedItem = this.items.find(item => item.idKelas === idKelas);
+            },
+            methods: {
+                editClass() {
+                    const editedIndex = this.items.findIndex(item => item.idKelas === this.editedItem.idKelas);
+                    if (editedIndex !== -1) {
+                        this.items[editedIndex] = { ...this.editedItem };
+                        localStorage.setItem('addedItems', JSON.stringify(this.items));
+                        alert("Perubahan disimpan.");
+                        window.location.href = "TableClass.html";
+                    } else {
+                        alert("Kelas tidak ditemukan.");
+                    }
+                }
+              }
+        });
+
+        app.mount('#appCls');
+    </script>
+</body>
+</html>
