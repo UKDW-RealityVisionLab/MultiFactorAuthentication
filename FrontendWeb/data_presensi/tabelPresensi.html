@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Data Presensi</title>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <style>
+    table {
+        border-collapse: collapse;
+        width: 100%;
+       margin-top: 10px;
+       margin-bottom: 20px;
+    }
+
+    th, td {
+        padding: 8px;
+        text-align: left;
+        text-align: center;
+    }
+
+    tr {
+        border-bottom: 1px solid black;
+    }
+    #appPresensi{
+     margin-left: 10%;
+     margin-right: 10%;
+     
+    }
+
+</style>
+</head>
+<body>
+  <div id="appPresensi">
+    <center><h1>Data Presensi</h1></center>
+    
+    <div class="mt-5" id="qr_code">
+        Generate QR Code
+        <button onclick="startpresensi(document.getElementById('kodejadwal').textContent)">run
+    </button>
+    </div>
+    
+    <table id="tableMhs" border="1">
+      <thead>
+        <tr>
+          <th>NIM</th>
+          <th>Nama</th>
+          <th>Hadir</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="(item, index) in items" :key="index">
+          <td>{{item.nim}}</td>
+          <td>{{item.nama}}</td>
+          <td class="hadir">{{item.hadir}}</td>
+       
+          <td>
+            <select name="hadir" id="hadir" v-model="item.hadir">
+              <option value="Hadir">Hadir</option>
+              <option value="Absen">Absen</option>
+              <option value="Izin">Izin</option>
+            </select>
+          </td>
+          
+      </tbody>
+    </table>
+
+    <center><button type="button" @click="saveHadir()">Save</button></center>
+
+  </div>
+
+  <script>
+    const dataDummy = {
+      data() {
+        return {
+          items: [
+            {
+              nim: 71210713,
+              nama: "bob",
+               
+            },
+            {
+              nim: 71210717,
+              nama: "bobi",
+            
+              
+        
+            },
+          ],
+        };
+      },
+      methods: {
+        saveHadir(item) {
+          //metode untuk save kehadiran ke database
+        },
+        generateQR(kodejadwal){
+          //metode untuk generate qr berdasarkan kodejawal
+        }
+
+
+        
+      },
+    };
+
+    const app = Vue.createApp(dataDummy);
+    app.mount("#appPresensi");
+  </script>
+</body>
+</html>
