@@ -7,4 +7,8 @@ route.get('/', kelasController.getKelas)
 
 route.post('/', kelasController.addKelas)
 
+route.patch('/:id',kelasController.editKelas)
+
+route.delete('/:id',kelasController.deleteKelas)
+
 module.exports= route
