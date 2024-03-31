@@ -1,7 +1,7 @@
 const express= require('express');
 const app = express();
 
-const port= 8080;
+const port= 3000;
 const kelasRoute= require('./routes/kelas.js');
 const logReq= require('./middleware/log.js')
 
