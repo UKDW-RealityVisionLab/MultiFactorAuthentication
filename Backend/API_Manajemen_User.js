@@ -28,7 +28,7 @@ const db = new sqlite3.Database('./db/Mahasiswa.db', (err) => {
 
 
 // GET request
-app.get('/', (req, res) => {
+app.get('/daftarPresensi', (req, res) => {
   db.all("SELECT * FROM presensiMahasiswa", (err, rows) => {
       if (err) {
           res.status(500).json({ error: err.message });
