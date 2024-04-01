@@ -8,7 +8,7 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "serve": "nodemon API_Manajemen_User.js"
+    "serve": "nodemon API_manajemen_presensi.js"
   },
   "keywords": [],
   "author": "",
