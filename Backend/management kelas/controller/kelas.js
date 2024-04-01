@@ -14,9 +14,10 @@ const formatRes = (status, data, message, res) => {
 
 const getKelas = async (req, res) => {
   try {
-    const queryGet = "SELECT * FROM kelas";
+    const queryGet = 'SELECT * FROM kelas';
     const result = await new Promise((resolve, reject) => {
-      db.query(queryGet, (error, result) => {
+  
+      db.all(queryGet, (error, result) => {
         if (error) reject(error);
         resolve(result);
       });
@@ -24,8 +25,8 @@ const getKelas = async (req, res) => {
     formatRes(200, result, "berhasil get kelas", res);
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ message: "Terjadi kesalahan" });
-  }
+    return res.status(500).json({ message: "Terjadi kesalahan" });
+  }
 };
 
 const addKelas = async (req, res) => {
@@ -47,7 +48,7 @@ const addKelas = async (req, res) => {
     ];
 
     const result = await new Promise((resolve, reject) => {
-      db.query(query, values, (err, result) => {
+      db.run(query, values, (err, result) => {
         if (err) reject(err);
         resolve(result);
       });
@@ -68,7 +69,7 @@ const deleteKelas = async (req, res) => {
   const query = `DELETE FROM kelas WHERE kode_kelas= '${id}';`;
 
   const result = await new Promise((resolve, reject)=>{
-    db.query(query,(error, result)=>{
+    db.run(query,(error, result)=>{
       if(error) reject(error);
       resolve(result);
     });
@@ -113,7 +114,7 @@ const editKelas = async (req, res) => {
     `;
 
     await new Promise((resolve, reject) => {
-      db.query(query, (err, result) => {
+      db.run(query, (err, result) => {
         if (err) reject(err);
         resolve(result);
       });
