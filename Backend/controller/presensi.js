@@ -3,7 +3,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const db = require('./connect_db'); // Import the db object directly
+const db = require("../config/db");
 const app = express();
 
 app.use(bodyParser.json());
@@ -38,7 +38,8 @@ const formatRes = (status, data, message, res) => {
   });
 };
 
-app.get('/data_presensi', async (req, res) => {
+
+const dataPresensi =  async (req, res) => {
   try {
     const queryGet = "SELECT * FROM presensi";
     const result = await new Promise((resolve, reject) => {
@@ -53,11 +54,12 @@ app.get('/data_presensi', async (req, res) => {
     console.error(error);
     return res.status(500).json({ message: "Terjadi kesalahan" });
 }
-});
+};
 
 
 
-app.post('/data_presensi', async (req, res) => {
+
+const insertPresensi =  async (req, res) => {
   try {
     const {  jadwal, nim, hadir } = req.body; // Retrieve data from request body
     console.log('Received data:', {  jadwal, nim, hadir });
@@ -82,7 +84,7 @@ app.post('/data_presensi', async (req, res) => {
     console.error(error);
     return res.status(500).json({ message: "Terjadi kesalahan" });
   }
-});
+};
 
 
 
@@ -92,9 +94,9 @@ app.post('/data_presensi', async (req, res) => {
 // Other routes...
 
 
-app.delete('/data_presensi', async (req, res) => {
+const deletePresensi = async (req, res) => {
   try {
-    const { id } = req.body; // Extract the ID from the request parameters
+    const { id } = req.params; // Extract the ID from the request parameters
 
     const queryDelete = "DELETE FROM presensi WHERE id_presensi = ?";
     const result = await new Promise((resolve, reject) => {
@@ -113,20 +115,22 @@ app.delete('/data_presensi', async (req, res) => {
     console.error(error);
     return res.status(500).json({ message: "Terjadi kesalahan" });
   }
-});
+};
 
 
 
 
 
 
-app.put('/data_presensi', async (req, res) => {
+
+const updatePresensi =  async (req, res) => {
   try {
-    const { jadwal, nim_mahasiswa, hadir,id_presensi } = req.body; // Extract the ID from the request parameters
+    const{id}=req.params;
 
-    const queryUpdate = "UPDATE presensi SET jadwal = ?, nim_mahasiswa = ?, hadir = ? WHERE id_presensi = ?";
+    const { jadwal, nim_mahasiswa, hadir } = req.body; // Extract the ID from the request parameters
+    const queryUpdate = `UPDATE presensi SET jadwal = ?, nim_mahasiswa = ?, hadir = ? WHERE id_presensi = '${id}'`;
     const result = await new Promise((resolve, reject) => {
-      db.run(queryUpdate, [jadwal, nim_mahasiswa, hadir, id_presensi], function (error) {
+      db.run(queryUpdate, [jadwal, nim_mahasiswa, hadir], function (error) {
         if (error) reject(error);
         resolve({ affectedRows: this.changes }); // Return the number of affected rows
       });
@@ -141,8 +145,10 @@ app.put('/data_presensi', async (req, res) => {
     console.error(error);
     return res.status(500).json({ message: "Terjadi kesalahan" });
   }
-});
+};
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
+
+module.exports = { dataPresensi, insertPresensi, deletePresensi, updatePresensi };
