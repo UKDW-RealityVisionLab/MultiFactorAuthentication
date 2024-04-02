@@ -82,7 +82,6 @@ const deleteKelas = async (req, res) => {
   }
 };
 
-
 const editKelas = async (req, res) => {
   try {
     const { id } = req.params;
