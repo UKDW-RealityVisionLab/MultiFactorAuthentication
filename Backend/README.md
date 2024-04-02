@@ -6,7 +6,7 @@ Applikasi Backend untuk prototipe MFA
 ## Articles
 
 ## How to start
-Jalankan perintah 
+Jalankan perintah melalui console pada directory project  
 ```
 npm install
 ```
@@ -15,11 +15,12 @@ lalu jalankan perintah
 ```
 npm run start
 ```
+Akses API yang ada pada daftar endpoint melalui aplikasi Postman  
 
-## API List
+## API Endpoint List
 ### Manajemen kelas
-- GET localhost:3000/kelas/
-- POST localhost:3000/kelas/
+- GET localhost:3000/kelas/  
+- POST localhost:3000/kelas/  
 Request Body
 ```
     {
@@ -29,7 +30,7 @@ Request Body
         "kode_dosen": 123 //required numeric int
     }
 ```
-- PATCH localhost:3000/kelas/{id}
+- PATCH localhost:3000/kelas/{id}  
 Request Body
 ```
     {
@@ -40,6 +41,6 @@ Request Body
 ```
 - DELETE localhost:3000/kelas/{id}
 ## Tools
-Node.JS
-Express JS 
+- Node.JS  
+- Express JS 
 
