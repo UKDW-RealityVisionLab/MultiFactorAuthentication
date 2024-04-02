@@ -53,7 +53,7 @@ Request Body
                 "hadir": 0
             }
 ```
-- PATCH localhost:3000/kelas/{id}  
+- PATCH localhost:3000/presensi/{id}  
 Request Body
 ```
 {
@@ -62,7 +62,7 @@ Request Body
     "hadir":0
 }
 ```
-- DELETE localhost:3000/kelas/{id}
+- DELETE localhost:3000/presensi/{id}
 ## Tools
 - Node.JS  
 - Express JS 
