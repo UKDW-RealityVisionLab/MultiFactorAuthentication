@@ -9,7 +9,6 @@ const app = express();
 app.use(bodyParser.json());
 app.use(cors());
 
-const PORT = process.env.PORT || 8080;
 
 // GET request
 // app.get('/data', (req, res) => {
