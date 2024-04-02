@@ -1,30 +1,11 @@
 // API_manajemen_presensi.js
 
 const express = require('express');
-const bodyParser = require('body-parser');
 const cors = require('cors');
 const db = require("../config/db");
 const app = express();
 
-app.use(bodyParser.json());
 app.use(cors());
-
-
-// GET request
-// app.get('/data', (req, res) => {
-  // const sqlQuery = 'SELECT * FROM presensi; ';
-
-  // db.all(sqlQuery, (err, rows) => { // Use db.all instead of db.query
-  //   if (err) {
-  //     console.error('Error executing query:', err);
-  //     res.status(500).send('Internal Server Error');
-  //     return;
-  //   }
-
-  //   res.json(rows);
-  // });
-// });
-
 
 
 const formatRes = (status, data, message, res) => {
@@ -55,9 +36,6 @@ const dataPresensi =  async (req, res) => {
 }
 };
 
-
-
-
 const insertPresensi =  async (req, res) => {
   try {
     const {  jadwal, nim, hadir } = req.body; // Retrieve data from request body
@@ -86,13 +64,6 @@ const insertPresensi =  async (req, res) => {
 };
 
 
-
-
-
-
-// Other routes...
-
-
 const deletePresensi = async (req, res) => {
   try {
     const { id } = req.params; // Extract the ID from the request parameters
@@ -115,12 +86,6 @@ const deletePresensi = async (req, res) => {
     return res.status(500).json({ message: "Terjadi kesalahan" });
   }
 };
-
-
-
-
-
-
 
 const updatePresensi =  async (req, res) => {
   try {
@@ -145,9 +110,5 @@ const updatePresensi =  async (req, res) => {
     return res.status(500).json({ message: "Terjadi kesalahan" });
   }
 };
-
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
 
 module.exports = { dataPresensi, insertPresensi, deletePresensi, updatePresensi };
