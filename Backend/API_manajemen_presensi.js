@@ -38,7 +38,7 @@ const formatRes = (status, data, message, res) => {
   });
 };
 
-app.get('/dataPresensi', async (req, res) => {
+app.get('/data_presensi', async (req, res) => {
   try {
     const queryGet = "SELECT * FROM presensi";
     const result = await new Promise((resolve, reject) => {
@@ -57,15 +57,21 @@ app.get('/dataPresensi', async (req, res) => {
 
 
 
-app.post('/dataPresensi/:idPre/:jadwal/:nim/:hadir', async (req, res) => {
+app.post('/data_presensi', async (req, res) => {
   try {
-    const { id_presensi, jadwal, nim,hadir } = req.params; // Assuming you're expecting certain fields in the request body
+    const {  jadwal, nim, hadir } = req.body; // Retrieve data from request body
+    console.log('Received data:', {  jadwal, nim, hadir });
+
     const nim_mahasiswa = nim; 
+    console.log('Student ID:', nim_mahasiswa);
+
     // Perform validation if needed
     
-    const queryInsert = "INSERT INTO presensi (id_presensi, jadwal, nim_mahasiswa,hadir) VALUES ( ? , ? , ? , ? )";
+    const queryInsert = "INSERT INTO presensi ( jadwal, nim_mahasiswa, hadir) VALUES (?, ?, ?)";
+    console.log('Insertion query:', queryInsert);
+
     const result = await new Promise((resolve, reject) => {
-      db.run(queryInsert, [id_presensi, jadwal, nim_mahasiswa,hadir], function (error) {
+      db.run(queryInsert, [ jadwal, nim_mahasiswa, hadir], function (error) {
         if (error) reject(error);
         resolve({ id: this.lastID }); // Return the ID of the inserted row
       });
@@ -78,12 +84,17 @@ app.post('/dataPresensi/:idPre/:jadwal/:nim/:hadir', async (req, res) => {
   }
 });
 
+
+
+
+
+
 // Other routes...
 
 
-app.delete('/dataPresensi/:id', async (req, res) => {
+app.delete('/data_presensi', async (req, res) => {
   try {
-    const { id } = req.params; // Extract the ID from the request parameters
+    const { id } = req.body; // Extract the ID from the request parameters
 
     const queryDelete = "DELETE FROM presensi WHERE id_presensi = ?";
     const result = await new Promise((resolve, reject) => {
@@ -109,9 +120,9 @@ app.delete('/dataPresensi/:id', async (req, res) => {
 
 
 
-app.put('/dataPresensi/:jadwal/:nim_mahasiswa/:hadir/:id_presensi', async (req, res) => {
+app.put('/data_presensi', async (req, res) => {
   try {
-    const { jadwal, nim_mahasiswa, hadir,id_presensi } = req.params; // Extract the ID from the request parameters
+    const { jadwal, nim_mahasiswa, hadir,id_presensi } = req.body; // Extract the ID from the request parameters
 
     const queryUpdate = "UPDATE presensi SET jadwal = ?, nim_mahasiswa = ?, hadir = ? WHERE id_presensi = ?";
     const result = await new Promise((resolve, reject) => {
