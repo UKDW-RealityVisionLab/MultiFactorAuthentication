@@ -1,0 +1,30 @@
+{
+  "name": "management-kelas",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+<<<<<<< HEAD:Backend/package.json
+    "main": "nodemon index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+=======
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "serve": "nodemon API_manajemen_presensi.js"
+>>>>>>> 3a84f6e5816d84f3d38a02abf6f7d6f300193bf8:Backend/manajemen_presensi/package.json
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.19.2",
+<<<<<<< HEAD:Backend/package.json
+    "md5": "^2.3.0",
+    "mysql": "^2.18.1",
+    "nodemon": "^3.1.0",
+=======
+    "nodemon": "^3.1.0",
+    "sqlite": "^5.1.1",
+>>>>>>> 3a84f6e5816d84f3d38a02abf6f7d6f300193bf8:Backend/manajemen_presensi/package.json
+    "sqlite3": "^5.1.7"
+  }
+}
