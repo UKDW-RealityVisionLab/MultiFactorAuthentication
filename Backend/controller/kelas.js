@@ -25,8 +25,8 @@ const getKelas = async (req, res) => {
     formatRes(200, result, "berhasil get kelas", res);
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ message: "Terjadi kesalahan" });
-  }
+    return res.status(500).json({ message: "Terjadi kesalahan"});
+}
 };
 
 const addKelas = async (req, res) => {
