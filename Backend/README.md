@@ -2,7 +2,7 @@
 Applikasi Backend untuk prototipe MFA
 ## Features
 - Manajemen kelas : CRUD data kelas
-
+- Manajemen presensi : CRUD data presensi
 ## Articles
 
 ## How to start
@@ -13,7 +13,7 @@ npm install
 
 lalu jalankan perintah 
 ```
-npm run start
+npm run serve
 ```
 Akses API yang ada pada daftar endpoint melalui aplikasi Postman  
 
@@ -40,7 +40,31 @@ Request Body
     }
 ```
 - DELETE localhost:3000/kelas/{id}
+
+### Manajemen presensi
+- GET localhost:3000/presensi/  
+- POST localhost:3000/presensi/ 
+Request Body
+```
+           {
+                "id_presensi": 3,
+                "jadwal": "jemuah kliwon",
+                "nim_mahasiswa": "7121",
+                "hadir": 0
+            }
+```
+- PATCH localhost:3000/kelas/{id}  
+Request Body
+```
+{
+    "jadwal":"rabu",
+    "nim_mahasiswa":"7121",
+    "hadir":0
+}
+```
+- DELETE localhost:3000/kelas/{id}
 ## Tools
 - Node.JS  
 - Express JS 
+
 
