@@ -1,30 +1,10 @@
-#tableMhs {
-    width: 100%;
+
+.app-container {
+    min-height: 350px;
+}
+
+.btn-delete-user {
+    width: 40px;
     text-align: center;
-    align-content: center;
-}
-
-#addBtn {
-    background-color: orange;
-    color: white;
-    padding: 10px;
-    margin-top: 10px;
-    border-color: white;
-    border-radius: 10px;
-}
-
-#editBtn {
-    background-color: yellow;
-    color: black;
-    padding: 5px;
-    border-color: white;
-    border-radius: 5px;
-}
-
-#delBtn {
-    background-color: red;
-    color: white;
-    padding: 5px;
-    border-color: white;
-    border-radius: 5px;
+    box-sizing: content-box;
 }

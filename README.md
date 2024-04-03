@@ -8,6 +8,10 @@ Sistem authentikasi multifaktor menggunakan lokasi, wajah, dan QR-Code
 ## Articles
 
 
-## Tools
-
+## Libs & Tools
+- Vue 3
+- Pinia state management
+- Vue-Router
+- Ve-Validate
+- Vite build tool 
 
