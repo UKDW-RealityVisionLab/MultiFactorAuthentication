@@ -1,7 +1,7 @@
 export { fakeBackend };
 
 // array in local storage for registered users
-const usersKey = 'vue-3-pinia-registration-login-example-users';
+const usersKey = 'mfa-feapps';
 let users = JSON.parse(localStorage.getItem(usersKey)) || [];
 
 function fakeBackend() {
@@ -34,7 +34,6 @@ function fakeBackend() {
             }
 
             // route functions
-
             function authenticate() {
                 const { username, password } = body();
                 const user = users.find(x => x.username === username && x.password === password);
@@ -87,7 +86,7 @@ function fakeBackend() {
                 if (params.username !== user.username && users.find(x => x.username === params.username)) {
                     return error('Username "' + params.username + '" is already taken')
                 }
-
+                // console.log(user)
                 // update and save user
                 Object.assign(user, params);
                 localStorage.setItem(usersKey, JSON.stringify(users));
@@ -118,8 +117,8 @@ function fakeBackend() {
             }
 
             function basicDetails(user) {
-                const { id, username, firstName, lastName } = user;
-                return { id, username, firstName, lastName };
+                const { id, username, firstName, role, lastName } = user;
+                return { id, username, firstName, role, lastName };
             }
 
             function isAuthenticated() {

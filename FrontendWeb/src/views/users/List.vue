@@ -16,8 +16,9 @@ usersStore.getAll();
         <thead>
             <tr>
                 <th style="width: 30%">First Name</th>
-                <th style="width: 30%">Last Name</th>
-                <th style="width: 30%">Username</th>
+                <th style="width: 20%">Last Name</th>
+                <th style="width: 20%">Username</th>
+                <th style="width: 20%">Role</th>
                 <th style="width: 10%"></th>
             </tr>
         </thead>
@@ -27,6 +28,7 @@ usersStore.getAll();
                     <td>{{ user.firstName }}</td>
                     <td>{{ user.lastName }}</td>
                     <td>{{ user.username }}</td>
+                    <td>{{ user.role }}</td>
                     <td style="white-space: nowrap">
                         <router-link :to="`/users/edit/${user.id}`" class="btn btn-sm btn-primary mr-1">Edit</router-link>
                         <button @click="usersStore.delete(user.id)" class="btn btn-sm btn-danger btn-delete-user" :disabled="user.isDeleting">

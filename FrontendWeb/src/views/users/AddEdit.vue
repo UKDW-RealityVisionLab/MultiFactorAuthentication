@@ -26,6 +26,8 @@ const schema = Yup.object().shape({
         .required('First Name is required'),
     lastName: Yup.string()
         .required('Last Name is required'),
+    role: Yup.string()
+        .required('Role is required'),
     username: Yup.string()
         .required('Username is required'),
     password: Yup.string()
@@ -54,25 +56,36 @@ async function onSubmit(values) {
 </script>
 
 <template>
-    <h1>{{title}}</h1>
+    <h1>{{ title }}</h1>
     <template v-if="!(user?.loading || user?.error)">
         <Form @submit="onSubmit" :validation-schema="schema" :initial-values="user" v-slot="{ errors, isSubmitting }">
             <div class="form-row">
                 <div class="form-group col">
                     <label>First Name</label>
-                    <Field name="firstName" type="text" class="form-control" :class="{ 'is-invalid': errors.firstName }" />
+                    <Field name="firstName" type="text" class="form-control"
+                        :class="{ 'is-invalid': errors.firstName }" />
                     <div class="invalid-feedback">{{ errors.firstName }}</div>
                 </div>
                 <div class="form-group col">
                     <label>Last Name</label>
-                    <Field name="lastName" type="text" class="form-control" :class="{ 'is-invalid': errors.lastName }" />
+                    <Field name="lastName" type="text" class="form-control"
+                        :class="{ 'is-invalid': errors.lastName }" />
                     <div class="invalid-feedback">{{ errors.lastName }}</div>
+                </div>
+                <div class="form-group col">
+                    <label>Role</label>
+                    <Field name="role" as="select" class="form-control" :class="{ 'is-invalid': errors.role }">
+                        <option value="mahasiswa">Mahasiswa</option>
+                        <option value="dosen">Dosen</option>
+                    </Field>
+                    <div class="invalid-feedback">{{ errors.role }}</div>                    
                 </div>
             </div>
             <div class="form-row">
                 <div class="form-group col">
                     <label>Username</label>
-                    <Field name="username" type="text" class="form-control" :class="{ 'is-invalid': errors.username }" />
+                    <Field name="username" type="text" class="form-control"
+                        :class="{ 'is-invalid': errors.username }" />
                     <div class="invalid-feedback">{{ errors.username }}</div>
                 </div>
                 <div class="form-group col">
@@ -80,7 +93,8 @@ async function onSubmit(values) {
                         Password
                         <em v-if="user">(Leave blank to keep the same password)</em>
                     </label>
-                    <Field name="password" type="password" class="form-control" :class="{ 'is-invalid': errors.password }" />
+                    <Field name="password" type="password" class="form-control"
+                        :class="{ 'is-invalid': errors.password }" />
                     <div class="invalid-feedback">{{ errors.password }}</div>
                 </div>
             </div>
@@ -100,7 +114,7 @@ async function onSubmit(values) {
     </template>
     <template v-if="user?.error">
         <div class="text-center m-5">
-            <div class="text-danger">Error loading user: {{user.error}}</div>
+            <div class="text-danger">Error loading user: {{ user.error }}</div>
         </div>
     </template>
 </template>
