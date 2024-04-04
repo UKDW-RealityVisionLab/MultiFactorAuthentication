@@ -7,7 +7,9 @@ const presensiRoute= require('./routes/presensi.js');
 const kelasRoute= require('./routes/kelas.js');
 const mkRoute= require('./routes/matakuliah.js');
 const userRouter= require('./routes/users')
+const dosenRouter= require('./routes/dosen.js')
 const logReq= require('./middleware/log.js')
+
 
 // cuma log aja
 app.use(logReq);
@@ -17,6 +19,7 @@ app.use('/presensi',presensiRoute);
 app.use('/matakuliah',mkRoute);
 app.use('/kelas',kelasRoute);
 app.use('/users',userRouter)
+app.use('/dosen',dosenRouter)
 
 
 app.listen(port,()=>{
