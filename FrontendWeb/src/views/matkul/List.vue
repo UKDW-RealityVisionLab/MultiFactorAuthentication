@@ -1,12 +1,27 @@
 <script setup>
-// import { storeToRefs } from 'pinia';
+import { ref, onMounted } from 'vue';
+import axios from 'axios';
 
-// import { useUsersStore } from '@/stores';
+const baseUrl= "http://localhost:3000/matakuliah"
+const matkul = ref({
+  data: [],
+  loading: false,
+  error: null,
+});
 
-// const usersStore = useUsersStore();
-// const { users } = storeToRefs(usersStore);
+const fetchDataMatkul = async () => {
+  matkul.value.loading = true;
+  try {
+    const response = await axios.get(baseUrl);
+    matkul.value.data = response.data.matakuliah.dataMataKuliah;
+  } catch (error) {
+    matkul.value.error = error.message;
+  } finally {
+    matkul.value.loading = false;
+  }
+};
 
-// usersStore.getAll();
+onMounted(fetchDataMatkul);
 </script>
 
 <template>
@@ -17,39 +32,46 @@
       <tr>
         <th style="width: 30%">Kode mata kuliah</th>
         <th style="width: 30%">Nama Mata Kuliah</th>
-        <th style="width: 20%">SKS</th>
-        <th style="width: 20%">Harga</th>
-        <th style="width: 20%">Praktikum</th>
-        <th style="width: 20%">Minimal SKS</th>
-        <th style="width: 20%">Tanggal Input</th>
+        <th style="width: 25%">SKS</th>
+        <th style="width: 25%">Harga</th>
+        <th style="width: 25%">Praktikum</th>
+        <th style="width: 25%">Minimal SKS</th>
+        <th style="width: 25%">Tanggal Input</th>
+        <th style="width: 25%">Aksi</th> <!-- Menambah kolom untuk tombol aksi -->
       </tr>
     </thead>
     <tbody>
-      <!-- <template v-if="users.length">
-                <tr v-for="user in users" :key="user.id">
-                    <td>{{ user.firstName }}</td>
-                    <td>{{ user.lastName }}</td>
-                    <td>{{ user.username }}</td>
-                    <td>{{ user.role }}</td>
-                    <td style="white-space: nowrap">
-                        <router-link :to="`/users/edit/${user.id}`" class="btn btn-sm btn-primary mr-1">Edit</router-link>
-                        <button @click="usersStore.delete(user.id)" class="btn btn-sm btn-danger btn-delete-user" :disabled="user.isDeleting">
-                            <span v-if="user.isDeleting" class="spinner-border spinner-border-sm"></span>
-                            <span v-else>Delete</span>
-                        </button>
-                    </td>
-                </tr>
-            </template>
-            <tr v-if="users.loading">
-                <td colspan="4" class="text-center">
-                    <span class="spinner-border spinner-border-lg align-center"></span>
-                </td>
-            </tr>
-            <tr v-if="users.error">
-                <td colspan="4">
-                    <div class="text-danger">Error loading users: {{users.error}}</div>
-                </td>
-            </tr>             -->
+      <template v-if="matkul.loading">
+        <tr>
+          <td colspan="8" class="text-center">
+            <span class="spinner-border spinner-border-lg align-center"></span>
+          </td>
+        </tr>
+      </template>
+      
+      <template v-else-if="matkul.error">
+        <tr>
+          <td colspan="8">
+            <div class="text-danger">Error loading matkul: {{ matkul.error }}</div>
+          </td>
+        </tr>
+      </template>
+
+      <template v-else>
+        <tr v-for="mat in matkul.data" :key="mat.kode_matakuliah">
+          <td>{{ mat.kode_matakuliah }}</td>
+          <td>{{ mat.nama_matakuliah }}</td>
+          <td>{{ mat.sks }}</td>
+          <td>{{ mat.harga }}</td>
+          <td>{{ mat.is_praktikum }}</td>
+          <td>{{ mat.minimal_sks }}</td>
+          <td>{{ mat.tanggal_input }}</td>
+          <td style="white-space: nowrap">
+            <router-link :to="`/matakuliah/edit/${mat.kode_matakuliah}`" class="btn btn-sm btn-primary mr-1">Edit</router-link>
+            <button class="btn btn-sm btn-danger btn-delete-matkul">Delete</button> 
+          </td>
+        </tr>
+      </template>
     </tbody>
   </table>
 </template>

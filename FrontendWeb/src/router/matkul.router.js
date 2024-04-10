@@ -1,7 +1,7 @@
 import { Layout, List } from '@/views/matkul';
 
 export default {
-    path: '/mataKuliah',
+    path: '/matakuliah',
     component: Layout,
     children: [
         { path: '', component: List },
