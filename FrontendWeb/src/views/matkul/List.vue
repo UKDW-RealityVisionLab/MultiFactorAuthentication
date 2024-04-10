@@ -2,7 +2,7 @@
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
 
-const baseUrl= "http://localhost:3000/matakuliah"
+const baseUrl = "http://localhost:3000/matakuliah";
 const matkul = ref({
   data: [],
   loading: false,
@@ -21,7 +21,19 @@ const fetchDataMatkul = async () => {
   }
 };
 
-onMounted(fetchDataMatkul);
+const deleteMatkul = async (kodeMatakuliah) => {
+  try {
+    await axios.delete(`${baseUrl}/${kodeMatakuliah}`);
+    await fetchDataMatkul();
+  } catch (error) {
+    console.error("Error deleting matkul:", error);
+  }
+};
+
+onMounted(() => {
+  fetchDataMatkul();
+});
+
 </script>
 
 <template>
@@ -37,7 +49,7 @@ onMounted(fetchDataMatkul);
         <th style="width: 25%">Praktikum</th>
         <th style="width: 25%">Minimal SKS</th>
         <th style="width: 25%">Tanggal Input</th>
-        <th style="width: 25%">Aksi</th> <!-- Menambah kolom untuk tombol aksi -->
+        <th style="width: 25%">Aksi</th>
       </tr>
     </thead>
     <tbody>
@@ -68,7 +80,7 @@ onMounted(fetchDataMatkul);
           <td>{{ mat.tanggal_input }}</td>
           <td style="white-space: nowrap">
             <router-link :to="`/matakuliah/edit/${mat.kode_matakuliah}`" class="btn btn-sm btn-primary mr-1">Edit</router-link>
-            <button class="btn btn-sm btn-danger btn-delete-matkul">Delete</button> 
+            <button class="btn btn-sm btn-danger btn-delete-matkul" @click="deleteMatkul(mat.kode_matakuliah)">Delete</button> 
           </td>
         </tr>
       </template>
