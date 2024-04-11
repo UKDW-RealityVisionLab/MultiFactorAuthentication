@@ -8,3 +8,6 @@
     text-align: center;
     box-sizing: content-box;
 }
+.form-group.col .form-check-input {
+    margin-left: 10px;
+}
