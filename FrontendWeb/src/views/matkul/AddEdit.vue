@@ -13,6 +13,22 @@ const usersStore = useUsersStore();
 const alertStore = useAlertStore();
 const route = useRoute();
 const kode_matakuliah = route.params.kode_matakuliah;
+const baseUrl = "http://localhost:3000/matakuliah";
+const matkul = ref({
+  dataId: [],
+  loading: false,
+  //   error: null,
+});
+
+
+const fetchMataKuliahById = async (url) => {
+  try {
+    const response = await axios.get(url)
+    matkul.value.dataId = response.data;
+  } catch (error) {
+    alertStore.error("Failed to fetch mata kuliah data");
+  }
+};
 
 let title = "Add Mata Kuliah";
 // let mataKuliah = null;
@@ -20,12 +36,15 @@ if (kode_matakuliah) {
   // edit mode
   title = "Edit Mata Kuliah";
   try {
-    // const response = await axios.get(`${baseUrl}/${kode_matakuliah}`);
-    // mataKuliah = response.data.matakuliah.dataMataKuliah; // Mengisi mataKuliah dengan data mata kuliah yang sudah ada
+   fetchMataKuliahById(`${baseUrl}/${kode_matakuliah}`);
   } catch (error) {
     alertStore.error("Failed to fetch mata kuliah data");
   }
 }
+
+onMounted(() => {
+  // fetchMataKuliahById;
+});
 
 const schema = Yup.object().shape({
   kodeMataKuliah: Yup.string().required("Kode Mata Kuliah is required"),
@@ -40,13 +59,6 @@ const schema = Yup.object().shape({
     .required("Minimal SKS is required")
     .min(0, "Minimal SKS must be at least 1"),
   tanggalInput: Yup.date().required("Tanggal Input is required"),
-});
-
-const baseUrl = "http://localhost:3000/matakuliah";
-const matkul = ref({
-  dataId: [],
-  loading: false,
-  //   error: null,
 });
 
 const addMatkul = async (data) => {

@@ -6,6 +6,6 @@ export default {
     children: [
         { path: '', component: List },
         { path: 'add', component: AddEdit },
-        { path: 'edit/:kode_matakuliah', component: AddEdit }
+        { path: ':kode_matakuliah', component: AddEdit }
     ]
 };

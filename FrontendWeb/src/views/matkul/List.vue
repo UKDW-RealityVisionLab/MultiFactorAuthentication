@@ -79,7 +79,7 @@ onMounted(() => {
           <td>{{ mat.minimal_sks }}</td>
           <td>{{ mat.tanggal_input }}</td>
           <td style="white-space: nowrap">
-            <router-link :to="`/matakuliah/edit/${mat.kode_matakuliah}`" class="btn btn-sm btn-primary mr-1">Edit</router-link>
+            <router-link :to="`/matakuliah/${mat.kode_matakuliah}`" class="btn btn-sm btn-primary mr-1">Edit</router-link>
             <button class="btn btn-sm btn-danger btn-delete-matkul" @click="deleteMatkul(mat.kode_matakuliah)">Delete</button> 
           </td>
         </tr>
