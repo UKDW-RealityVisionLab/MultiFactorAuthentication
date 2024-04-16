@@ -23,7 +23,7 @@ const fetchMataKuliahById = async (url) => {
     const response = await axios.get(url)
     matkul.value.dataId = response.data.matakuliah.dataMataKuliah;
     console.log('Data by kode matkul:', matkul.value.dataId)
-    
+
   } catch (error) {
     alertStore.error("Failed to fetch mata kuliah data");
   }
@@ -50,11 +50,11 @@ const schema = Yup.object().shape({
     .min(0, "SKS must be at least 0")
     .max(9, "SKS must be at most 9"),
   harga: Yup.number(),
-  is_praktikum: Yup.boolean().value = false, 
+  is_praktikum: Yup.boolean().value = false,
   minimal_sks: Yup.number()
     // .required("Minimal SKS is required")
     .min(0, "Minimal SKS must be at least 1"),
-    tanggal_input: Yup.date(),
+  tanggal_input: Yup.date(),
 });
 
 const addMatkul = async (data) => {
@@ -72,7 +72,7 @@ const addMatkul = async (data) => {
 const editMataKuliah = async (data) => {
   matkul.value.loading = true;
   try {
-    const response = await axios.patch(`${baseUrl}/${kode_matakuliah}`, data); 
+    const response = await axios.patch(`${baseUrl}/${kode_matakuliah}`, data);
     alertStore.success(response.data.message);
   } catch (error) {
     if (error.response && error.response.status === 500) {
@@ -94,7 +94,7 @@ async function onSubmit(values) {
     if (kode_matakuliah) {
       try {
         await editMataKuliah(values);
-        message = "Mata Kuliah updated";
+        message = "Mata Kuliah updated kode kuliah="+kode_matakuliah;
         await router.push("/matakuliah");
       } catch (error) {
         alertStore.error("Failed to update");
@@ -102,13 +102,13 @@ async function onSubmit(values) {
     } else {
       try {
         const newMatkul = {
-        nama_matakuliah: values.nama_matakuliah,
-        sks: values.sks,
-        harga: values.harga,
-        is_praktikum: values.is_praktikum? values.is_praktikum : true,
-        minimal_sks: values.minimal_sks,
-        tanggal_input: values.tanggal_input,
-};
+          nama_matakuliah: values.nama_matakuliah,
+          sks: values.sks,
+          harga: values.harga,
+          is_praktikum: values.is_praktikum ? values.is_praktikum : true,
+          minimal_sks: values.minimal_sks,
+          tanggal_input: values.tanggal_input,
+        };
 
         await addMatkul(newMatkul);
         message = "Mata Kuliah added";
@@ -127,40 +127,22 @@ async function onSubmit(values) {
 <template>
   <h1>{{ title }}</h1>
   <template v-if="!(matkul?.loading || matkul?.error)">
-    <Form
-      @submit="onSubmit"
-      :validation-schema="schema"
-      v-slot="{ errors, isSubmitting }"
-    >
+    <Form @submit="onSubmit" :validation-schema="schema" v-slot="{ errors, isSubmitting }">
       <div class="form-row">
         <div class="form-group col">
           <label>Nama Mata Kuliah</label>
-          <Field
-            name="nama_matakuliah"
-            type="text"
-            class="form-control"
-            :class="{ 'is-invalid': errors.namaMataKuliah }"
-          />
+          <Field name="nama_matakuliah" type="text" class="form-control"
+            :class="{ 'is-invalid': errors.namaMataKuliah }" />
           <div class="invalid-feedback">{{ errors.namaMataKuliah }}</div>
         </div>
         <div class="form-group col">
           <label>SKS</label>
-          <Field
-            name="sks"
-            type="number"
-            class="form-control"
-            :class="{ 'is-invalid': errors.sks }"
-          />
+          <Field name="sks" type="number" class="form-control" :class="{ 'is-invalid': errors.sks }" />
           <div class="invalid-feedback">{{ errors.sks }}</div>
         </div>
         <div class="form-group col">
           <label>Harga</label>
-          <Field
-            name="harga"
-            type="number"
-            class="form-control"
-            :class="{ 'is-invalid': errors.harga }"
-          />
+          <Field name="harga" type="number" class="form-control" :class="{ 'is-invalid': errors.harga }" />
           <div class="invalid-feedback">{{ errors.harga }}</div>
         </div>
       </div>
@@ -171,31 +153,18 @@ async function onSubmit(values) {
         </div>
         <div class="form-group col">
           <label>Minimal SKS</label>
-          <Field
-            name="minimal_sks"
-            type="number"
-            class="form-control"
-            :class="{ 'is-invalid': errors.minimalSks }"
-          />
+          <Field name="minimal_sks" type="number" class="form-control" :class="{ 'is-invalid': errors.minimalSks }" />
           <div class="invalid-feedback">{{ errors.minimalSks }}</div>
         </div>
         <div class="form-group col">
           <label>Tanggal Input</label>
-          <Field
-            name="tanggal_input"
-            type="date"
-            class="form-control"
-            :class="{ 'is-invalid': errors.tanggalInput }"
-          />
+          <Field name="tanggal_input" type="date" class="form-control" :class="{ 'is-invalid': errors.tanggalInput }" />
           <div class="invalid-feedback">{{ errors.tanggalInput }}</div>
         </div>
       </div>
       <div class="form-group">
         <button class="btn btn-primary" :disabled="isSubmitting">
-          <span
-            v-show="isSubmitting"
-            class="spinner-border spinner-border-sm mr-1"
-          ></span>
+          <span v-show="isSubmitting" class="spinner-border spinner-border-sm mr-1"></span>
           Save
         </button>
         <router-link to="/mata-kuliah" class="btn btn-link">Cancel</router-link>
