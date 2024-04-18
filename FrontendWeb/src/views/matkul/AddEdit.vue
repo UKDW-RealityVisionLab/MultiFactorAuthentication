@@ -50,7 +50,7 @@ const schema = Yup.object().shape({
     .min(0, "SKS must be at least 0")
     .max(9, "SKS must be at most 9"),
   harga: Yup.number(),
-  is_praktikum: Yup.boolean().value = false,
+  is_praktikum: Yup.boolean(),
   minimal_sks: Yup.number()
     // .required("Minimal SKS is required")
     .min(0, "Minimal SKS must be at least 1"),
@@ -69,11 +69,22 @@ const addMatkul = async (data) => {
   }
 };
 
-const editMataKuliah = async (data) => {
+const editMataKuliah = async (values) => {
+  let message;
   matkul.value.loading = true;
   try {
+    const data = {
+          nama_matakuliah: values.nama_matakuliah,
+          sks: values.sks,
+          harga: values.harga,
+          is_praktikum: values.is_praktikum || false, // Set default value if undefined
+          minimal_sks: values.minimal_sks,
+          tanggal_input: values.tanggal_input,
+        };
+    console.log("Data yang disend request:", data); // Add this line for debugging
     const response = await axios.patch(`${baseUrl}/${kode_matakuliah}`, data);
     alertStore.success(response.data.message);
+    message = "Mata Kuliah updated kode kuliah="+kode_matakuliah;
   } catch (error) {
     if (error.response && error.response.status === 500) {
       console.error("Internal Server Error:", error.message);
@@ -87,14 +98,15 @@ const editMataKuliah = async (data) => {
   }
 };
 
-
 async function onSubmit(values) {
   try {
     let message;
     if (kode_matakuliah) {
       try {
+        // Ensure is_praktikum is set to false if it's undefined
+        values.is_praktikum = values.is_praktikum || false;
         await editMataKuliah(values);
-        message = "Mata Kuliah updated kode kuliah="+kode_matakuliah;
+        console.log(values);
         await router.push("/matakuliah");
       } catch (error) {
         alertStore.error("Failed to update");
@@ -105,7 +117,7 @@ async function onSubmit(values) {
           nama_matakuliah: values.nama_matakuliah,
           sks: values.sks,
           harga: values.harga,
-          is_praktikum: values.is_praktikum ? values.is_praktikum : true,
+          is_praktikum: values.is_praktikum || false, // Set default value if undefined
           minimal_sks: values.minimal_sks,
           tanggal_input: values.tanggal_input,
         };
@@ -122,12 +134,13 @@ async function onSubmit(values) {
     alertStore.error(error);
   }
 }
+
 </script>
 
 <template>
   <h1>{{ title }}</h1>
   <template v-if="!(matkul?.loading || matkul?.error)">
-    <Form @submit="onSubmit" :validation-schema="schema" v-slot="{ errors, isSubmitting }">
+    <Form @submit="onSubmit" :validation-schema="schema" v-slot="{ errors, isSubmitting }"  v-for="mat in matkul.dataId" :initial-values="mat">
       <div class="form-row">
         <div class="form-group col">
           <label>Nama Mata Kuliah</label>

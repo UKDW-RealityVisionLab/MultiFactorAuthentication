@@ -26,9 +26,11 @@ const deleteMatkul = async (kodeMatakuliah) => {
     await axios.delete(`${baseUrl}/${kodeMatakuliah}`);
     await fetchDataMatkul();
   } catch (error) {
-    console.error("Error deleting matkul:", error);
+    console.error("Error deleting Mata Kuliah:", error);
+    alertStore.error("Failed to delete Mata Kuliah");
   }
 };
+
 
 onMounted(() => {
   fetchDataMatkul();
