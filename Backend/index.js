@@ -8,7 +8,10 @@ const kelasRoute= require('./routes/kelas.js');
 const mkRoute= require('./routes/matakuliah.js');
 const userRouter= require('./routes/users')
 const dosenRouter= require('./routes/dosen.js')
-const logReq= require('./middleware/log.js')
+const qrRouter= require('./routes/qr.js')
+
+const logReq= require('./middleware/log.js');
+// const { default: qrRouter } = require('../FrontendWeb/src/router/qr.router.js');
 
 
 // cuma log aja
@@ -18,8 +21,9 @@ app.use(express.json())
 app.use('/presensi',presensiRoute);
 app.use('/matakuliah',mkRoute);
 app.use('/kelas',kelasRoute);
-app.use('/users',userRouter)
-app.use('/dosen',dosenRouter)
+app.use('/users',userRouter);
+app.use('/dosen',dosenRouter);
+app.use('/qr',qrRouter);
 
 
 
