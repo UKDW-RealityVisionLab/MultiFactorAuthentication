@@ -11,4 +11,6 @@ route.patch('/:id',kelasController.editKelas)
 
 route.delete('/:id',kelasController.deleteKelas)
 
+route.get('/:kode_kelas',kelasController.getByIdKelas)
+
 module.exports= route
