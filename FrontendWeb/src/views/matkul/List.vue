@@ -1,14 +1,12 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
-
 const baseUrl = "http://localhost:3000/matakuliah";
 const matkul = ref({
   data: [],
   loading: false,
   error: null,
 });
-
 const fetchDataMatkul = async () => {
   matkul.value.loading = true;
   try {
@@ -20,20 +18,18 @@ const fetchDataMatkul = async () => {
     matkul.value.loading = false;
   }
 };
-
 const deleteMatkul = async (kodeMatakuliah) => {
   try {
     await axios.delete(`${baseUrl}/${kodeMatakuliah}`);
     await fetchDataMatkul();
   } catch (error) {
-    console.error("Error deleting matkul:", error);
+    console.error("Error deleting Mata Kuliah:", error);
+    alertStore.error("Failed to delete Mata Kuliah");
   }
 };
-
 onMounted(() => {
   fetchDataMatkul();
 });
-
 </script>
 
 <template>
@@ -60,7 +56,7 @@ onMounted(() => {
           </td>
         </tr>
       </template>
-      
+
       <template v-else-if="matkul.error">
         <tr>
           <td colspan="8">
