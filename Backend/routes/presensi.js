@@ -11,4 +11,7 @@ route.patch('/:id',presensiController.updatePresensi)
 
 route.delete('/:id',presensiController.deletePresensi)
 
+route.get('/:kode_matkul',presensiController.getByIdPresensi)
+
+
 module.exports= route

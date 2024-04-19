@@ -111,4 +111,24 @@ const updatePresensi =  async (req, res) => {
   }
 };
 
-module.exports = { dataPresensi, insertPresensi, deletePresensi, updatePresensi };
+const getByIdPresensi =async (req, res) => {
+  try {
+    const {id_presensi} = req.params;
+    const queryGet = `SELECT *
+                      FROM presensi
+                      WHERE id_presensi = '${id_presensi}';`;
+    const result = await new Promise((resolve, reject) => {
+
+      db.all(queryGet, (error, result) => {
+        if (error) reject(error);
+        resolve(result);
+      });
+    });
+    formatRes(200, result, "berhasil get Presensi", res);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({message: "Terjadi kesalahan"});
+  }
+};
+
+module.exports = { dataPresensi, insertPresensi, deletePresensi, updatePresensi, getByIdPresensi}; 
