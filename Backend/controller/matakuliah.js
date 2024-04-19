@@ -16,7 +16,7 @@ const getMataKuliah = async (req, res) => {
   try {
     const queryGet = 'SELECT * FROM mata_kuliah';
     const result = await new Promise((resolve, reject) => {
-  
+
       db.all(queryGet, (error, result) => {
         if (error) reject(error);
         resolve(result);
@@ -28,6 +28,26 @@ const getMataKuliah = async (req, res) => {
     return res.status(500).json({ message: "Terjadi kesalahan"});
 }
 };
+
+const getByIdMatkul =async (req, res) => {
+  try {
+    const {kode_matkul} = req.params;
+    const queryGet = `SELECT *
+                      FROM mata_kuliah
+                      WHERE kode_matakuliah = '${kode_matkul}';`;
+    const result = await new Promise((resolve, reject) => {
+
+      db.all(queryGet, (error, result) => {
+        if (error) reject(error);
+        resolve(result);
+      });
+    });
+    formatRes(200, result, "berhasil get mata kuliah", res);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({message: "Terjadi kesalahan"});
+  }
+}
 
 const addMataKuliah = async (req, res) => {
   try {
@@ -131,4 +151,4 @@ const editMataKuliah = async (req, res) => {
 };
 
 
-module.exports = { getMataKuliah, addMataKuliah, editMataKuliah, deleteMataKuliah };
+module.exports = { getMataKuliah, addMataKuliah, editMataKuliah, deleteMataKuliah,getByIdMatkul };
