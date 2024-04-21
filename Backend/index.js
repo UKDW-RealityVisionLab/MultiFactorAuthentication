@@ -9,6 +9,7 @@ const mkRoute= require('./routes/matakuliah.js');
 const userRouter= require('./routes/users')
 const dosenRouter= require('./routes/dosen.js')
 const logReq= require('./middleware/log.js')
+const sesi= require('./routes/sesi')
 
 
 // cuma log aja
@@ -20,6 +21,7 @@ app.use('/matakuliah',mkRoute);
 app.use('/kelas',kelasRoute);
 app.use('/users',userRouter)
 app.use('/dosen',dosenRouter)
+app.use('/sesi',sesi)
 
 
 
