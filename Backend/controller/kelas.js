@@ -125,6 +125,24 @@ const editKelas = async (req, res) => {
     return res.status(500).json({ message: 'Terjadi kesalahan' });
   }
 };
+const getByIdKelas =async (req, res) => {
+  try {
+    const {kode_kelas} = req.params;
+    const queryGet = `SELECT *
+                      FROM kelas
+                      WHERE kode_kelas = '${kode_kelas}';`;
+    const result = await new Promise((resolve, reject) => {
 
+      db.all(queryGet, (error, result) => {
+        if (error) reject(error);
+        resolve(result);
+      });
+    });
+    formatRes(200, result, "berhasil get kelas", res);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({message: "Terjadi kesalahan"});
+  }
+}
 
-module.exports = { getKelas, addKelas, editKelas, deleteKelas };
+module.exports = { getKelas, addKelas, editKelas, deleteKelas, getByIdKelas };
