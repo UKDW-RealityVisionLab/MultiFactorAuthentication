@@ -4,7 +4,7 @@ const { query } = require("express");
 
 const formatRes = (status, data, message, res) => {
     res.status(status).json({
-        kelas: {
+        sesi: {
             status: status,
             dataKelas: data,
             message: message,
