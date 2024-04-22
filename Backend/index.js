@@ -10,6 +10,7 @@ const userRouter= require('./routes/users')
 const dosenRouter= require('./routes/dosen.js')
 const logReq= require('./middleware/log.js')
 const sesi= require('./routes/sesi')
+const ruang= require('./routes/ruang')
 
 
 // cuma log aja
@@ -22,6 +23,7 @@ app.use('/kelas',kelasRoute);
 app.use('/users',userRouter)
 app.use('/dosen',dosenRouter)
 app.use('/sesi',sesi)
+app.use('/ruang',ruang)
 
 
 
