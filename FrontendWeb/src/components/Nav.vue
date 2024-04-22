@@ -12,6 +12,8 @@ const authStore = useAuthStore();
             <router-link to="/matakuliah" class="nav-item nav-link">Mata kuliah</router-link>
             <router-link to="/qr" class="nav-item nav-link">QR</router-link>
 
+            <router-link to="/kelas" class="nav-item nav-link">Kelas</router-link>
+            <router-link to="/sesi" class="nav-item nav-link">Sesi kelas</router-link>
             <button @click="authStore.logout()" class="btn btn-link nav-item nav-link">Logout</button>
         </div>
     </nav>

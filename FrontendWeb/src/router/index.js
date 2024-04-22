@@ -6,6 +6,8 @@ import accountRoutes from './account.routes';
 import usersRoutes from './users.routes';
 import matkulRoutes from './matkul.router';
 import qrRoutes from './qr.router';
+import kelasRoutes from './kelas.routes';
+import sesiRoutes from './sesi.routes';
 
 export const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
@@ -17,6 +19,8 @@ export const router = createRouter({
         {...matkulRoutes},
         {...qrRoutes},
 
+        { ...kelasRoutes },
+        {...sesiRoutes},
         // catch all redirect to home page
         { path: '/:pathMatch(.*)*', redirect: '/' }
     ]

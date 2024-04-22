@@ -12,6 +12,7 @@ const qrRouter= require('./routes/qr.js')
 
 const logReq= require('./middleware/log.js');
 // const { default: qrRouter } = require('../FrontendWeb/src/router/qr.router.js');
+const sesi= require('./routes/sesi')
 
 
 // cuma log aja
@@ -24,6 +25,7 @@ app.use('/kelas',kelasRoute);
 app.use('/users',userRouter);
 app.use('/dosen',dosenRouter);
 app.use('/qr',qrRouter);
+app.use('/sesi',sesi)
 
 
 
