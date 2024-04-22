@@ -5,9 +5,9 @@ const controller= require('../controller/ruang')
 
 route.get('/', controller.getRuang)
 
-// route.post('/', MataKuliahController.addMataKuliah)
+route.post('/', controller.addRuang)
 
-// route.patch('/:kode_ruang',MataKuliahController.editMataKuliah)
+route.patch('/:kode_ruang',controller.editruang)
 
 route.delete('/:kode_ruang',controller.deleteRuang)
 route.get('/:kode_ruang',controller.getByKodeRuang)
