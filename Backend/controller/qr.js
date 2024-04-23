@@ -32,15 +32,21 @@ const getQR = async (req, res) => {
 const addQR = async (req, res) => {
   try {
     const {
-      nidn,
-      kode_prodi,
-      nama,
+      time_remain,
+      time_start,
+      time_end,
+      qr_code,
+      qr_value,
+      kode_qr
     } = req.body;
-    const query = `INSERT INTO qr (nidn, kode_prodi,nama) VALUES (?, ?, ?)`;
+    const query = `INSERT INTO qr (time_remain,time_start,time_end,qr_code,qr_value,kode_qr) VALUES (?, ?, ?,?,?,?)`;
     const values = [
-        nidn,
-        kode_prodi,
-        nama,
+      time_remain,
+      time_start,
+      time_end,
+      qr_code,
+      qr_value,
+      kode_qr
     ];
 
     const result = await new Promise((resolve, reject) => {
@@ -59,10 +65,10 @@ const addQR = async (req, res) => {
 
 const deleteQR = async (req, res) => {
   try{
-    const { nidn } = req.params;
-  console.log("qr yang dihapus:", nidn);
+    const { kode } = req.params;
+  console.log("qr yang dihapus:", kode);
 
-  const query = `DELETE FROM QR WHERE nidn= '${nidn}';`;
+  const query = `DELETE FROM QR WHERE kode= '${kode}';`;
 
   await new Promise((resolve, reject)=>{
     db.run(query,(error, result)=>{
@@ -70,7 +76,7 @@ const deleteQR = async (req, res) => {
       resolve(result);
     });
   });
-  formatRes(200,nidn,"berhasil hapus user ",res)
+  formatRes(200,kode,"berhasil hapus user ",res)
   }
   catch(error){
     console.error(error);
@@ -80,8 +86,8 @@ const deleteQR = async (req, res) => {
 
 const editQR = async (req, res) => {
   try {
-    const { nidn } = req.params;
-    console.log("nim yang diedit:", nidn);
+    const { kode } = req.params;
+    console.log("kode yang diedit:", kode);
 
     // requestnya
     const newData = req.body;
@@ -90,8 +96,8 @@ const editQR = async (req, res) => {
     let setValues = "";
 
     // id ga bole di edit
-    if ("nidn" in newData) {
-      return res.status(400).json({ message: "Dilarang mengubah NIDN" });
+    if ("kode" in newData) {
+      return res.status(400).json({ message: "Dilarang mengubah kode" });
     }
 
     // Membuat string setValues
@@ -103,9 +109,9 @@ const editQR = async (req, res) => {
     setValues = setValues.slice(0, -2);
 
     const query = `
-      UPDATE user_dosen
+      UPDATE QR
       SET ${setValues}
-      WHERE nidn='${nidn}'
+      WHERE kode='${kode}'
     `;
 
     await new Promise((resolve, reject) => {
@@ -115,7 +121,7 @@ const editQR = async (req, res) => {
       });
     });
 
-    formatRes(200, "berhasil edit", "nidn"+nidn, res);
+    formatRes(200, "berhasil edit", "kode"+kode, res);
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: 'Terjadi kesalahan' });
