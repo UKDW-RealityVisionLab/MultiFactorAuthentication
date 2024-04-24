@@ -44,8 +44,8 @@ onMounted(() => {
   <table class="table table-striped">
     <thead>
       <tr>
-        <th style="width: 30%">Kode ruang</th>
-        <th style="width: 30%">Nama ruang</th>
+        <th style="width: 30%">Kode jadwal</th>
+        <th style="width: 30%">kode ruang</th>
         <th style="width: 25%">Kode sesi</th>
         <th style="width: 25%">tanggal</th>
       </tr>
