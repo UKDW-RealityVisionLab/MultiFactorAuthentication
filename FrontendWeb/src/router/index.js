@@ -8,6 +8,7 @@ import matkulRoutes from './matkul.router';
 import kelasRoutes from './kelas.routes';
 import sesiRoutes from './sesi.routes';
 import ruang from './ruang.router';
+import jadwal from './jadwal.router';
 
 export const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
@@ -20,6 +21,7 @@ export const router = createRouter({
         { ...kelasRoutes },
         {...sesiRoutes},
         {...ruang},
+        {...jadwal},
         // catch all redirect to home page
         { path: '/:pathMatch(.*)*', redirect: '/' }
     ]
