@@ -11,6 +11,7 @@ const dosenRouter= require('./routes/dosen.js')
 const logReq= require('./middleware/log.js')
 const sesi= require('./routes/sesi')
 const ruang= require('./routes/ruang')
+const jadwal = require('./routes/jadwal.js')
 
 
 // cuma log aja
@@ -24,6 +25,7 @@ app.use('/users',userRouter)
 app.use('/dosen',dosenRouter)
 app.use('/sesi',sesi)
 app.use('/ruang',ruang)
+app.use('/jadwal',jadwal)
 
 
 
