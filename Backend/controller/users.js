@@ -123,6 +123,24 @@ const editUsers = async (req, res) => {
     return res.status(500).json({ message: 'Terjadi kesalahan' });
   }
 };
+const getByIdMahasiswa =async (req, res) => {
+  try {
+    const {nim} = req.params;
+    const queryGet = `SELECT *
+                      FROM user_mahasiswa
+                      WHERE nim = '${nim}';`;
+    const result = await new Promise((resolve, reject) => {
 
+      db.all(queryGet, (error, result) => {
+        if (error) reject(error);
+        resolve(result);
+      });
+    });
+    formatRes(200, result, "berhasil get mahasiswa", res);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({message: "Terjadi kesalahan"});
+  }
+};
 
-module.exports = { getUsers, addUsers, editUsers, deleteUsers };
+module.exports = { getUsers, addUsers, editUsers, deleteUsers, getByIdMahasiswa };

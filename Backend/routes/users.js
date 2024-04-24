@@ -11,4 +11,6 @@ route.patch('/:nim',controller.editUsers)
 
 route.delete('/:nim',controller.deleteUsers)
 
+route.get('/:nim',controller.getByIdMahasiswa)
+
 module.exports= route
