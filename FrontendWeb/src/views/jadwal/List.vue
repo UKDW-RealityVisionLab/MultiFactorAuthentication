@@ -46,8 +46,8 @@ onMounted(() => {
       <tr>
         <th style="width: 30%">Kode ruang</th>
         <th style="width: 30%">Nama ruang</th>
-        <th style="width: 25%">Latitude</th>
-        <th style="width: 25%">Longitude</th>
+        <th style="width: 25%">Kode sesi</th>
+        <th style="width: 25%">tanggal</th>
       </tr>
     </thead>
     <tbody>
