@@ -12,6 +12,8 @@ const logReq= require('./middleware/log.js')
 const sesi= require('./routes/sesi')
 const ruang= require('./routes/ruang')
 const jadwal = require('./routes/jadwal.js')
+const semesterRoute = require('./routes/semester.js')
+
 
 
 // cuma log aja
@@ -26,6 +28,7 @@ app.use('/dosen',dosenRouter)
 app.use('/sesi',sesi)
 app.use('/ruang',ruang)
 app.use('/jadwal',jadwal)
+app.use('/semester',semesterRoute);
 
 
 
