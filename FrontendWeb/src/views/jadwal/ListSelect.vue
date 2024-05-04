@@ -84,6 +84,7 @@ onMounted(async () => {
           
           <td style="white-space: nowrap">
             <router-link :to="`/jadwal/${jadwalApi.kode_jadwal}`" class="btn btn-sm btn-primary mr-1">Edit</router-link>
+            <button class="btn btn-sm btn-success btn-presensi">QR</button> 
             <button class="btn btn-sm btn-danger btn-delete" @click="deleteJadwal(jadwalApi.kode_jadwal)">Delete</button> 
           </td>
         </tr>
