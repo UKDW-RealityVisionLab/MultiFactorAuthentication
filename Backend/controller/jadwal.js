@@ -15,6 +15,7 @@ const getJadwal = async (req, res) => {
     try {
         const queryGet = `SELECT 
         kelas.group_kelas, 
+        kelas.kode_kelas,
         jadwal.tanggal,
         jadwal.kode_jadwal,
         jadwal.kode_sesi,
@@ -46,6 +47,48 @@ const getJadwal = async (req, res) => {
     }
 };
 
+const getJadwalBykodeKelas = async (req, res) => {
+    try {
+        const { kode_kelas } = req.params;
+        const query = `
+            SELECT 
+                kelas.group_kelas, 
+                kelas.kode_kelas,
+                jadwal.tanggal,
+                jadwal.kode_jadwal,
+                jadwal.kode_sesi,
+                jadwal.kode_ruang, 
+                kelas_sesi.sesi_start,
+                kelas_sesi.sesi_end,
+                mata_kuliah.nama_matakuliah
+            FROM 
+                kelas 
+            INNER JOIN 
+                jadwal ON kelas.kode_kelas = jadwal.kode_kelas 
+            INNER JOIN 
+                kelas_sesi ON jadwal.kode_sesi = kelas_sesi.kode_sesi
+            INNER JOIN 
+                mata_kuliah ON kelas.kode_matakuliah = mata_kuliah.kode_matakuliah 
+            WHERE 
+                kelas.kode_kelas= '${kode_kelas}';
+        `;
+
+        const result = await new Promise((resolve, reject) => {
+            db.all(query, (error, result) => {
+                if (error) reject(error);
+                resolve(result);
+            });
+        });
+
+        
+        formatRes(200, result, "berhasil get jadwal by Kode Kelas", res);
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: "Terjadi kesalahan" });
+    }
+};
+
+
 const getByKodeJadwal= async (req, res) => {
     try {
         const { kode_jadwal } = req.params;
@@ -69,13 +112,13 @@ const getByKodeJadwal= async (req, res) => {
 const addJadwal = async (req, res) => {
     try {
         const {
-            kode_jadwal, kode_ruang, kode_sesi, tanggal
+            kode_jadwal, kode_kelas, kode_ruang, kode_sesi, tanggal
         } = req.body;
 
-        const query = `INSERT INTO jadwal (kode_jadwal, kode_ruang, kode_sesi, tanggal) VALUES (?, ?, ?, ?)`;
+        const query = `INSERT INTO jadwal (kode_jadwal, kode_kelas, kode_ruang, kode_sesi, tanggal) VALUES (?,?, ?, ?, ?)`;
 
         const values = [
-            kode_jadwal, kode_ruang, kode_sesi, tanggal
+            kode_jadwal, kode_kelas, kode_ruang, kode_sesi, tanggal
         ];
 
         const result = await new Promise((resolve, reject) => {
@@ -164,4 +207,4 @@ const editJadwal = async (req, res) => {
 
 
 
-module.exports = { getJadwal, addJadwal, editJadwal, deleteJadwal, getByKodeJadwal };
+module.exports = { getJadwal, addJadwal, editJadwal, deleteJadwal, getByKodeJadwal, getJadwalBykodeKelas };

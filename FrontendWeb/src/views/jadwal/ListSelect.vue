@@ -1,41 +1,46 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
+import { useRoute } from 'vue-router';
 
 const baseUrl = "http://localhost:3000/jadwal";
+const route = useRoute();
+const kode_kelas = route.params.kode_kelas;
 const dataApi = ref({
   data: [],
   loading: false,
   error: null,
 });
 
-const fetchDataJadwal = async () => {
-  dataApi.value.loading = true;
+const fetchDataJadwal = async (url) => {
   try {
-    const response = await axios.get(baseUrl);
+    const response = await axios.get(url);
     dataApi.value.data = response.data.jadwal.dataJadwal;
+    console.log('Data by kode kelas:', dataApi.value.data);
   } catch (error) {
-    dataApi.value.error = error.message;
-  } finally {
-    dataApi.value.loading = false;
+    console.error("Error fetching data:", error);
+    dataApi.value.error = "Failed to fetch data";
   }
 };
 
 const deleteJadwal = async (kodeJadwal) => {
   try {
     await axios.delete(`${baseUrl}/${kodeJadwal}`);
-    await fetchDataJadwal();
+    await fetchDataJadwal(`${baseUrl}/${kode_kelas}`);
   } catch (error) {
-    console.error("Error deleting :", error);
-    alertStore.error("Failed to delete ");
+    console.error("Error deleting jadwal:", error);
+    dataApi.value.error = "Failed to delete jadwal";
   }
 };
 
-
-onMounted(() => {
-  fetchDataJadwal();
+onMounted(async () => {
+  try {
+    await fetchDataJadwal(`${baseUrl}/jadwalPresensi/${kode_kelas}`);
+  } catch (error) {
+    console.error("Error fetching data:", error);
+    dataApi.value.error = "Failed to fetch data";
+  }
 });
-
 </script>
 
 <template>

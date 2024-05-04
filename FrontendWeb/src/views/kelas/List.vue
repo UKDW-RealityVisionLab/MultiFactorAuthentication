@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
+import { router } from "@/router"
 
 const baseUrl = "http://localhost:3000/kelas";
 const kelass = ref({
@@ -8,6 +9,7 @@ const kelass = ref({
   // loading: false,
   error: null,
 });
+
 
 const fetchDataKelas = async () => {
   // kelass.value.loading = true;
@@ -33,6 +35,10 @@ const deleteKelas = async (kodeKelass) => {
 onMounted(() => {
   fetchDataKelas();
 });
+
+const selectKelas= (id)=>{
+  router.push(`/jadwal/jadwalPresensi/${id}`)
+}
 
 </script>
 
@@ -76,6 +82,8 @@ onMounted(() => {
   
           <td style="white-space: nowrap">
             <router-link :to="`kelas/${item.kode_kelas}`" class="btn btn-sm btn-primary mr-1">Edit</router-link>
+            <!-- <router-link :to="`jadwal/${item.kode_kelas}`" class="btn btn-sm btn-success mr-1">Pilih</router-link> -->
+            <button class="btn btn-sm btn-success btn-pilih-kelas" @click="selectKelas(item.kode_kelas)">Pilih</button> 
             <button class="btn btn-sm btn-danger btn-delete-kelas" @click="deleteKelas(item.kode_kelas)">Delete</button> 
           </td>
         </tr>

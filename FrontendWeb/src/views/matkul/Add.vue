@@ -13,6 +13,7 @@ const route = useRoute();
 const baseUrl = "http://localhost:3000/matakuliah";
 
 const schema = Yup.object().shape({
+  kode_matakuliah:Yup.string().required("kode mata Kuliah is required"),
   nama_matakuliah: Yup.string().required("Nama Mata Kuliah is required"),
   sks: Yup.number()
     .required("SKS is required")
@@ -46,6 +47,7 @@ const addMatkul = async (data) => {
 async function onSubmit(values) {
   try {
     const newMatkul = {
+      kode_matakuliah: values.kode_matakuliah,
       nama_matakuliah: values.nama_matakuliah,
       sks: values.sks,
       harga: values.harga,
@@ -68,6 +70,14 @@ async function onSubmit(values) {
   <template v-if="!(matkul.loading || matkul.error)">
     <Form @submit="onSubmit" :validation-schema="schema" v-slot="{ errors, isSubmitting }">
       <div class="form-row">
+
+        <div class="form-group col">
+          <label>kode Mata Kuliah</label>
+          <Field name="kode_matakuliah" type="text" class="form-control"
+            :class="{ 'is-invalid': errors.kode_matakuliah }" />
+          <div class="invalid-feedback">{{ errors.kode_matakuliah }}</div>
+        </div>
+
         <div class="form-group col">
           <label>Nama Mata Kuliah</label>
           <Field name="nama_matakuliah" type="text" class="form-control"
