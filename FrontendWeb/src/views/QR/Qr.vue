@@ -2,7 +2,7 @@
 import axios from 'axios';
 import { ref, onMounted } from 'vue';
 
-const baseURL = 'http://localhost:3000/presensi'; // Sesuaikan URL ini sesuai dengan endpoint backend Anda
+const baseURL = 'http://localhost:3000/presensi'; 
 
 const dataApi = ref({
   qrCode: null,
