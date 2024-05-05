@@ -8,11 +8,15 @@ const formatRes = (status, data, message, res) => {
     });
 };
 
-const QRCode = require('qrcode')
+const QRCode = require('qrcode');
 
 const generateQr = (req, res) => {
     const data = 'Hello, World!';
-    QRCode.toDataURL(data, (err, url) => {
+    const timestamp = Date.now(); // Mengambil timestamp saat ini
+    const expiryTime = timestamp + (5 * 60 * 1000); // Menambah 5 menit ke timestamp
+
+    const qrData = { text: data, expiry: expiryTime }; // Menyimpan data QR code dan waktu kadaluarsa
+    QRCode.toDataURL(JSON.stringify(qrData), (err, url) => {
         if (err) {
             console.error(err);
             formatRes(500, null, 'Error generating QR code', res);
@@ -21,6 +25,5 @@ const generateQr = (req, res) => {
         }
     });
 };
-
 
 module.exports = { generateQr };
