@@ -1,10 +1,11 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from "vue-router";
 
 const baseUrl = "http://localhost:3000/jadwal";
 const route = useRoute();
+const router = useRouter();
 const kode_kelas = route.params.kode_kelas;
 const dataApi = ref({
   data: [],
@@ -32,6 +33,10 @@ const deleteJadwal = async (kodeJadwal) => {
     dataApi.value.error = "Failed to delete jadwal";
   }
 };
+
+const presensi= ()=>{
+  router.push('/presensi')
+}
 
 onMounted(async () => {
   try {
@@ -84,7 +89,7 @@ onMounted(async () => {
           
           <td style="white-space: nowrap">
             <router-link :to="`/jadwal/${jadwalApi.kode_jadwal}`" class="btn btn-sm btn-primary mr-1">Edit</router-link>
-            <button class="btn btn-sm btn-success btn-presensi">QR</button> 
+            <button class="btn btn-sm btn-success btn-presensi" @click="presensi">QR</button> 
             <button class="btn btn-sm btn-danger btn-delete" @click="deleteJadwal(jadwalApi.kode_jadwal)">Delete</button> 
           </td>
         </tr>
