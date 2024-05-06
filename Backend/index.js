@@ -14,6 +14,7 @@ const ruang= require('./routes/ruang')
 const jadwal = require('./routes/jadwal.js')
 const semesterRoute = require('./routes/semester.js')
 const presensiRoute = require('./routes/qr.js')
+const daftarPresensi= require('./routes/presensi.js')
 
 
 // cuma log aja
@@ -30,6 +31,7 @@ app.use('/ruang',ruang)
 app.use('/jadwal',jadwal)
 app.use('/semester',semesterRoute);
 app.use('/presensi',presensiRoute)
+app.use('/daftarpresensi',daftarPresensi)
 
 
 

@@ -12,7 +12,7 @@ const formatRes = (status, data, message, res) => {
   res.status(status).json({
     kelas: {
       status: status,
-      dataKelas: data,
+      dataPresensiKelas: data,
       message: message,
     },
   });

@@ -5,6 +5,6 @@
 <template>
     <div >
         <h1>Welcome to home page!</h1>       
-        <p><router-link to="/mahasiswa">Manage Mahasiswa</router-link></p>
+        <p><router-link to="/kelas">cari kelas</router-link></p>
     </div>
 </template>
