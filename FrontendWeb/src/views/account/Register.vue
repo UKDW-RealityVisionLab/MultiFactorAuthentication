@@ -39,6 +39,7 @@ async function onSubmit(values) {
             nama: nama,
         };
         await addMhs(newMhs);
+        console.log(newMhs)
     } else if (values.role === "dosen") {
         const newDosen = {
             nidn: values.nidn,

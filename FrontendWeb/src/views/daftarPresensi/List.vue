@@ -1,6 +1,11 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
+import { useRoute, useRouter } from "vue-router";
+
+const route = useRoute();
+const router = useRouter();
+const kode_jadwal = route.params.kode_jadwal;
 
 const baseUrl = "http://localhost:3000/daftarpresensi";
 const dataApi = ref({
@@ -12,7 +17,7 @@ const dataApi = ref({
 const fetchData = async () => {
   dataApi.value.loading = true;
   try {
-    const response = await axios.get(baseUrl);
+    const response = await axios.get(baseUrl+"/"+kode_jadwal);
     dataApi.value.data = response.data.kelas.dataPresensiKelas;
   } catch (error) {
     dataApi.value.error = error.message;
@@ -58,9 +63,8 @@ onMounted(() => {
 
       <template v-else>
         <tr v-for="api in dataApi.data" :key="api.nim">
-          <td>{{ api.nim}}</td>
-          <!-- <td>{{ api. }}</td> harusnya nama -->
-          <td>belom kelar</td>
+          <td>{{ api.nim_mahasiswa}}</td>
+          <td>{{ api.nama }}</td> 
           <td>{{ api.hadir }}</td>
         </tr>
       </template>

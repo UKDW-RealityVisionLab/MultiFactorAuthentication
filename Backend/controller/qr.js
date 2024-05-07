@@ -18,14 +18,20 @@ const generateQr = (req, res) => {
     const expiryTime = timestamp + (5 * 60 * 1000); // Menambah 5 menit ke timestamp
 
     const qrData = { text: data, expiry: expiryTime }; 
-    QRCode.toDataURL(JSON.stringify(qrData), (err, url) => {
+    QRCode.toDataURL(data, (err, url) => {
         if (err) {
             console.error(err);
             formatRes(500, null, 'Error generating QR code', res);
         } else {
             formatRes(200, url, 'QR code generated successfully', res);
         }
+        if(req.body > expiryTime){
+            formatRes(403, null,"waktu telah berakhir",res)
+        }
+        
     });
+
+
    
 
 };

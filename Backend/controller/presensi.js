@@ -21,7 +21,8 @@ const formatRes = (status, data, message, res) => {
 
 const dataPresensi =  async (req, res) => {
   try {
-    const queryGet = "SELECT * FROM presensi";
+    const {kode_jadwal} = req.params
+    const queryGet = `SELECT presensi.id_presensi,presensi.nim_mahasiswa,presensi.nama, presensi.hadir FROM jadwal INNER JOIN presensi on jadwal.kode_jadwal=presensi.kode_jadwal WHERE jadwal.kode_jadwal='${kode_jadwal}';`;
     const result = await new Promise((resolve, reject) => {
   
       db.all(queryGet, (error, result) => {

@@ -4,7 +4,7 @@ export default {
     path: '/daftarpresensi',
     component: Layout,
     children: [
-        { path: '', component: List },
-        // { path: ':kode_jadwal', component: List },
+        // { path: '', component: List },
+        { path: ':kode_jadwal', component: List },
     ]
 };

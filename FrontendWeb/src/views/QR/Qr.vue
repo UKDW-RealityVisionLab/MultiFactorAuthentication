@@ -23,17 +23,16 @@ const showQr = async () => {
     console.log('API response:', response.data.presensi);
     const responseData = response.data.presensi;
     dataApi.value.qrCode = responseData.data;
-    const startTime = new Date(); // Waktu mulai saat QR code digenerate
+    const startTime = new Date(); 
     dataApi.value.startTime = startTime.toLocaleTimeString();
-    const endTime = new Date(startTime.getTime() + 300 * 1000); // Waktu kadaluarsa QR code 
+    const endTime = new Date(startTime.getTime() + 300 * 1000); 
     dataApi.value.endTime = endTime.toLocaleTimeString();
-    updateLiveTime(); // Memanggil fungsi untuk menginisialisasi live time
+    updateLiveTime(); 
 
-    // Menjalankan interval untuk memperbarui live time setiap detik
+    
     const intervalId = setInterval(() => {
       updateLiveTime();
       const currentTime = new Date();
-      // Memeriksa apakah waktu sekarang telah mencapai end time
       if (currentTime >= endTime) {
         clearInterval(intervalId); // Menghentikan interval jika waktu mencapai end time
       }
@@ -50,7 +49,7 @@ const updateLiveTime = () => {
 };
 
 function goTokehadiran() {
-  window.open(router.resolve('/daftarpresensi').href, '_blank');
+  window.open(router.resolve(`/daftarpresensi/${kode_jadwal}`).href, '_blank');
 }
 
 
