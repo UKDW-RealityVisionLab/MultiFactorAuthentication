@@ -6,30 +6,70 @@ import android.os.Bundle
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
-import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import com.firebase.ui.auth.AuthUI
-import com.google.android.gms.tasks.Task
+import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.DividerItemDecoration
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.mfa.Helper
+import com.mfa.JadwalAdapter
 import com.mfa.R
+import com.mfa.api.response.DataJadwalItem
 import com.mfa.databinding.ActivityHomeBinding
+import com.mfa.di.Injection
 import com.mfa.utils.PreferenceUtils
+import com.mfa.view_model.JadwalViewModel
+import com.mfa.view_model.ViewModelFactory
 import java.text.SimpleDateFormat
 import java.util.Date
 
 
 class HomeActivity : AppCompatActivity() {
     private lateinit var binding: ActivityHomeBinding
+    private lateinit var viewModel: JadwalViewModel
+    private lateinit var adapter: JadwalAdapter
     private val TAG = "HomeActivity"
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityHomeBinding.inflate(layoutInflater)
         setContentView(binding.root)
         binding.namaUser.text = PreferenceUtils.getUsername(this)
+        viewModel = ViewModelProvider(
+            this,
+            ViewModelFactory(Injection.provideRepository(this))
+        ).get(JadwalViewModel::class.java)
 
         setDate()
     }
+
+    private fun setupRecyclerView() {
+        val layoutManager = LinearLayoutManager(this)
+        binding.rvJadwal.layoutManager = layoutManager
+        val itemDecoration = DividerItemDecoration(this, layoutManager.orientation)
+        binding.rvJadwal.addItemDecoration(itemDecoration)
+
+            viewModel.getJadwal()
+            viewModel.getJadwalLiveData.observe(this) { stories ->
+                if (stories != null) {
+                    when (stories) {
+                        is Helper.Success -> setStory(stories.data.jadwal?.dataJadwal)
+                        else -> {}
+                    }
+
+                }
+            }
+        }
+
+    private fun setStory(data: List<DataJadwalItem?>?) {
+        if (data != null) {
+            adapter.submitList(data)
+        } else {
+            // Handle null data if needed
+            Toast.makeText(this, "Data is null", Toast.LENGTH_SHORT).show()
+        }
+    }
+
 
     override fun onResume() {
         super.onResume()
