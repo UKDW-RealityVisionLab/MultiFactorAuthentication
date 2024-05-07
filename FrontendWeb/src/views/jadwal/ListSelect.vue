@@ -1,41 +1,51 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
+import { useRoute, useRouter } from "vue-router";
 
 const baseUrl = "http://localhost:3000/jadwal";
+const route = useRoute();
+const router = useRouter();
+const kode_kelas = route.params.kode_kelas;
 const dataApi = ref({
   data: [],
   loading: false,
   error: null,
 });
 
-const fetchDataJadwal = async () => {
-  dataApi.value.loading = true;
+const fetchDataJadwal = async (url) => {
   try {
-    const response = await axios.get(baseUrl);
+    const response = await axios.get(url);
     dataApi.value.data = response.data.jadwal.dataJadwal;
+    console.log('Data by kode kelas:', dataApi.value.data);
   } catch (error) {
-    dataApi.value.error = error.message;
-  } finally {
-    dataApi.value.loading = false;
+    console.error("Error fetching data:", error);
+    dataApi.value.error = "Failed to fetch data";
   }
 };
 
 const deleteJadwal = async (kodeJadwal) => {
   try {
     await axios.delete(`${baseUrl}/${kodeJadwal}`);
-    await fetchDataJadwal();
+    await fetchDataJadwal(`${baseUrl}/${kode_kelas}`);
   } catch (error) {
-    console.error("Error deleting :", error);
-    alertStore.error("Failed to delete ");
+    console.error("Error deleting jadwal:", error);
+    dataApi.value.error = "Failed to delete jadwal";
   }
 };
 
+const presensi= (kode_jadwal)=>{
+  router.push(`/presensi/${kode_jadwal}`)
+}
 
-onMounted(() => {
-  fetchDataJadwal();
+onMounted(async () => {
+  try {
+    await fetchDataJadwal(`${baseUrl}/jadwalPresensi/${kode_kelas}`);
+  } catch (error) {
+    console.error("Error fetching data:", error);
+    dataApi.value.error = "Failed to fetch data";
+  }
 });
-
 </script>
 
 <template>
@@ -79,6 +89,7 @@ onMounted(() => {
           
           <td style="white-space: nowrap">
             <router-link :to="`/jadwal/${jadwalApi.kode_jadwal}`" class="btn btn-sm btn-primary mr-1">Edit</router-link>
+            <button class="btn btn-sm btn-success btn-presensi" @click="presensi(jadwalApi.kode_jadwal)">QR</button> 
             <button class="btn btn-sm btn-danger btn-delete" @click="deleteJadwal(jadwalApi.kode_jadwal)">Delete</button> 
           </td>
         </tr>

@@ -11,6 +11,8 @@ import ruang from './ruang.router';
 import jadwal from './jadwal.router';
 import mahasiswaRoutes from './mahasiswa.router';
 import semesterRoutes from './semester.routes';
+import qrRoutes from './qr.router';
+import daftarPresensi from './daftarPresensiRouter';
 
 export const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
@@ -26,6 +28,8 @@ export const router = createRouter({
         {...jadwal},
         {...mahasiswaRoutes},
         {...semesterRoutes},
+        {...qrRoutes},
+        {...daftarPresensi},
         // catch all redirect to home page
         { path: '/:pathMatch(.*)*', redirect: '/' }
     ]

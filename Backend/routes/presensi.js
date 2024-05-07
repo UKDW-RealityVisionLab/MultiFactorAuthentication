@@ -3,7 +3,7 @@ const route = express.Router();
 
 const presensiController= require('../controller/presensi.js')
 
-route.get('/', presensiController.dataPresensi)
+route.get('/:kode_jadwal', presensiController.dataPresensi)
 
 route.post('/', presensiController.insertPresensi)
 

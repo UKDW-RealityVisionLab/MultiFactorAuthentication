@@ -78,7 +78,7 @@ async function onSubmit(values) {
       @submit="onSubmit"
       :validation-schema="schema"
       v-slot="{ errors, isSubmitting }"
-      v-for="data in dataApi.data"
+      v-for="data in dataApi.data" :key="data.kode_jadwal"
       :initial-values="data"
     >
       <div class="form-row">
