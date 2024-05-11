@@ -47,7 +47,7 @@ const validation = (req, res) => {
     const timeReceive = new Date().toLocaleString();
 
     let dataReceived = JSON.stringify(req.body);
-    dataQrValid= JSON.stringify(dataQr)
+    let dataQrValid= JSON.stringify(dataQr)
 
 
     if (timeReceive > expiryTime.toLocaleString()) {
