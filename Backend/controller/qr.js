@@ -9,6 +9,7 @@ const formatRes = (status, data, message, res) => {
 };
 
 
+const { json } = require('body-parser');
 const QRCode = require('qrcode');
 let currentTime = new Date();
 let expiryTime = new Date(currentTime.getTime() + 5 * 60000); // Calculate expiry time
@@ -39,25 +40,28 @@ const generateQr = (req, res) => {
         }
     });
 };
-// const data= (data)=>{
-//     return data
-// }
+
 
 const validation = (req, res) => {
     const timeReceive = new Date().toLocaleString();
+    //cek jika ga req empty
+    if (!req.body) {
+        formatRes(400, null, 'Request body is missing or empty', res);
+        return;
+    }
 
-    let dataReceived = JSON.stringify(req.body);
-    let dataQrValid= JSON.stringify(dataQr)
-
+    let dataReceived = JSON.stringify(req.body[0].data+req.body[1].data);
+    let dataQrValid = JSON.stringify(dataQr);
+    
 
     if (timeReceive > expiryTime.toLocaleString()) {
         formatRes(400, null, 'QR code is not valid - QR code expired', res);
-    }else if(dataReceived!=dataQrValid){
-        formatRes(400,"Data received: "+ dataReceived +" valid data: "+dataQrValid ,"QR IS NOT MATCH",res)
+    } else if (dataReceived !== dataQrValid) {
+        formatRes(400, "Data received: " + dataReceived + " valid data: " + dataQrValid, "QR IS NOT MATCH", res);
+    } else {
+        formatRes(200, " GENERATE: " + currentTime.toLocaleString() + " REQ RECEIVED AT: " + timeReceive  + " EXPIRED:" + expiryTime.toLocaleString() + "data req: " + dataReceived, 'QR code is valid', res);
     }
-     else {
-        formatRes(200," GENERATE: " + currentTime.toLocaleString()+ " REQ RECEIVED AT: "+ timeReceive  +" EXPIRED:"+ expiryTime.toLocaleString()+ "data req: "+ dataReceived, 'QR code is valid', res);
-    }
+    console.log(dataQrValid[0].data)
 }
 
 module.exports = { generateQr, validation };
