@@ -67,7 +67,7 @@ const getJadwalBykodeKelas = async (req, res) => {
     INNER JOIN 
         mata_kuliah ON kelas.kode_matakuliah = mata_kuliah.kode_matakuliah 
     INNER JOIN 
-    ruang ON jadwal.kode_ruang= ruang.koderuang;
+    ruang ON jadwal.kode_ruang= ruang.koderuang
             WHERE 
                 kelas.kode_kelas= '${kode_kelas}';
         `;
