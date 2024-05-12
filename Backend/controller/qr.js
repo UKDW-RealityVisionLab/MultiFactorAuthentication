@@ -51,7 +51,7 @@ const validation = (req, res) => {
     }
 
     let dataReceived = JSON.stringify(req.body[0].data+req.body[1].data);
-    let dataQrValid = JSON.stringify(dataQr);
+    let dataQrValid = JSON.stringify(dataQr[0].data+dataQr[1].data);
     
 
     if (timeReceive > expiryTime.toLocaleString()) {
@@ -60,8 +60,9 @@ const validation = (req, res) => {
         formatRes(400, "Data received: " + dataReceived + " valid data: " + dataQrValid, "QR IS NOT MATCH", res);
     } else {
         formatRes(200, " GENERATE: " + currentTime.toLocaleString() + " REQ RECEIVED AT: " + timeReceive  + " EXPIRED:" + expiryTime.toLocaleString() + "data req: " + dataReceived, 'QR code is valid', res);
+        
     }
-    console.log(dataQrValid[0].data)
+    // console.log(dataQrValid[0].data)
 }
 
 module.exports = { generateQr, validation };
