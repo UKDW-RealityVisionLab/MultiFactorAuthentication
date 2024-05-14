@@ -2,6 +2,9 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("com.google.gms.google-services")
+//    alias("libs.plugins.androidApplication")
+
+
 }
 
 android {
@@ -65,9 +68,19 @@ android {
 
 dependencies {
 
-    implementation("androidx.core:core-ktx:1.10.1")
+//    implementation(group = "com.example.android", name = "app-magic", version = "12.3")
+//    implementation("libs.androidx.benchmark.macro")
+//    implementation("libs.my.library")
+
+//    implementation("me.dm7.barcodescanner:zxing:1.9.8")
+    implementation("com.google.zxing:core:3.4.1")
+
+    implementation("com.journeyapps:zxing-android-embedded:4.3.0")
+
+
+    implementation("androidx.core:core-ktx:1.13.1")
     implementation("androidx.appcompat:appcompat:1.6.1")
-    implementation("com.google.android.material:material:1.9.0")
+    implementation("com.google.android.material:material:1.12.0")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
 
     //google
