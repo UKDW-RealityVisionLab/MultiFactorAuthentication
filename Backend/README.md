@@ -68,3 +68,25 @@ Request Body
 - Express JS 
 
 
+## cara testing qr
+- endpoint: http://localhost:3000/presensi/kode_jadwal
+example:
+```
+[
+{
+"data": "android 1 5/13/2024, 10:16:48 PM"
+},
+{
+"data": "android 1 5/13/2024, 10:21:48 PM"
+},
+{
+"user": "Aryo"
+}
+]
+```
+
+## untuk menambahkan mahasiswa di setiap kelasnya:
+- insert di db dan pastikan kode_jadwal sama dengan kode jadwal yang ada pada table jadwal
+
+
+
