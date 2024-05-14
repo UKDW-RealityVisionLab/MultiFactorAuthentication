@@ -26,6 +26,9 @@
             android:name=".view.PresensiActivity"
             android:exported="false" />
         <activity
+            android:name=".view.QRCodeScanActivity"
+            android:exported="false" />
+        <activity
             android:name=".view.UserProfileActivity"
             android:exported="false" />
         <activity
