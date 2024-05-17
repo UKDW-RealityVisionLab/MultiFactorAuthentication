@@ -2,6 +2,7 @@ package com.mfa.view
 
 import android.content.Intent
 import android.os.Bundle
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.zxing.integration.android.IntentIntegrator
@@ -9,9 +10,13 @@ import com.mfa.R
 
 class QRCodeScanActivity : AppCompatActivity() {
 
+    private lateinit var scanResultTextView: TextView
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_qr_code_scan)
+
+        scanResultTextView = findViewById(R.id.scan_result)
 
         // Initialize the QR code scanner
         val integrator = IntentIntegrator(this)
@@ -29,10 +34,9 @@ class QRCodeScanActivity : AppCompatActivity() {
             if (result.contents != null) {
                 // QR code scanned successfully, handle the result
                 val scannedResult = result.contents
-                Toast.makeText(this, "Scanned: $scannedResult", Toast.LENGTH_LONG).show()
-                // You can also start another activity or process the result as needed
+                scanResultTextView.text = "Scanned: $scannedResult"
             } else {
-                Toast.makeText(this, "Scan canceled", Toast.LENGTH_SHORT).show()
+                scanResultTextView.text = "Scan canceled"
             }
         } else {
             super.onActivityResult(requestCode, resultCode, data)
