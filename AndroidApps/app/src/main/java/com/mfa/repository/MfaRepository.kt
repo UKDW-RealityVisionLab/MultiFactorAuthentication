@@ -1,9 +1,12 @@
 package com.mfa.repository
 
 import android.util.Log
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.liveData
 import com.mfa.Helper
+import com.mfa.api.response.RuangResponse
 import com.mfa.api.retrofit.ApiService
+import kotlinx.coroutines.Dispatchers
 
 class MfaRepository private constructor(
     private val apiService: ApiService
@@ -14,20 +17,28 @@ class MfaRepository private constructor(
             val response = apiService.getJadwal()
             emit(Helper.Success(response))
         } catch (e: Exception) {
-            Log.d("MfA repository", "Permintaan memuat data gagal", e)
+            Log.d("MfA repository", "Permintaan memuat data gagal",   e)
         }
     }
 
-//    suspend fun getDetailUser(token: String, id: String) = liveData {
-//        try {
-//            val response = apiService.getDetail("Bearer $token", id)
-//            emit(Helper.Success(response))
-//        } catch (e: Exception) {
-//            Log.d("User repository", "Permintaan memuat data gagal", e)
-//            Log.d("User repository", "$token dan $id masih eror")
-//        }
-//    }
+    suspend fun getPertemuan(kode_jadwal: String) = liveData {
+        try {
+            val response = apiService.getDetail(kode_jadwal)
+            emit(Helper.Success(response))
+        } catch (e: Exception) {
+            Log.d("Mfa repository", "$kode_jadwal masih eror")
+        }
+    }
 
+    fun getByKodeRuang(kodeRuang: String): LiveData<Helper<RuangResponse>> = liveData(Dispatchers.IO) {
+        try {
+            val response = apiService.getRuang(kodeRuang)
+            emit(Helper.Success(response))
+        } catch (e: Exception) {
+//            emit(Helper.Error(e))
+            Log.e("MfaRepository", "Failed to fetch room data: ${e.message}", e)
+        }
+    }
 
     companion object {
         @Volatile
@@ -39,5 +50,4 @@ class MfaRepository private constructor(
                 instance ?: MfaRepository(apiService)
             }.also { instance = it }
     }
-
 }

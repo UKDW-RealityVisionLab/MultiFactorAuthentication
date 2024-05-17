@@ -48,4 +48,5 @@ data class DataJadwalItem(
 
 	@field:SerializedName("kode_ruang")
 	val kodeRuang: String? = null
-)
+) {
+}
