@@ -78,7 +78,7 @@ const selectKelas= (id)=>{
           <td>{{ item.kode_matakuliah }}</td>
           <td>{{ item.group_kelas }}</td>
           <td>{{ item.kode_semester }}</td>
-          <td>{{ item.kode_dosen }}</td>
+          <td>{{ item.nidn }}</td>
   
           <td style="white-space: nowrap">
             <router-link :to="`kelas/${item.kode_kelas}`" class="btn btn-sm btn-primary mr-1">Edit</router-link>

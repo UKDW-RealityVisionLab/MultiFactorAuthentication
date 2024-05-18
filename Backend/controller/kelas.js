@@ -14,7 +14,18 @@ const formatRes = (status, data, message, res) => {
 
 const getKelas = async (req, res) => {
   try {
-    const queryGet = 'SELECT * FROM kelas';
+    const queryGet = `SELECT 
+    kelas.group_kelas, 
+    kelas.kode_kelas,
+    semester.kode_semester,
+    user_dosen.nidn
+FROM 
+    kelas 
+INNER JOIN 
+    semester ON kelas.kode_semester = semester.kode_semester 
+INNER JOIN 
+    user_dosen ON kelas.kode_dosen = user_dosen.nidn;
+`;
     const result = await new Promise((resolve, reject) => {
   
       db.all(queryGet, (error, result) => {
