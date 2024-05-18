@@ -113,6 +113,9 @@
     <string name="pertemuan">Pertemuan</string>
     <string name="profile">profile</string>
     <string name="tanggal_pertemuan">26-03-2024</string>
+    <string name="andadi_dalam_kelas">Anda di dalam kelas</string>
+    <string name="andadi_luar_kelas">Anda di luar kelas</string>
+
     <string name="position">Anda di luar kelas</string>
     <string name="status">Status: Alpha</string>
     <string name="scan_qr">Scan QR</string>
