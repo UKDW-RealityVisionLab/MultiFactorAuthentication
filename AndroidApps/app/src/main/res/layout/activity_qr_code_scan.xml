@@ -26,13 +26,22 @@
     <TextView
         android:id="@+id/scan_result"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="609dp"
         android:layout_above="@id/scan_status"
-        android:textColor="@android:color/white"
-        android:textSize="24sp"
-        android:textStyle="bold"
+        android:layout_marginBottom="15dp"
         android:gravity="center"
         android:padding="16dp"
-        android:text="Scanned result will be displayed here" />
+        android:text="Scanned result will be displayed here"
+        android:textColor="@android:color/white"
+        android:textSize="24sp"
+        android:textStyle="bold" />
 
+    <Button
+        android:id="@+id/scan_again_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/scan_result"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="16dp"
+        android:text="Scan Again" />
 </RelativeLayout>

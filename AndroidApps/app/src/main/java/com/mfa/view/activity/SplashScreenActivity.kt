@@ -1,4 +1,4 @@
-package com.mfa.view
+package com.mfa.view.activity
 
 import android.annotation.SuppressLint
 import android.content.Intent
@@ -12,7 +12,6 @@ import com.firebase.ui.auth.data.model.FirebaseAuthUIAuthenticationResult
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.mfa.databinding.ActivitySplashScreenBinding
 import com.mfa.utils.PreferenceUtils

@@ -1,4 +1,4 @@
-package com.mfa.view
+package com.mfa.view.activity
 
 import android.content.Intent
 import android.content.pm.PackageManager

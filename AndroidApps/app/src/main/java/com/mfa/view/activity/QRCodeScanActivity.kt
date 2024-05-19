@@ -1,7 +1,9 @@
-package com.mfa.view
+package com.mfa.view.activity
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
+import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -11,14 +13,26 @@ import com.mfa.R
 class QRCodeScanActivity : AppCompatActivity() {
 
     private lateinit var scanResultTextView: TextView
+    private lateinit var scanAgainButton: Button
 
+    @SuppressLint("MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_qr_code_scan)
 
         scanResultTextView = findViewById(R.id.scan_result)
+        scanAgainButton = findViewById(R.id.scan_again_button)
 
         // Initialize the QR code scanner
+        startQRCodeScanner()
+
+        // Set up the button to restart the scan
+        scanAgainButton.setOnClickListener {
+            startQRCodeScanner()
+        }
+    }
+
+    private fun startQRCodeScanner() {
         val integrator = IntentIntegrator(this)
         integrator.setOrientationLocked(false) // Allow orientation rotation
         integrator.setPrompt("Scan a QR code")
