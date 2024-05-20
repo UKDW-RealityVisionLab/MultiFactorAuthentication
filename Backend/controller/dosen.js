@@ -1,16 +1,16 @@
-const { json } = require("body-parser");
-const db = require("../config/db");
-const { query } = require("express");
 
-const formatRes = (status, data, message, res) => {
-  res.status(status).json({
-    user: {
-      status: status,
-      dataDosen: data,
-      message: message,
-    },
-  });
-};
+const db = require("../config/db");
+
+
+// const formatRes = (status, data, message, res) => {
+//   res.status(status).json({
+//     user: {
+//       status: status,
+//       dataDosen: data,
+//       message: message,
+//     },
+//   });
+// };
 
 const getDosen = async (req, res) => {
   try {
@@ -22,7 +22,7 @@ const getDosen = async (req, res) => {
         resolve(result);
       });
     });
-    formatRes(200, result, "berhasil get dosen", res);
+    res.json(result)
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Terjadi kesalahan"});
@@ -43,14 +43,15 @@ const addDosen = async (req, res) => {
         nama,
     ];
 
-    const result = await new Promise((resolve, reject) => {
+    await new Promise((resolve, reject) => {
       db.run(query, values, (err, result) => {
         if (err) reject(err);
         resolve(result);
       });
     });
-
-    formatRes(200, result, "berhasil add Dosen", res);
+    res.json({
+      message:"success add dosen"
+    })
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Terjadi kesalahan" });
@@ -70,7 +71,9 @@ const deleteDosen = async (req, res) => {
       resolve(result);
     });
   });
-  formatRes(200,nidn,"berhasil hapus user ",res)
+  res.json({
+    message:`succes delete ${nidn}` 
+  })
   }
   catch(error){
     console.error(error);
@@ -115,7 +118,9 @@ const editDosen = async (req, res) => {
       });
     });
 
-    formatRes(200, "berhasil edit", "nidn"+nidn, res);
+    res.json({
+      message:`success update ${nidn}`
+    })
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: 'Terjadi kesalahan' });

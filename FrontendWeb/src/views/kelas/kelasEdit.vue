@@ -22,7 +22,7 @@ const kelasData = ref({
 const fetchKelasById = async (url) => {
     try {
         const response = await axios.get(url)
-        kelasData.value.dataId = response.data.kelas.dataKelas;
+        kelasData.value.dataId = response.data;
         console.log('Data by kode kelas:', kelasData.value.dataId)
 
     } catch (error) {

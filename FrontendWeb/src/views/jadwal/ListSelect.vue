@@ -16,7 +16,7 @@ const dataApi = ref({
 const fetchDataJadwal = async (url) => {
   try {
     const response = await axios.get(url);
-    dataApi.value.data = response.data.jadwal.dataJadwal;
+    dataApi.value.data = response.data;
     console.log('Data by kode kelas:', dataApi.value.data);
   } catch (error) {
     console.error("Error fetching data:", error);

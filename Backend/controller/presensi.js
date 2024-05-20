@@ -8,17 +8,6 @@ const app = express();
 app.use(cors());
 
 
-const formatRes = (status, data, message, res) => {
-  res.status(status).json({
-    kelas: {
-      status: status,
-      dataPresensiKelas: data,
-      message: message,
-    },
-  });
-};
-
-
 const dataPresensi =  async (req, res) => {
   try {
     const {kode_jadwal} = req.params
@@ -30,7 +19,7 @@ const dataPresensi =  async (req, res) => {
         resolve(result);
       });
     });
-    formatRes(200, result, "berhasil get presensi", res);
+    res.json(result)
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Terjadi kesalahan" });
@@ -50,14 +39,16 @@ const insertPresensi =  async (req, res) => {
     const queryInsert = "INSERT INTO presensi ( jadwal, nim_mahasiswa, hadir) VALUES (?, ?, ?)";
     console.log('Insertion query:', queryInsert);
 
-    const result = await new Promise((resolve, reject) => {
+    await new Promise((resolve, reject) => {
       db.run(queryInsert, [ jadwal, nim_mahasiswa, hadir], function (error) {
         if (error) reject(error);
         resolve({ id: this.lastID }); // Return the ID of the inserted row
       });
     });
     
-    formatRes(200, result, "Data berhasil ditambahkan", res);
+    res.json({
+      message:"success add data presensi"
+    });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Terjadi kesalahan" });
@@ -78,7 +69,7 @@ const deletePresensi = async (req, res) => {
     });
 
     if (result.affectedRows > 0) {
-      formatRes(200, result, "Data berhasil dihapus", res);
+      res.json({message:`success delete ${id}`});
     } else {
       return res.status(404).json({ message: "Data tidak ditemukan" });
     }
@@ -102,7 +93,7 @@ const updatePresensi =  async (req, res) => {
     });
 
     if (result.affectedRows > 0) {
-      formatRes(200, result, "Data berhasil diupdate", res);
+      res.json({message:`success edit ${id}`});
     } else {
       return res.status(404).json({ message: "Data tidak ditemukan" });
     }

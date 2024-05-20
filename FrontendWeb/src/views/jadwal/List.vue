@@ -13,7 +13,7 @@ const fetchDataJadwal = async () => {
   dataApi.value.loading = true;
   try {
     const response = await axios.get(baseUrl);
-    dataApi.value.data = response.data.jadwal.dataJadwal;
+    dataApi.value.data = response.data;
   } catch (error) {
     dataApi.value.error = error.message;
   } finally {

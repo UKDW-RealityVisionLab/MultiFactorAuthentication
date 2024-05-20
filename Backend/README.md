@@ -114,8 +114,8 @@ Request Body
 {
 "kodeRuang": "D.3.1",
 "nama": "Didaktos 1",
-"latitude": 1,
-"longitude": 1
+"latitude": "",
+"longitude": ""
 }
 ```
 - PATCH http://localhost:3000/ruang/{kode_ruang}

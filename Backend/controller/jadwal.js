@@ -1,14 +1,14 @@
 const db = require("../config/db");
 
-const formatRes = (status, data, message, res) => {
-  res.status(status).json({
-    jadwal: {
-      status: status,
-      dataJadwal: data,
-      message: message,
-    },
-  });
-};
+// const formatRes = (status, data, message, res) => {
+//   res.status(status).json({
+//     jadwal: {
+//       status: status,
+//       dataJadwal: data,
+//       message: message,
+//     },
+//   });
+// };
 
 const getJadwal = async (req, res) => {
   try {
@@ -37,7 +37,7 @@ const getJadwal = async (req, res) => {
         resolve(result);
       });
     });
-    formatRes(200, result, "berhasil get jadwal", res);
+    res.json(result)
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Terjadi kesalahan" });
@@ -78,8 +78,7 @@ const getJadwalBykodeKelas = async (req, res) => {
         resolve(result);
       });
     });
-
-    formatRes(200, result, "berhasil get jadwal by Kode Kelas", res);
+    res.json(result)
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Terjadi kesalahan" });
@@ -98,7 +97,7 @@ const getByKodeJadwal = async (req, res) => {
         resolve(result);
       });
     });
-    formatRes(200, result, "berhasil get jadwal  by Kode Jadwal", res);
+   res.json(result)
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Terjadi kesalahan" });
@@ -120,8 +119,7 @@ const addJadwal = async (req, res) => {
         resolve(result);
       });
     });
-
-    formatRes(200, result, "berhasil add jadwal", res);
+    res.json({message:"success add jadwal"})
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Terjadi kesalahan" });
@@ -141,7 +139,7 @@ const deleteJadwal = async (req, res) => {
         resolve(result);
       });
     });
-    formatRes(200, kode_jadwal, "berhasil hapus", res);
+    res.json({message:` success delete ${kode_jadwal}`})
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Terjadi kesalahan" });
@@ -190,9 +188,9 @@ const editJadwal = async (req, res) => {
       });
     });
 
-    formatRes(200, "berhasil edit", "jadwal" + kode_jadwal, res);
+    res.json({message:`success edit ${kode_jadwal}`})
   } catch (error) {
-    console.error("Server error:", error); // Log the server error
+    console.error("Server error:", error); 
     return res.status(500).json({ message: "Terjadi kesalahan" });
   }
 };

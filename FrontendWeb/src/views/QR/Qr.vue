@@ -19,13 +19,14 @@ const dataApi = ref({
 
 const showQr = async () => {
   try {
-    const response = await axios.get(baseURL + "/" + kode_jadwal);
-    console.log('API response:', response.data.presensi);
-    const responseData = response.data.presensi;
-    dataApi.value.qrCode = responseData.data;
+    const resp = await axios.get(baseURL + "/" + kode_jadwal);
+    const response = { data: resp}
+    console.log('API response:', response.data);
+    const responseData = response.data.data
+    dataApi.value.qrCode = responseData;
     const startTime = new Date(); 
     dataApi.value.startTime = startTime.toLocaleTimeString();
-    const endTime = new Date(startTime.getTime() + 300 * 1000); 
+    const endTime = new Date(startTime.getTime() + 5 * 60000); 
     dataApi.value.endTime = endTime.toLocaleTimeString();
     updateLiveTime(); 
 

@@ -1,16 +1,4 @@
-const { json } = require("body-parser");
 const db = require("../config/db");
-const { query } = require("express");
-
-const formatRes = (status, data, message, res) => {
-    res.status(status).json({
-        ruang: {
-            status: status,
-            dataRuang: data,
-            message: message,
-        },
-    });
-};
 
 const getRuang = async (req, res) => {
     try {
@@ -22,7 +10,7 @@ const getRuang = async (req, res) => {
                 resolve(result);
             });
         });
-        formatRes(200, result, "berhasil get ruang", res);
+        res.json(result)
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: "Terjadi kesalahan" });
@@ -42,7 +30,7 @@ const getByKodeRuang = async (req, res) => {
                 resolve(result);
             });
         });
-        formatRes(200, result, "berhasil get ruang", res);
+        res.json(result)
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: "Terjadi kesalahan" });
@@ -69,7 +57,7 @@ const addRuang = async (req, res) => {
             });
         });
 
-        formatRes(200, result, "berhasil add ruang", res);
+        res.json({message:"success add ruang"});
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: "Terjadi kesalahan" });
@@ -89,7 +77,7 @@ const deleteRuang = async (req, res) => {
                 resolve(result);
             });
         });
-        formatRes(200, kode_ruang, "berhasil hapus ruang", res)
+        res.json({message:`success delete ${kode_ruang}`})
     }
     catch (error) {
         console.error(error);
@@ -139,7 +127,7 @@ const editruang = async (req, res) => {
             });
         });
 
-        formatRes(200, "berhasil edit", "ruang" + kode_ruang, res);
+        res.json({message:`success edit ruang ${kode_ruang}`});
     } catch (error) {
         console.error("Server error:", error); // Log the server error
         return res.status(500).json({ message: 'Terjadi kesalahan' });

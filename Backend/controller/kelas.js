@@ -1,16 +1,4 @@
-const { json } = require("body-parser");
 const db = require("../config/db");
-const { query } = require("express");
-
-const formatRes = (status, data, message, res) => {
-  res.status(status).json({
-    kelas: {
-      status: status,
-      dataKelas: data,
-      message: message,
-    },
-  });
-};
 
 const getKelas = async (req, res) => {
   try {
@@ -33,7 +21,7 @@ INNER JOIN
         resolve(result);
       });
     });
-    formatRes(200, result, "berhasil get kelas", res);
+    res.json(result)
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Terjadi kesalahan"});
@@ -58,14 +46,14 @@ const addKelas = async (req, res) => {
       kode_dosen,
     ];
 
-    const result = await new Promise((resolve, reject) => {
+    await new Promise((resolve, reject) => {
       db.run(query, values, (err, result) => {
         if (err) reject(err);
         resolve(result);
       });
     });
 
-    formatRes(200, result, "berhasil add kelas", res);
+    res.json({message:'success add kelas'})
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Terjadi kesalahan" });
@@ -79,13 +67,13 @@ const deleteKelas = async (req, res) => {
 
   const query = `DELETE FROM kelas WHERE kode_kelas= '${id}';`;
 
-  const result = await new Promise((resolve, reject)=>{
+  await new Promise((resolve, reject)=>{
     db.run(query,(error, result)=>{
       if(error) reject(error);
       resolve(result);
     });
   });
-  formatRes(200,id,"berhasil hapus kelas",res)
+  res.json({message:`success delete ${id}`})
   }
   catch(error){
     console.error(error);
@@ -130,7 +118,9 @@ const editKelas = async (req, res) => {
       });
     });
 
-    formatRes(200, "berhasil edit", "id"+id, res);
+    res.json({
+      message: `success edit ${id}`,
+    });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: 'Terjadi kesalahan' });
@@ -149,7 +139,7 @@ const getByIdKelas =async (req, res) => {
         resolve(result);
       });
     });
-    formatRes(200, result, "berhasil get kelas", res);
+    res.json(result)
   } catch (error) {
     console.error(error);
     return res.status(500).json({message: "Terjadi kesalahan"});
