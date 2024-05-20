@@ -3,7 +3,7 @@ import { ref, onMounted } from 'vue';
 import axios from 'axios';
 import { useRoute, useRouter } from "vue-router";
 
-const baseUrl = "http://localhost:3000/jadwal";
+const baseUrl = "http://localhost:3000/jadwalKuliah";
 const route = useRoute();
 const router = useRouter();
 const kode_kelas = route.params.kode_kelas;

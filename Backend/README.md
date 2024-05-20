@@ -42,8 +42,8 @@ Request Body
 - DELETE localhost:3000/kelas/{id}
 
 ### Manajemen Jadwal
-- GET http://localhost:3000/jadwal
-- POST http://localhost:3000/jadwal
+- GET http://localhost:3000/jadwalKuliah
+- POST http://localhost:3000/jadwalKuliah
 Request Body for post
 ```
     {
@@ -58,7 +58,7 @@ Request Body for post
                 "nama_matakuliah": "Matematika Teknik"
             }
 ```
-- PATCH http://localhost:3000/jadwal/{kode_jadwal}
+- PATCH http://localhost:3000/jadwalKuliah/{kode_jadwal}
 ```
 {
 "kode_jadwal": "tes aja",

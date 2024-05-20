@@ -28,7 +28,7 @@ app.use('/users',userRouter)
 app.use('/dosen',dosenRouter)
 app.use('/sesi',sesi)
 app.use('/ruang',ruang)
-app.use('/jadwal',jadwal)
+app.use('/jadwalKuliah',jadwal)
 app.use('/semester',semesterRoute);
 app.use('/presensi',presensiRoute)
 app.use('/daftarpresensi',daftarPresensi)

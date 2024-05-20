@@ -2,7 +2,7 @@
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
 
-const baseUrl = "http://localhost:3000/jadwal";
+const baseUrl = "http://localhost:3000/jadwalKuliah";
 const dataApi = ref({
   data: [],
   loading: false,

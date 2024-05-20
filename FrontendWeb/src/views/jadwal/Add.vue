@@ -10,7 +10,7 @@ import { router } from "@/router";
 
 const alertStore = useAlertStore();
 const route = useRoute();
-const baseUrl = "http://localhost:3000/jadwal";
+const baseUrl = "http://localhost:3000/jadwalKuliah";
 
 const schema = Yup.object().shape({
   kode_jadwal: Yup.string().required("kode ruang is required"),
