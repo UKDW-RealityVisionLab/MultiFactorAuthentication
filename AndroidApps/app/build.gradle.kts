@@ -76,7 +76,9 @@ dependencies {
 //    implementation("com.google.zxing:core:3.4.1")
 
     implementation("com.journeyapps:zxing-android-embedded:4.3.0")
+    implementation ("com.squareup.retrofit2:retrofit:2.9.0")
 
+    implementation ("com.squareup.okhttp3:okhttp:4.11.0")
 
     implementation("androidx.core:core-ktx:1.13.1")
     implementation("androidx.appcompat:appcompat:1.6.1")
