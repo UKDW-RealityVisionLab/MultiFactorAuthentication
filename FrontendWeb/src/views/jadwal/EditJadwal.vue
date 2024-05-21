@@ -11,7 +11,7 @@ const alertStore = useAlertStore();
 const route = useRoute();
 const router = useRouter();
 const kodeJadwal = route.params.kode_jadwal;
-const baseUrl = "http://localhost:3000/jadwalKuliah";
+const baseUrl = "http://localhost:3000/jadwal";
 const dataApi = ref({
   data: [],
   loading: false,
@@ -78,7 +78,7 @@ async function onSubmit(values) {
       @submit="onSubmit"
       :validation-schema="schema"
       v-slot="{ errors, isSubmitting }"
-      v-for="data in dataApi.data" :key="data.kode_jadwal"
+      v-for="data in dataApi.data" :key="data.kodeJadwal"
       :initial-values="data"
     >
       <div class="form-row">

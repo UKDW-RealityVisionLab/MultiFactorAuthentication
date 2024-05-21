@@ -1,15 +1,5 @@
 const db = require("../config/db");
 
-// const formatRes = (status, data, message, res) => {
-//   res.status(status).json({
-//     jadwal: {
-//       status: status,
-//       dataJadwal: data,
-//       message: message,
-//     },
-//   });
-// };
-
 const getJadwal = async (req, res) => {
   try {
     const queryGet = `SELECT 
@@ -37,7 +27,18 @@ const getJadwal = async (req, res) => {
         resolve(result);
       });
     });
-    res.json(result)
+    res.json(result.map(result => ({
+      kodeKelas: result.kode_kelas,
+      mataKuliah: result.nama_matakuliah,
+      grup: result.group_kelas,
+      tanggal: result.tanggal,
+      kodeJadwal: result.kode_jadwal,
+      kodeSesi: result.kode_sesi,
+      kodeRuang: result.kode_ruang,
+      sesiStart: result.sesi_start,
+      sesiEnd: result.sesi_end
+    })));
+    // res.json(result)
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Terjadi kesalahan" });
@@ -46,9 +47,25 @@ const getJadwal = async (req, res) => {
 
 const getJadwalBykodeKelas = async (req, res) => {
   try {
-    const { kode_kelas } = req.params;
+    let kodeKelas;
+    let source;
+
+    if (req.body.kodeKelas) {
+      kodeKelas = req.body.kodeKelas;
+      source = "req.body";
+    } else if (req.params.kode_kelas) {
+      kodeKelas = req.params.kode_kelas;
+      source = "req.params";
+    }
+
+    console.log("Received kodeKelas:", kodeKelas, "from", source);
+
+    if (!kodeKelas) {
+      return res.status(400).json({ message: "kodeKelas tidak ditemukan dalam request body atau params" });
+    }
+
     const query = `
-        SELECT 
+      SELECT 
         kelas.group_kelas, 
         kelas.kode_kelas,
         jadwal.tanggal,
@@ -58,32 +75,52 @@ const getJadwalBykodeKelas = async (req, res) => {
         kelas_sesi.sesi_start,
         kelas_sesi.sesi_end,
         mata_kuliah.nama_matakuliah
-    FROM 
+      FROM 
         kelas 
-    INNER JOIN 
+      INNER JOIN 
         jadwal ON kelas.kode_kelas = jadwal.kode_kelas 
-    INNER JOIN 
+      INNER JOIN 
         kelas_sesi ON jadwal.kode_sesi = kelas_sesi.kode_sesi
-    INNER JOIN 
-        mata_kuliah ON kelas.kode_matakuliah = mata_kuliah.kode_matakuliah 
-    INNER JOIN 
-    ruang ON jadwal.kode_ruang= ruang.koderuang
-            WHERE 
-                kelas.kode_kelas= '${kode_kelas}';
-        `;
+      INNER JOIN 
+        mata_kuliah ON kelas.kode_matakuliah = mata_kuliah.kode_matakuliah
+      WHERE 
+        kelas.kode_kelas = ?;
+    `;
 
     const result = await new Promise((resolve, reject) => {
-      db.all(query, (error, result) => {
-        if (error) reject(error);
-        resolve(result);
+      db.all(query, [kodeKelas], (error, results) => {
+        if (error) {
+          console.error("Database error:", error);
+          return reject(error);
+        }
+        resolve(results);
       });
     });
-    res.json(result)
+
+    if (!result.length) {
+      return res.status(404).json({ message: "Tidak ada jadwal ditemukan untuk kode_kelas ini" });
+    }
+
+    const formattedResult = result.map(item => ({
+      kodeKelas: item.kode_kelas,
+      mataKuliah: `${item.nama_matakuliah} ${item.group_kelas}`,
+      grup: item.group_kelas,
+      tanggal: item.tanggal,
+      jadwal: item.kode_jadwal,
+      sesi:  `sesi ${item.kode_sesi} ${item.sesi_start} - ${item.sesi_end} `,
+      ruang: item.kode_ruang,
+      sesiStart: item.sesi_start,
+      sesiEnd: item.sesi_end
+    }));
+
+    res.json(formattedResult);
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: "Terjadi kesalahan" });
+    console.error("Server error:", error);
+    res.status(500).json({ message: "Terjadi kesalahan" });
   }
 };
+
+
 
 const getByKodeJadwal = async (req, res) => {
   try {

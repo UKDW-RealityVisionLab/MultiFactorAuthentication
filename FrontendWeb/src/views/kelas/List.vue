@@ -49,10 +49,10 @@ const selectKelas= (id)=>{
     <thead>
       <tr>
         <th style="width: 20%">Kode Kelas</th>
-        <th style="width: 20%">Kode Matakuliah</th>
+        <th style="width: 20%">Matakuliah</th>
         <th style="width: 20%">Group Kelas</th>
         <th style="width: 20%">Kode Semester</th>
-        <th style="width: 20%">Kode Dosen</th>
+        <th style="width: 20%">Dosen</th>
       </tr>
     </thead>
     <tbody>
@@ -74,17 +74,17 @@ const selectKelas= (id)=>{
 
       <template v-else>
         <tr v-for="item in kelass.data" :key="item.kode_kelas">
-          <td>{{ item.kode_kelas }}</td>
-          <td>{{ item.kode_matakuliah }}</td>
-          <td>{{ item.group_kelas }}</td>
-          <td>{{ item.kode_semester }}</td>
-          <td>{{ item.nidn }}</td>
+          <td>{{ item.kodeKelas }}</td>
+          <td>{{ item.matakuliah }}</td>
+          <td>{{ item.grup }}</td>
+          <td>{{ item.semester }}</td>
+          <td>{{ item.dosen }}</td>
   
           <td style="white-space: nowrap">
-            <router-link :to="`kelas/${item.kode_kelas}`" class="btn btn-sm btn-primary mr-1">Edit</router-link>
+            <router-link :to="`kelas/${item.kodeKelas}`" class="btn btn-sm btn-primary mr-1">Edit</router-link>
             <!-- <router-link :to="`jadwal/${item.kode_kelas}`" class="btn btn-sm btn-success mr-1">Pilih</router-link> -->
-            <button class="btn btn-sm btn-success btn-pilih-kelas" @click="selectKelas(item.kode_kelas)">Pilih</button> 
-            <button class="btn btn-sm btn-danger btn-delete-kelas" @click="deleteKelas(item.kode_kelas)">Delete</button> 
+            <button class="btn btn-sm btn-success btn-pilih-kelas" @click="selectKelas(item.kodeKelas)">Pilih</button> 
+            <button class="btn btn-sm btn-danger btn-delete-kelas" @click="deleteKelas(item.kodeKelas)">Delete</button> 
           </td>
         </tr>
       </template>

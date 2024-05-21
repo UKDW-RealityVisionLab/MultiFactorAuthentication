@@ -6,13 +6,17 @@ const getKelas = async (req, res) => {
     kelas.group_kelas, 
     kelas.kode_kelas,
     semester.kode_semester,
-    user_dosen.nidn
+    user_dosen.nidn,
+    user_dosen.nama,
+    kelas.kode_matakuliah,
+	mata_kuliah.nama_matakuliah
 FROM 
     kelas 
 INNER JOIN 
     semester ON kelas.kode_semester = semester.kode_semester 
 INNER JOIN 
-    user_dosen ON kelas.kode_dosen = user_dosen.nidn;
+    user_dosen ON kelas.kode_dosen = user_dosen.nidn
+INNER join mata_kuliah ON kelas.kode_matakuliah= mata_kuliah.kode_matakuliah;
 `;
     const result = await new Promise((resolve, reject) => {
   
@@ -21,7 +25,15 @@ INNER JOIN
         resolve(result);
       });
     });
-    res.json(result)
+    res.json(result.map(result => ({
+      kodeKelas: result.kode_kelas,
+      semester: result.kode_semester,
+      dosen: result.nama,
+      grup: result.group_kelas,
+      matakuliah:result.nama_matakuliah,
+      kodeMatakuliah: result.kode_matakuliah
+    })));
+    
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Terjadi kesalahan"});
@@ -129,9 +141,23 @@ const editKelas = async (req, res) => {
 const getByIdKelas =async (req, res) => {
   try {
     const {kode_kelas} = req.params;
-    const queryGet = `SELECT *
-                      FROM kelas
-                      WHERE kode_kelas = '${kode_kelas}';`;
+    const queryGet = `SELECT 
+    kelas.group_kelas, 
+    kelas.kode_kelas,
+    semester.kode_semester,
+    user_dosen.nidn,
+    user_dosen.nama,
+    kelas.kode_matakuliah,
+	mata_kuliah.nama_matakuliah
+FROM 
+    kelas 
+INNER JOIN 
+    semester ON kelas.kode_semester = semester.kode_semester 
+INNER JOIN 
+    user_dosen ON kelas.kode_dosen = user_dosen.nidn
+INNER join mata_kuliah ON kelas.kode_matakuliah= mata_kuliah.kode_matakuliah
+WHERE kelas.kode_kelas= ${kode_kelas};
+`;
     const result = await new Promise((resolve, reject) => {
 
       db.all(queryGet, (error, result) => {
@@ -139,7 +165,14 @@ const getByIdKelas =async (req, res) => {
         resolve(result);
       });
     });
-    res.json(result)
+    res.json(result.map(result => ({
+      kodeKelas: result.kode_kelas,
+      semester: result.kode_semester,
+      dosen: result.nama,
+      grup: result.group_kelas,
+      matakuliah:result.nama_matakuliah,
+      kodeMatakuliah: result.kode_matakuliah
+    })));
   } catch (error) {
     console.error(error);
     return res.status(500).json({message: "Terjadi kesalahan"});

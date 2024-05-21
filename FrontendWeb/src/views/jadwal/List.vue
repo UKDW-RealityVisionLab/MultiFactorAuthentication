@@ -2,7 +2,7 @@
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
 
-const baseUrl = "http://localhost:3000/jadwalKuliah";
+const baseUrl = "http://localhost:3000/jadwal";
 const dataApi = ref({
   data: [],
   loading: false,
@@ -70,16 +70,16 @@ onMounted(() => {
 
       <template v-else>
         <tr v-for="jadwalApi in dataApi.data" :key="jadwalApi.kode_jadwal">
-          <td>{{ jadwalApi.kode_jadwal}}</td>
-          <td>{{ jadwalApi.kode_ruang }}</td>
-          <td>{{ jadwalApi.kode_sesi }}</td>
+          <td>{{ jadwalApi.kodeJadwal}}</td>
+          <td>{{ jadwalApi.kodeRuang }}</td>
+          <td>{{ jadwalApi.kodeSesi }}</td>
           <td>{{ jadwalApi.tanggal }}</td>
-          <td>{{ jadwalApi.kode_kelas }}</td>
+          <td>{{ jadwalApi.kodeKelas }}</td>
 
           
           <td style="white-space: nowrap">
-            <router-link :to="`/jadwal/${jadwalApi.kode_jadwal}`" class="btn btn-sm btn-primary mr-1">Edit</router-link>
-            <button class="btn btn-sm btn-danger btn-delete" @click="deleteJadwal(jadwalApi.kode_jadwal)">Delete</button> 
+            <router-link :to="`/jadwal/${jadwalApi.kodeJadwal}`" class="btn btn-sm btn-primary mr-1">Edit</router-link>
+            <button class="btn btn-sm btn-danger btn-delete" @click="deleteJadwal(jadwalApi.kodeJadwal)">Delete</button> 
           </td>
         </tr>
       </template>
