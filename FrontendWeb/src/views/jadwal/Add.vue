@@ -41,7 +41,7 @@ async function onSubmit(values) {
   try {
     const data = {
       kode_jadwal: values.kode_jadwal,
-      kode_kelas: value.kode_kelas,
+      kode_kelas: values.kode_kelas,
       kode_ruang: values.kode_ruang,
       kode_sesi: values.kode_sesi, 
       tanggal: values.tanggal, 
