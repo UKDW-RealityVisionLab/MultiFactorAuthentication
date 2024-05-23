@@ -140,7 +140,7 @@ Request Body
 - DELETE http://localhost:3000/ruang/{kode_ruang}
 
 - get latitute longtitude
-![alt text](image.png)
+![alt text](image-1.png)
 
 ### Manajemen Semester
 - GET http://localhost:3000/semester

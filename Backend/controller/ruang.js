@@ -26,10 +26,11 @@ const getRuangByIdJadwal = async (req, res) => {
         if (req.body.idJadwal) {
             idJadwal = req.body.idJadwal;
             source = "req.body";
-        } else if (req.params.idJadwal) {
-            idJadwal = req.params.idJadwal;
-            source = "req.params";
         }
+        // } else if (req.params.idJadwal) {
+        //     idJadwal = req.params.idJadwal;
+        //     source = "req.params";
+        // }
 
         console.log("Received idJadwal:", idJadwal, "from", source);
 
