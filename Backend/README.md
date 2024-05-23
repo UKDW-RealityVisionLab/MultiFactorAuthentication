@@ -139,6 +139,9 @@ Request Body
 ```
 - DELETE http://localhost:3000/ruang/{kode_ruang}
 
+- get latitute longtitude
+![alt text](image.png)
+
 ### Manajemen Semester
 - GET http://localhost:3000/semester
 - POST http://localhost:3000/semester
