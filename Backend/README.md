@@ -42,8 +42,8 @@ Request Body
 - DELETE localhost:3000/kelas/{id}
 
 ### Manajemen Jadwal
-- GET http://localhost:3000/jadwalKuliah
-- POST http://localhost:3000/jadwalKuliah
+- GET http://localhost:3000/jadwal
+- POST http://localhost:3000/jadwal
 Request Body for post
 ```
     {
@@ -73,6 +73,15 @@ Request Body for post
 
 ### Manajemen kelas_sesi
 - GET http://localhost:3000/sesi
+
+### get profil user
+- POST http://localhost:3000/daftarpresensi/getProfile/email
+```
+{
+    "email": "yoannes.haryo@gmail.com"
+}
+```
+
 
 
 
@@ -106,7 +115,7 @@ Request Body for patch kode matakuliah
 ```
 - DELETE http://localhost:3000/mataKuliah/{kode_matakuliah}
 
-### Manajemen 
+### Manajemen RUANG
 - GET http://localhost:3000/ruang
 - POST http://localhost:3000/ruang
 Request Body

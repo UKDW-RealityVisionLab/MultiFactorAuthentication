@@ -11,7 +11,7 @@ app.use(cors());
 const dataPresensi =  async (req, res) => {
   try {
     const {kode_jadwal} = req.params
-    const queryGet = `SELECT presensi.id_presensi,presensi.nim_mahasiswa,presensi.nama, presensi.hadir FROM jadwal INNER JOIN presensi on jadwal.kode_jadwal=presensi.kode_jadwal WHERE jadwal.kode_jadwal='${kode_jadwal}';`;
+    const queryGet = `SELECT presensi.email, presensi.id_presensi,presensi.nim_mahasiswa,presensi.nama, presensi.hadir FROM jadwal INNER JOIN presensi on jadwal.kode_jadwal=presensi.kode_jadwal WHERE jadwal.kode_jadwal='${kode_jadwal}';`;
     const result = await new Promise((resolve, reject) => {
   
       db.all(queryGet, (error, result) => {
@@ -24,6 +24,86 @@ const dataPresensi =  async (req, res) => {
     console.error(error);
     return res.status(500).json({ message: "Terjadi kesalahan" });
 }
+};
+
+const getProfile = async (req, res) => {
+  try {
+      let email;
+      let source;
+
+      if (req.body.email) {
+          email = req.body.email;
+          source = "req.body";
+      } else if (req.params.email) {
+          email = req.params.email;
+          source = "req.params";
+      }
+
+      if (!email) {
+          return res.status(400).json({ message: "email is required" });
+      }
+
+      console.log("Received email:", email, "from", source);
+
+      const queryGet = `SELECT * FROM presensi WHERE email = ?;`;
+      
+      const result = await new Promise((resolve, reject) => {
+          db.all(queryGet, [email], (error, rows) => {
+              if (error) {
+                  reject(error);
+              } else {
+                  resolve(rows);
+              }
+          });
+      });
+
+      if (result.length === 0) {
+          return res.status(404).json({ message: "Data not found" });
+      }
+
+      let respond = {};
+      result.forEach(result => {
+        respond= {
+          email: result.email,
+          nama: result.nama,
+          nim: result.nim_mahasiswa
+        };
+      });
+
+      res.json(respond);
+  } catch (error) {
+      console.error(error);
+      return res.status(500).json({ message: "Terjadi kesalahan" });
+  }
+}
+
+const cekStatusPresensi = async (req, res) => {
+  const { idJadwal, nim } = req.body;
+  let query = `SELECT presensi.hadir, presensi.kode_jadwal FROM presensi WHERE presensi.kode_jadwal = ? AND nim_mahasiswa = ?`;
+  try {
+    const result = await new Promise((resolve, reject) => {
+      db.all(query, idJadwal, nim, (error, rows) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve(rows);
+        }
+      });
+    });
+    if (result.length === 0) {
+      res.json({ message: "data tidak ditemukan" });
+    } else {
+      const hadir = result[0].hadir;
+      if (hadir === "0") {
+        res.json(false);
+      } else if (hadir === "hadir") {
+        res.json(true);
+      }
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error occurred" });
+  }
 };
 
 const insertPresensi =  async (req, res) => {
@@ -103,4 +183,4 @@ const updatePresensi =  async (req, res) => {
   }
 };
 
-module.exports = { dataPresensi, insertPresensi, deletePresensi, updatePresensi };
+module.exports = { dataPresensi, insertPresensi, deletePresensi, updatePresensi,getProfile,cekStatusPresensi };
