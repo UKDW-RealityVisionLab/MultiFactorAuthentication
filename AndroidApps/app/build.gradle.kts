@@ -2,9 +2,6 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("com.google.gms.google-services")
-//    alias("libs.plugins.androidApplication")
-
-
 }
 
 android {
@@ -17,7 +14,6 @@ android {
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -27,13 +23,16 @@ android {
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
+
     kotlinOptions {
         jvmTarget = "1.8"
     }
+
     buildFeatures {
         viewBinding = true
     }
@@ -43,7 +42,6 @@ android {
         noCompress += "lite"
     }
 
-
     signingConfigs {
         getByName("debug") {
             storeFile = file("keystore/debug.keystore")
@@ -52,34 +50,26 @@ android {
             keyPassword = "android"
         }
 
-
         create("release") {
             storeFile = file("keystore/release.keystore")
             storePassword = "srmukdw"
             keyAlias = "srmmobilereleasekey"
             keyPassword = "srmukdw"
+        }
+    }
 
-            // Optional, specify signing versions used
-            //v1SigningEnabled true
-            //v2SigningEnabled true
+    configurations.all {
+        resolutionStrategy {
+            force("org.jetbrains:annotations:23.0.0" ) // Atur versi yang ingin Anda gunakan
         }
     }
 }
 
 dependencies {
 
-//    implementation(group = "com.example.android", name = "app-magic", version = "12.3")
-//    implementation("libs.androidx.benchmark.macro")
-//    implementation("libs.my.library")
 
-//    implementation("me.dm7.barcodescanner:zxing:1.9.8")
-//    implementation("com.google.zxing:core:3.4.1")
 
     implementation("com.journeyapps:zxing-android-embedded:4.3.0")
-    implementation ("com.squareup.retrofit2:retrofit:2.9.0")
-
-    implementation ("com.squareup.okhttp3:okhttp:4.11.0")
-
     implementation("androidx.core:core-ktx:1.13.1")
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("com.google.android.material:material:1.12.0")
@@ -98,15 +88,30 @@ dependencies {
     implementation("com.google.mlkit:face-detection:16.1.6")
 
     // CameraX
-    implementation("androidx.camera:camera-core:1.3.2")
-    implementation("androidx.camera:camera-camera2:1.3.2")
-    implementation("androidx.camera:camera-lifecycle:1.3.2")
-    implementation("androidx.camera:camera-view:1.3.2")
+    implementation("androidx.camera:camera-core:1.3.3")
+    implementation("androidx.camera:camera-camera2:1.3.3")
+    implementation("androidx.camera:camera-lifecycle:1.3.3")
+    implementation("androidx.camera:camera-view:1.3.3")
     implementation("com.google.android.gms:play-services-vision-common:19.1.3")
 
     //tensorflow
     implementation("org.tensorflow:tensorflow-lite:2.14.0")
     implementation("org.tensorflow:tensorflow-lite-gpu:2.14.0")
+
+//    implementation("com.android.tools.compose:compose-preview-renderer:0.0.1-alpha01")
+//    {
+//        exclude("org.jetbrains", "annotations")
+//        exclude("org.jetbrains.kotlinx", "kotlinx-coroutines-core-jvm")
+//        exclude("org.checkerframework", "checker-qual")
+//
+//    }
+    implementation("com.android.volley:volley:1.2.1")
+//    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.7.3")
+//    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+
+//    implementation("com.android.tools.compose:compose-preview-renderer:0.0.1-alpha01")
+
+
 
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
@@ -118,9 +123,26 @@ dependencies {
     implementation("com.squareup.okhttp3:logging-interceptor:4.11.0")
 
     //livedata
-    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.2")
-    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.6.2")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.0")
+    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.8.0")
 
-//    glide
+    //glide
     implementation ("com.github.bumptech.glide:glide:4.16.0")
+
+
+//    implementation("com.android.tools.compose:compose-preview-renderer:1.1.0")
+//    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.7.3")
+
+
+
 }
+
+
+//configurations {
+//    all {
+//        exclude("org.jetbrains", "annotations")
+//        exclude ("org.jetbrains.kotlinx", "kotlinx-coroutines-core-jvm")
+//        exclude("org.checkerframework", "checker-qual")
+//
+//    }
+//}

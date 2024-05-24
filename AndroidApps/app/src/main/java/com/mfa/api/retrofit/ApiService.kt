@@ -3,9 +3,10 @@ package com.mfa.api.retrofit
 import com.mfa.api.response.JadwalResponse
 import com.mfa.api.response.PertemuanResponse
 import com.mfa.api.response.RuangResponse
+import retrofit2.Call
 import retrofit2.http.Field
+import retrofit2.http.FormUrlEncoded
 import retrofit2.http.GET
-import retrofit2.http.Header
 import retrofit2.http.POST
 import retrofit2.http.Path
 import retrofit2.http.Query
@@ -30,4 +31,20 @@ interface ApiService {
         @Query("latitude") latitude: String,
         @Query("longitude") longitude: String
     ): RuangResponse
+
+    @FormUrlEncoded
+    @POST("updateHadirStatus")
+    fun updateHadirStatus(
+        @Field("kode_jadwal") kodeJadwal: String,
+        @Field("nim_mahasiswa") nimMahasiswa: String,
+        @Field("hadir") hadir: String
+    ): Call<Any>
+
+//    @GET("sendScannedResult")
+//    fun sendScannedResult(@Query("qrCode") qrCode: String): Call<Void>
+
+    @POST("presensi")
+    fun sendScannedResult(@Query("qrCode") qrCode: String): Call<Void>
+
+
 }
