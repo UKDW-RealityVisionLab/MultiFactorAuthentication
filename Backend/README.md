@@ -233,6 +233,20 @@ example:
 ```
 ![alt text](image-3.png)
 ```
+pastikan posisi di lab fti atau sesuaikan latitute longtitude pada table ruang
+nyalakann gps
+buka db browser
+open mfa.db
+buka table presensi
+ubah email sesuai dengan email yang akan digunakan sewaktu login aplikasi
+ubah nama(optional)
+buka aplikasi dan login
+pilih android
+pilih pertemuan paling atas (android 1)
+generate qr (fe web -> cari kelas -> android -> android 1
+scan qr
+scan wajah
+berhasil update status hadir (boleh lihat kembali di db browsernya untuk memastikan status hadir menjadi hadir atau kembali ke home aplikasi dan pilih jadwal yg sudah presensi)
 
 ## face verify
 ![alt text](image-2.png) 
