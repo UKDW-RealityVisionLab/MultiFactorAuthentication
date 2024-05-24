@@ -15,7 +15,7 @@ const jadwal = require('./routes/jadwal.js')
 const semesterRoute = require('./routes/semester.js')
 const presensiRoute = require('./routes/qr.js')
 const daftarPresensi= require('./routes/presensi.js')
-
+const faceVerif= require('./routes/faceVerify.js')
 
 // cuma log aja
 app.use(logReq);
@@ -32,6 +32,7 @@ app.use('/jadwal',jadwal)
 app.use('/semester',semesterRoute);
 app.use('/presensi',presensiRoute)
 app.use('/daftarpresensi',daftarPresensi)
+app.use('/face',faceVerif)
 
 
 
