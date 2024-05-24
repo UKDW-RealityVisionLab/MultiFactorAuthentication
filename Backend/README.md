@@ -230,9 +230,8 @@ Request Body
 ## cara testing qr
 - endpoint: http://localhost:3000/presensi/kode_jadwal
 example:
-```
 ![alt text](image-3.png)
-```
+
 pastikan posisi di lab fti atau sesuaikan latitute longtitude pada table ruang
 nyalakann gps
 buka db browser
