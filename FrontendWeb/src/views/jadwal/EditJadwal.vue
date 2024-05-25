@@ -21,7 +21,7 @@ const dataApi = ref({
 const fetchDataJadwal = async (url) => {
   try {
     const response = await axios.get(url);
-    dataApi.value.data = response.data.jadwal.dataJadwal;
+    dataApi.value.data = response.data;
     console.log('Data by kode jadwal:', dataApi.value.data);
   } catch (error) {
     alertStore.error("Failed to fetch data");
@@ -78,7 +78,7 @@ async function onSubmit(values) {
       @submit="onSubmit"
       :validation-schema="schema"
       v-slot="{ errors, isSubmitting }"
-      v-for="data in dataApi.data" :key="data.kode_jadwal"
+      v-for="data in dataApi.data" :key="data.kodeJadwal"
       :initial-values="data"
     >
       <div class="form-row">

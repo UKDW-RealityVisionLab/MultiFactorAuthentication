@@ -1,16 +1,4 @@
-const { json } = require("body-parser");
 const db = require("../config/db");
-const { query } = require("express");
-
-const formatRes = (status, data, message, res) => {
-  res.status(status).json({
-    matakuliah : {
-      status: status,
-      dataMataKuliah: data,
-      message: message,
-    },
-  });
-};
 
 const getMataKuliah = async (req, res) => {
   try {
@@ -22,7 +10,7 @@ const getMataKuliah = async (req, res) => {
         resolve(result);
       });
     });
-    formatRes(200, result, "berhasil get mata kuliah", res);
+    res.json(result)
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Terjadi kesalahan"});
@@ -42,7 +30,7 @@ const getByIdMatkul =async (req, res) => {
         resolve(result);
       });
     });
-    formatRes(200, result, "berhasil get mata kuliah", res);
+    res.json(result)
   } catch (error) {
     console.error(error);
     return res.status(500).json({message: "Terjadi kesalahan"});
@@ -78,7 +66,9 @@ const addMataKuliah = async (req, res) => {
       });
     });
 
-    formatRes(200, result, "berhasil add mata kuliah", res);
+    res.json({
+      message:"success add mata kuliah"
+    })
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Terjadi kesalahan" });
@@ -92,13 +82,15 @@ const deleteMataKuliah = async (req, res) => {
 
   const query = `DELETE FROM mata_kuliah WHERE kode_matakuliah= '${id}';`;
 
-  const result = await new Promise((resolve, reject)=>{
+  await new Promise((resolve, reject)=>{
     db.run(query,(error, result)=>{
       if(error) reject(error);
       resolve(result);
     });
   });
-  formatRes(200,id,"berhasil hapus mata kuliah",res)
+  res.json({
+    message:`success delete ${id}`
+  })
   }
   catch(error){
     console.error(error);
@@ -143,7 +135,7 @@ const editMataKuliah = async (req, res) => {
       });
     });
 
-    formatRes(200, "berhasil edit", "id"+id, res);
+    res.json({message:`success edit matakuliah ${id}`})
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: 'Terjadi kesalahan' });

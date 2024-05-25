@@ -13,7 +13,7 @@ const fetchDataSesi = async () => {
   sesi.value.loading = true;
   try {
     const response = await axios.get(baseUrl);
-    sesi.value.data = response.data.sesi.dataKelas;
+    sesi.value.data = response.data;
     console.log("Data yang didapat:", sesi.value.data); 
   } catch (error) {
     sesi.value.error = error.message;

@@ -13,7 +13,7 @@ const fetchDataMahasiswa = async () => {
   // kelass.value.loading = true;
   try {
     const response = await axios.get(baseUrl);
-    dataMahasiswa.value.data = response.data.user.dataUser;
+    dataMahasiswa.value.data = response.data;
   } catch (error) {
     dataMahasiswa.value.error = error.message;
   } finally {

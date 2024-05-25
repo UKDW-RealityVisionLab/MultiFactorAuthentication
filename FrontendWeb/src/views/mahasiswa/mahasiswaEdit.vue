@@ -21,7 +21,7 @@ const mahasiswaData = ref({
 const fetchMahasiswaById = async (url) => {
     try {
         const response = await axios.get(url);
-        mahasiswaData.value.dataId = response.data.user.dataUser;
+        mahasiswaData.value.dataId = response.data;
         console.log('Data by Nim:', mahasiswaData.value.dataId);
     } catch (error) {
         alertStore.error("Failed to fetch kelas data");

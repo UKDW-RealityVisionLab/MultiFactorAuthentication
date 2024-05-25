@@ -13,7 +13,7 @@ const fetchDataMatkul = async () => {
   matkul.value.loading = true;
   try {
     const response = await axios.get(baseUrl);
-    matkul.value.data = response.data.matakuliah.dataMataKuliah;
+    matkul.value.data = response.data;
   } catch (error) {
     matkul.value.error = error.message;
   } finally {
