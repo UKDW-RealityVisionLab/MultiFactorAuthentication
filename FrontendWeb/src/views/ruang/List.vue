@@ -13,7 +13,7 @@ const fetchDataRuang = async () => {
   ruang.value.loading = true;
   try {
     const response = await axios.get(baseUrl);
-    ruang.value.data = response.data.ruang.dataRuang;
+    ruang.value.data = response.data;
   } catch (error) {
     ruang.value.error = error.message;
   } finally {

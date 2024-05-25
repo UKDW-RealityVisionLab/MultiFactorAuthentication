@@ -1,16 +1,4 @@
-const { json } = require("body-parser");
 const db = require("../config/db");
-const { query } = require("express");
-
-const formatRes = (status, data, message, res) => {
-  res.status(status).json({
-    user: {
-      status: status,
-      dataUser: data,
-      message: message,
-    },
-  });
-};
 
 const getUsers = async (req, res) => {
   try {
@@ -22,7 +10,7 @@ const getUsers = async (req, res) => {
         resolve(result);
       });
     });
-    formatRes(200, result, "berhasil get users", res);
+    res.json(result)
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Terjadi kesalahan"});
@@ -45,14 +33,14 @@ const addUsers = async (req, res) => {
         nama,
     ];
 
-    const result = await new Promise((resolve, reject) => {
+   await new Promise((resolve, reject) => {
       db.run(query, values, (err, result) => {
         if (err) reject(err);
         resolve(result);
       });
     });
 
-    formatRes(200, result, "berhasil add users", res);
+    res.json({message:'success add mahasiswa'})
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Terjadi kesalahan" });
@@ -66,13 +54,13 @@ const deleteUsers = async (req, res) => {
 
   const query = `DELETE FROM user_mahasiswa WHERE nim= '${nim}';`;
 
-  const result = await new Promise((resolve, reject)=>{
+  await new Promise((resolve, reject)=>{
     db.run(query,(error, result)=>{
       if(error) reject(error);
       resolve(result);
     });
   });
-  formatRes(200,nim,"berhasil hapus user ",res)
+  res.json({message:`success delete ${nim}`})
   }
   catch(error){
     console.error(error);
@@ -117,7 +105,7 @@ const editUsers = async (req, res) => {
       });
     });
 
-    formatRes(200, "berhasil edit", "nim"+nim, res);
+    res.json({message:`success edit ${nim}`});
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: 'Terjadi kesalahan' });
@@ -136,7 +124,7 @@ const getByIdMahasiswa =async (req, res) => {
         resolve(result);
       });
     });
-    formatRes(200, result, "berhasil get mahasiswa", res);
+    res.json(result);
   } catch (error) {
     console.error(error);
     return res.status(500).json({message: "Terjadi kesalahan"});

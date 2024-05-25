@@ -10,6 +10,6 @@ route.post('/', controller.addRuang)
 route.patch('/:kode_ruang',controller.editruang)
 
 route.delete('/:kode_ruang',controller.deleteRuang)
-route.get('/:kode_ruang',controller.getByKodeRuang)
+route.post('/selectRuang',controller.getRuangByIdJadwal)
 
 module.exports= route

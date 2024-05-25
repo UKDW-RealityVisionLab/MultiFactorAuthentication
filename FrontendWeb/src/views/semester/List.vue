@@ -13,7 +13,7 @@ const fetchDataSemester = async () => {
   dataSemester.value.loading = true;
   try {
     const response = await axios.get(baseUrl);
-    dataSemester.value.data = response.data.dataSemester.Semester;
+    dataSemester.value.data = response.data;
   } catch (error) {
     dataSemester.value.error = error.message;
   } finally {

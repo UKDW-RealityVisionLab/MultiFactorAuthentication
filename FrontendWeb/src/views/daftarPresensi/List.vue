@@ -18,7 +18,7 @@ const fetchData = async () => {
   dataApi.value.loading = true;
   try {
     const response = await axios.get(baseUrl+"/"+kode_jadwal);
-    dataApi.value.data = response.data.kelas.dataPresensiKelas;
+    dataApi.value.data = response.data;
   } catch (error) {
     dataApi.value.error = error.message;
   } finally {

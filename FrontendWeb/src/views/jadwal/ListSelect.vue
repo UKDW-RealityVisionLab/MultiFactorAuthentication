@@ -15,8 +15,8 @@ const dataApi = ref({
 
 const fetchDataJadwal = async (url) => {
   try {
-    const response = await axios.get(url);
-    dataApi.value.data = response.data.jadwal.dataJadwal;
+    const response = await axios.post(url);
+    dataApi.value.data = response.data;
     console.log('Data by kode kelas:', dataApi.value.data);
   } catch (error) {
     console.error("Error fetching data:", error);
@@ -80,17 +80,17 @@ onMounted(async () => {
 
       <template v-else>
         <tr v-for="jadwalApi in dataApi.data" :key="jadwalApi.kode_jadwal">
-          <td>{{ jadwalApi.kode_jadwal}}</td>
-          <td>{{ jadwalApi.kode_ruang }}</td>
-          <td>{{ jadwalApi.kode_sesi }}</td>
+          <td>{{ jadwalApi.jadwal}}</td>
+          <td>{{ jadwalApi.ruang }}</td>
+          <td>{{ jadwalApi.sesi }}</td>
           <td>{{ jadwalApi.tanggal }}</td>
-          <td>{{ jadwalApi.kode_kelas }}</td>
+          <td>{{ jadwalApi.kodeKelas }}</td>
 
           
           <td style="white-space: nowrap">
-            <router-link :to="`/jadwal/${jadwalApi.kode_jadwal}`" class="btn btn-sm btn-primary mr-1">Edit</router-link>
-            <button class="btn btn-sm btn-success btn-presensi" @click="presensi(jadwalApi.kode_jadwal)">QR</button> 
-            <button class="btn btn-sm btn-danger btn-delete" @click="deleteJadwal(jadwalApi.kode_jadwal)">Delete</button> 
+            <router-link :to="`/jadwal/${jadwalApi.jadwal}`" class="btn btn-sm btn-primary mr-1">Edit</router-link>
+            <button class="btn btn-sm btn-success btn-presensi" @click="presensi(jadwalApi.jadwal)">QR</button> 
+            <button class="btn btn-sm btn-danger btn-delete" @click="deleteJadwal(jadwalApi.jadwal)">Delete</button> 
           </td>
         </tr>
       </template>

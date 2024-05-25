@@ -1,16 +1,4 @@
-const { json } = require("body-parser");
 const db = require("../config/db");
-const { query } = require("express");
-
-const formatRes = (status, data, message, res) => {
-    res.status(status).json({
-        ruang: {
-            status: status,
-            dataRuang: data,
-            message: message,
-        },
-    });
-};
 
 const getRuang = async (req, res) => {
     try {
@@ -22,32 +10,60 @@ const getRuang = async (req, res) => {
                 resolve(result);
             });
         });
-        formatRes(200, result, "berhasil get ruang", res);
+        res.json(result)
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: "Terjadi kesalahan" });
     }
 };
 
-const getByKodeRuang = async (req, res) => {
-    try {
-        const { kode_ruang } = req.params;
-        const queryGet = `SELECT *
-                      FROM ruang
-                      WHERE kodeRuang = '${kode_ruang}';`;
-        const result = await new Promise((resolve, reject) => {
 
-            db.all(queryGet, (error, result) => {
+const getRuangByIdJadwal = async (req, res) => {
+    try {
+        let idJadwal;
+        let source;
+
+        if (req.body.idJadwal) {
+            idJadwal = req.body.idJadwal;
+            source = "req.body";
+        }
+        // } else if (req.params.idJadwal) {
+        //     idJadwal = req.params.idJadwal;
+        //     source = "req.params";
+        // }
+
+        console.log("Received idJadwal:", idJadwal, "from", source);
+
+        const queryGet = `SELECT ruang.latitude, ruang.longitude
+                FROM ruang 
+                    JOIN jadwal ON ruang.kodeRuang = jadwal.kode_ruang
+                        WHERE jadwal.kode_jadwal = ?;`;
+
+        const result = await new Promise((resolve, reject) => {
+            db.all(queryGet,[idJadwal], (error, result) => {
                 if (error) reject(error);
                 resolve(result);
             });
         });
-        formatRes(200, result, "berhasil get ruang", res);
+        let respond = {};
+      result.forEach(result => {
+        respond= {
+            latitude: result.latitude,
+            longtitude: result.longitude,
+        };
+      });
+      res.json(respond)
+
+        if (result.length === 0) {
+            return res.status(404).json({ message: "Data not found" });
+        }
+
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: "Terjadi kesalahan" });
     }
-}
+};
+
 
 const addRuang = async (req, res) => {
     try {
@@ -69,7 +85,7 @@ const addRuang = async (req, res) => {
             });
         });
 
-        formatRes(200, result, "berhasil add ruang", res);
+        res.json({ message: "success add ruang" });
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: "Terjadi kesalahan" });
@@ -89,7 +105,7 @@ const deleteRuang = async (req, res) => {
                 resolve(result);
             });
         });
-        formatRes(200, kode_ruang, "berhasil hapus ruang", res)
+        res.json({ message: `success delete ${kode_ruang}` })
     }
     catch (error) {
         console.error(error);
@@ -126,7 +142,7 @@ const editruang = async (req, res) => {
       SET ${setValues}
       WHERE kodeRuang='${kode_ruang}'
     `;
-        
+
         console.log("Generated SQL query:", query); // Log the generated SQL query
 
         await new Promise((resolve, reject) => {
@@ -139,7 +155,7 @@ const editruang = async (req, res) => {
             });
         });
 
-        formatRes(200, "berhasil edit", "ruang" + kode_ruang, res);
+        res.json({ message: `success edit ruang ${kode_ruang}` });
     } catch (error) {
         console.error("Server error:", error); // Log the server error
         return res.status(500).json({ message: 'Terjadi kesalahan' });
@@ -148,4 +164,4 @@ const editruang = async (req, res) => {
 
 
 
-module.exports = { getRuang, addRuang, editruang, deleteRuang, getByKodeRuang };
+module.exports = { getRuang, addRuang, editruang, deleteRuang, getRuangByIdJadwal };

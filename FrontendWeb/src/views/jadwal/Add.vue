@@ -13,11 +13,11 @@ const route = useRoute();
 const baseUrl = "http://localhost:3000/jadwal";
 
 const schema = Yup.object().shape({
-  kode_jadwal: Yup.string().required("kode ruang is required"),
-  kode_ruang: Yup.string().required("kode_ruang is required"),
-  kode_sesi: Yup.string().required("kode_sesi is required"),
-  kode_sesi: Yup.string().required("kode_kelas is required"),
-  tanggal:Yup.date()
+  kode_jadwal: Yup.string().required("kode jadwal is required"),
+  kode_kelas: Yup.string().required("kode kelas is required"),
+  kode_ruang: Yup.string().required("kode ruang is required"),
+  kode_sesi: Yup.string().required("kode sesi is required"),
+  tanggal: Yup.date()
 });
 
 const dataApi = ref({
@@ -26,7 +26,7 @@ const dataApi = ref({
 });
 
 const addJadwal = async (data) => {
-  dataApi.value.loading = true; // Fix variable name
+  dataApi.value.loading = true;
   try {
     const response = await axios.post(baseUrl, data);
     alertStore.success(response.data.message);
@@ -40,18 +40,18 @@ const addJadwal = async (data) => {
 async function onSubmit(values) {
   try {
     const data = {
-      kode_jadwal: values.kode_jadwal,
-      kode_kelas: values.kode_kelas,
-      kode_ruang: values.kode_ruang,
-      kode_sesi: values.kode_sesi, 
+      kodeJadwal: values.kode_jadwal,
+      kodeKelas: values.kode_kelas,
+      kodeRuang: values.kode_ruang,
+      kodeSesi: values.kode_sesi, 
       tanggal: values.tanggal, 
     };
 
-    await addJadwal(data);
+    await addJadwal(values);
     alertStore.success("jadwal added");
     await router.push("/jadwal");
   } catch (error) {
-    alertStore.error("Failed to add ruang");
+    alertStore.error("Failed to add jadwal");
   }
 }
 </script>
@@ -98,9 +98,8 @@ async function onSubmit(values) {
           <div class="invalid-feedback">{{ errors.kode_ruang }}</div>
         </div>
 
-        <div class="form-row">
         <div class="form-group col">
-          <label>kode_sesi</label>
+          <label>kode sesi</label>
           <Field
             name="kode_sesi"
             type="text"
@@ -109,14 +108,17 @@ async function onSubmit(values) {
           />
           <div class="invalid-feedback">{{ errors.kode_sesi }}</div>
         </div>
+
         <div class="form-group col">
-          <div class="form-group col">
           <label>Tanggal</label>
-          <Field name="tanggal" type="date" class="form-control" :class="{ 'is-invalid': errors.tanggal }" />
+          <Field 
+            name="tanggal" 
+            type="date" 
+            class="form-control" 
+            :class="{ 'is-invalid': errors.tanggal }" 
+          />
           <div class="invalid-feedback">{{ errors.tanggal }}</div>
         </div>
-        </div>
-      </div>
       </div>
       <div class="form-group">
         <button class="btn btn-primary" :disabled="isSubmitting">

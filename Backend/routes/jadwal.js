@@ -10,6 +10,6 @@ route.patch('/:kode_jadwal',controller.editJadwal)
 
 route.delete('/:kode_jadwal',controller.deleteJadwal)
 route.get('/:kode_jadwal',controller.getByKodeJadwal)
-route.get('/jadwalPresensi/:kode_kelas',controller.getJadwalBykodeKelas)
+route.post('/jadwalPresensi/:kode_kelas',controller.getJadwalBykodeKelas)
 
 module.exports= route

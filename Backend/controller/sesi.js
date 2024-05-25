@@ -1,16 +1,4 @@
-const { json } = require("body-parser");
 const db = require("../config/db");
-const { query } = require("express");
-
-const formatRes = (status, data, message, res) => {
-    res.status(status).json({
-        sesi: {
-            status: status,
-            dataKelas: data,
-            message: message,
-        },
-    });
-};
 
 const getSesi = async (req, res) => {
     try {
@@ -22,7 +10,7 @@ const getSesi = async (req, res) => {
                 resolve(result);
             });
         });
-        formatRes(200, result, "berhasil get sesi", res);
+        res.json(result)
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: "Terjadi kesalahan"});

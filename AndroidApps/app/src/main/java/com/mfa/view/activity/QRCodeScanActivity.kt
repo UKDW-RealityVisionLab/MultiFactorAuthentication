@@ -86,7 +86,7 @@ class QRCodeScanActivity : AppCompatActivity() {
 
     private fun makeAPICall(kodeJadwal: String, nimMahasiswa: String) {
         try {
-            val url = "http://192.168.1.11:3000/updateHadirStatus"
+            val url = "http://172.16.50.227:3000/updateHadirStatus"
             val jsonObject = JSONObject().apply {
                 put("kode_jadwal", kodeJadwal)
                 put("nim_mahasiswa", nimMahasiswa)

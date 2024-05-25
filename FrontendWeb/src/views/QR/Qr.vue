@@ -17,48 +17,48 @@ const dataApi = ref({
   error: null,
 });
 
+const isGenerating = ref(false); // Variable to track whether QR is being generated
+
 const showQr = async () => {
   try {
-    const response = await axios.get(baseURL + "/" + kode_jadwal);
-    console.log('API response:', response.data.presensi);
-    const responseData = response.data.presensi;
-    dataApi.value.qrCode = responseData.data;
+    isGenerating.value = true; // Set the flag to indicate QR generation is in progress
+    const resp = await axios.get(baseURL + "/" + kode_jadwal);
+    const response = { data: resp}
+    console.log('API response:', response.data);
+    const responseData = response.data.data
+    dataApi.value.qrCode = responseData;
     const startTime = new Date(); 
     dataApi.value.startTime = startTime.toLocaleTimeString();
-    const endTime = new Date(startTime.getTime() + 300 * 1000); 
+    const endTime = new Date(startTime.getTime() + 5 * 60000); 
     dataApi.value.endTime = endTime.toLocaleTimeString();
     updateLiveTime(); 
 
-    
     const intervalId = setInterval(() => {
       updateLiveTime();
       const currentTime = new Date();
       if (currentTime >= endTime) {
-        clearInterval(intervalId); // Menghentikan interval jika waktu mencapai end time
+        clearInterval(intervalId); // Stop the interval when the time reaches end time
+        isGenerating.value = false; // Set the flag to indicate QR generation is complete
       }
     }, 1000);
   } catch (error) {
     console.error("Error fetching data:", error);
     dataApi.value.error = "Failed to fetch data";
   }
-  onMounted(showQr);
 };
 
 const updateLiveTime = () => {
-  dataApi.value.liveTime = new Date().toLocaleTimeString(); // Mengupdate nilai live time setiap detik
+  dataApi.value.liveTime = new Date().toLocaleTimeString(); // Update live time value every second
 };
 
 function goTokehadiran() {
   window.open(router.resolve(`/daftarpresensi/${kode_jadwal}`).href, '_blank');
 }
-
-
-
 </script>
 
 <template>
   <h1>PRESENSI</h1>
-  <button class="btn btn-sm btn-success btn-presensi" @click="showQr">Generate QR</button>
+  <button class="btn btn-sm btn-success btn-presensi" @click="showQr" :disabled="isGenerating">Generate QR</button>
   <div v-if="dataApi.qrCode">
     <div>
       <img :src="dataApi.qrCode" alt="QR Code" />

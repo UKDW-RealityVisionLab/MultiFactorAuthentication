@@ -1,16 +1,4 @@
-const { json } = require("body-parser");
 const db = require("../config/db");
-const { query } = require("express");
-
-const formatRes = (status, data, message, res) => {
-  res.status(status).json({
-    dataSemester: {
-      status: status,
-      Semester: data,
-      message: message,
-    },
-  });
-};
 
 const getSemester = async (req, res) => {
   try {
@@ -22,7 +10,7 @@ const getSemester = async (req, res) => {
         resolve(result);
       });
     });
-    formatRes(200, result, "berhasil get data semester", res);
+    res.json(result);
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Terjadi kesalahan"});
@@ -52,7 +40,7 @@ const addSemester = async (req, res) => {
         });
       });
   
-      formatRes(200, result, "berhasil add data semester", res);
+      res.json({message:'success add semester'});
     } catch (error) {
       console.error(error);
       return res.status(500).json({ message: "Terjadi kesalahan" });
@@ -66,13 +54,13 @@ const addSemester = async (req, res) => {
   
     const query = `DELETE FROM semester WHERE kode_semester= '${kode_semester}';`;
   
-    const result = await new Promise((resolve, reject)=>{
+   await new Promise((resolve, reject)=>{
       db.run(query,(error, result)=>{
         if(error) reject(error);
         resolve(result);
       });
     });
-    formatRes(200,nim,"berhasil hapus data semester ",res)
+    res.json({messege:`success delete ${kode_semester}`})
     }
     catch(error){
       console.error(error);
@@ -116,7 +104,7 @@ const addSemester = async (req, res) => {
         });
       });
   
-      formatRes(200, "berhasil edit", "kode_semester"+kode_semester, res);
+      res.json({messege:`success edit ${kode_semester}`})
     } catch (error) {
       console.error(error);
       return res.status(500).json({ message: 'Terjadi kesalahan' });
@@ -135,7 +123,7 @@ const addSemester = async (req, res) => {
           resolve(result);
         });
       });
-      formatRes(200, result, "berhasil get data semester", res);
+      res.json(result);
     } catch (error) {
       console.error(error);
       return res.status(500).json({message: "Terjadi kesalahan"});
