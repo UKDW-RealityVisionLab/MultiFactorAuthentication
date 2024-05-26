@@ -6,10 +6,11 @@ import { ref, onMounted } from "vue";
 import axios from "axios";
 
 import { useAlertStore } from "@/stores";
-import { router } from "@/router";
+import { useRouter } from "vue-router";
 
 const alertStore = useAlertStore();
 const route = useRoute();
+const router = useRouter();
 const kode_kelas = route.params.kode_kelas;
 const baseUrl = "http://localhost:3000/kelas";
 const kelasData = ref({
@@ -18,35 +19,32 @@ const kelasData = ref({
     error: null,
 });
 
-
 const fetchKelasById = async (url) => {
     try {
-        const response = await axios.get(url)
+        const response = await axios.get(url);
         kelasData.value.dataId = response.data;
-        console.log('Data by kode kelas:', kelasData.value.dataId)
-
+        console.log('Data by kode kelas:', kelasData.value.dataId);
     } catch (error) {
-        alertStore.error("Failed to fetch kelas data");
+        kelasData.value.error = "Failed to fetch kelas data";
+        alertStore.error(kelasData.value.error);
+    } finally {
+        kelasData.value.loading = false;
     }
 };
 
-if (kode_kelas) {
-    onMounted(async () => {
-        try {
-            await fetchKelasById(`${baseUrl}/${kode_kelas}`);
-        } catch (error) {
-            alertStore.error("Failed to fetch kelas data");
-        }
-    });
-}
+onMounted(() => {
+    if (kode_kelas) {
+        kelasData.value.loading = true;
+        fetchKelasById(`${baseUrl}/${kode_kelas}`);
+    }
+});
+
 const schema = Yup.object().shape({
     kode_matakuliah: Yup.string(),
     group_kelas: Yup.string(),
     kode_semester: Yup.string(),
     kode_dosen: Yup.number(),
 });
-
-
 
 const editKelas = async (values) => {
     let message;
@@ -62,13 +60,10 @@ const editKelas = async (values) => {
         await axios.patch(`${baseUrl}/${kode_kelas}`, data);
 
         message = "Kelas updated=" + kode_kelas;
-        alertStore.success(message)
+        alertStore.success(message);
+        await router.push("/kelas");
     } catch (error) {
-        if (error.response && error.response.status === 500) {
-            console.error("Internal Server Error:", error.message);
-        } else {
-            console.error("Failed to update Kelas:", error.message);
-        }
+        console.error("Failed to update Kelas:", error.message);
         alertStore.error("Failed to update Kelas");
         kelasData.value.error = error.message;
     } finally {
@@ -78,101 +73,87 @@ const editKelas = async (values) => {
 
 async function onSubmit(values) {
     try {
-        let message;
         if (kode_kelas) {
-            try {
-                await editKelas(values);
-                console.log(values);
-                await router.push("/kelas");
-                message = "Kelas updated kode kuliah=" + kode_kelas;
-            } catch (error) {
-                alertStore.error("Failed to update");
-            }
+            await editKelas(values);
         }
-        alertStore.success(message);
     } catch (error) {
-        alertStore.error(error);
+        alertStore.error(error.message);
     }
 }
-
 </script>
-
 <template>
-    <h1>Edit Kelas</h1>
-    <template v-if="!(kelasData?.loading || kelasData?.error)">
+  <h1>Edit Kelas</h1>
+  <template v-if="!(kelasData.loading || kelasData.error)">
       <Form
-        @submit="onSubmit"
-        :validation-schema="schema"
-        v-for="data in kelasData.dataId"
-        :initial-values="data"
-        v-slot="{ errors, isSubmitting }"
+          @submit="onSubmit"
+          :validation-schema="schema"
+          v-slot="{ errors, isSubmitting }"
+          v-for="data in kelasData.dataId"
+          :key="data.kode_kelas"
+          :initial-values="data"
+          
       >
-        <div class="form-row">
-          <div class="form-group col">
-            <label>Kode Matakuliah</label>
-            <Field
-              name="kode_matakuliah"
-              type="text"
-              class="form-control"
-              :class="{ 'is-invalid': errors.kode_matakuliah }"
-            />
-            <div class="invalid-feedback">{{ errors.kode_matakuliah }}</div>
+          <div class="form-row">
+              <div class="form-group col">
+                  <label>Kode Matakuliah</label>
+                  <Field
+                      name="kode_matakuliah"
+                      type="text"
+                      class="form-control"
+                      :class="{ 'is-invalid': errors.kode_matakuliah }"
+                  />
+                  <div class="invalid-feedback">{{ errors.kode_matakuliah }}</div>
+              </div>
+              <div class="form-group col">
+                  <label>Group Kelas</label>
+                  <Field
+                      name="group_kelas"
+                      type="text"
+                      class="form-control"
+                      :class="{ 'is-invalid': errors.group_kelas }"
+                  />
+                  <div class="invalid-feedback">{{ errors.group_kelas }}</div>
+              </div>
+              <div class="form-group col">
+                  <label>Kode Semester</label>
+                  <Field
+                      name="kode_semester"
+                      type="text"
+                      class="form-control"
+                      :class="{ 'is-invalid': errors.kode_semester }"
+                  />
+                  <div class="invalid-feedback">{{ errors.kode_semester }}</div>
+              </div>
+              <div class="form-group col">
+                  <label>Kode Dosen</label>
+                  <Field
+                      name="kode_dosen"
+                      type="text"
+                      class="form-control"
+                      :class="{ 'is-invalid': errors.kode_dosen }"
+                  />
+                  <div class="invalid-feedback">{{ errors.kode_dosen }}</div>
+              </div>
           </div>
-          <div class="form-group col">
-            <label>Group Kelas</label>
-            <Field
-              name="group_kelas"
-              type="text"
-              class="form-control"
-              :class="{ 'is-invalid': errors.group_kelas }"
-            />
-            <div class="invalid-feedback">{{ errors.group_kelas }}</div>
+          <div class="form-group">
+              <button class="btn btn-primary" :disabled="isSubmitting">
+                  <span v-show="isSubmitting" class="spinner-border spinner-border-sm mr-1"></span>
+                  Save
+              </button>
+              <router-link to="/kelas" class="btn btn-link">Cancel</router-link>
           </div>
-          <div class="form-group col">
-            <label>Kode Semester</label>
-            <Field
-              name="kode_semester"
-              type="text"
-              class="form-control"
-              :class="{ 'is-invalid': errors.kode_semester }"
-            />
-            <div class="invalid-feedback">{{ errors.kode_semester }}</div>
-          </div>
-          <div class="form-group col">
-            <label>Kode Dosen</label>
-            <Field
-              name="kode_dosen"
-              type="text"
-              class="form-control"
-              :class="{ 'is-invalid': errors.kode_dosen }"
-            />
-            <div class="invalid-feedback">{{ errors.kode_dosen }}</div>
-          </div>
-          </div>
-        
-        <div class="form-group">
-          <button class="btn btn-primary" :disabled="isSubmitting">
-            <span
-              v-show="isSubmitting"
-              class="spinner-border spinner-border-sm mr-1"
-            ></span>
-            Save
-          </button>
-          <router-link to="/kelas" class="btn btn-link">Cancel</router-link>
-        </div>
       </Form>
-    </template>
-    <template v-if="kelass?.loading">
+  </template>
+  <template v-if="kelasData.loading">
       <div class="text-center m-5">
-        <span class="spinner-border spinner-border-lg align-center"></span>
+          <span class="spinner-border spinner-border-lg align-center"></span>
       </div>
-    </template>
-    <template v-if="kelass?.error">
+  </template>
+  <template v-if="kelasData.error">
       <div class="text-center m-5">
-        <div class="text-danger">
-          Error loading Kelas: {{ kelass.error }}
-        </div>
+          <div class="text-danger">
+              Error loading Kelas: {{ kelasData.error }}
+          </div>
       </div>
-    </template>
+  </template>
 </template>
-  

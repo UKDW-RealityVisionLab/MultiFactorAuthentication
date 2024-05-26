@@ -92,6 +92,7 @@ async function onSubmit(values) {
         @submit="onSubmit"
         :validation-schema="schema"
         v-for="data in mahasiswaData.dataId"
+        :key="data.nim"
         :initial-values="data"
         v-slot="{ errors, isSubmitting }"
       >
