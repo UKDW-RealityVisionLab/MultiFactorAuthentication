@@ -11,7 +11,9 @@ app.use(cors());
 const dataPresensi =  async (req, res) => {
   try {
     const {kode_jadwal} = req.params
-    const queryGet = `SELECT presensi.email, presensi.id_presensi,presensi.nim_mahasiswa,presensi.nama, presensi.hadir FROM jadwal INNER JOIN presensi on jadwal.kode_jadwal=presensi.kode_jadwal WHERE jadwal.kode_jadwal='${kode_jadwal}';`;
+    const queryGet = `SELECT presensi.id_presensi, presensi.kode_jadwal, presensi.nim_mahasiswa, presensi.hadir, user_mahasiswa.nama, user_mahasiswa.email
+    FROM presensi
+    INNER JOIN user_mahasiswa ON presensi.nim_mahasiswa = user_mahasiswa.nim WHERE presensi.kode_jadwal='${kode_jadwal}';`;
     const result = await new Promise((resolve, reject) => {
   
       db.all(queryGet, (error, result) => {
@@ -45,7 +47,9 @@ const getProfile = async (req, res) => {
 
       console.log("Received email:", email, "from", source);
 
-      const queryGet = `SELECT * FROM presensi WHERE email = ?;`;
+      const queryGet = `SELECT user_mahasiswa.email, user_mahasiswa.nim, user_mahasiswa.nama
+      FROM user_mahasiswa
+      WHERE user_mahasiswa.email = ?;`
       
       const result = await new Promise((resolve, reject) => {
           db.all(queryGet, [email], (error, rows) => {
@@ -64,9 +68,9 @@ const getProfile = async (req, res) => {
       let respond = {};
       result.forEach(result => {
         respond= {
-          email: result.email,
           nama: result.nama,
-          nim: result.nim_mahasiswa
+          nim: result.nim,
+          email:result.email
         };
       });
 
