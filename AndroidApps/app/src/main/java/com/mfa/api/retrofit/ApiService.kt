@@ -1,8 +1,13 @@
 package com.mfa.api.retrofit
 
-import com.mfa.api.response.JadwalResponse
+import com.mfa.api.response.HomeResponseItem
+import com.mfa.api.response.PertemuanRequest
 import com.mfa.api.response.PertemuanResponse
+import com.mfa.api.response.PertemuanResponseItem
+import com.mfa.api.response.RuangRequest
 import com.mfa.api.response.RuangResponse
+import com.mfa.api.response.RuangResponseItem
+import retrofit2.http.Body
 import retrofit2.http.Field
 import retrofit2.http.GET
 import retrofit2.http.Header
@@ -11,23 +16,14 @@ import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface ApiService {
+    @GET("kelas")
+    suspend fun getKelas(): List<HomeResponseItem>
 
-    @GET("jadwal")
-    suspend fun getJadwal(): JadwalResponse
+    @POST("jadwal/jadwalPresensi/request")
+    suspend fun getDetail(@Body request: PertemuanRequest): List<PertemuanResponseItem>
 
-    @GET("jadwal/{kode_jadwal}")
-    suspend fun getDetail(
-        @Path("kode_jadwal") id: String,
-    ): PertemuanResponse
+    @POST("ruang/selectRuang")
+    suspend fun getRuang(@Body request: RuangRequest): RuangResponseItem
 
-    @GET("ruang/{kode_ruang}")
-    suspend fun getRuang(
-        @Path("kode_ruang") kodeRuang: String
-    ): RuangResponse
 
-    @POST("ruang")
-    suspend fun validationLocation(
-        @Query("latitude") latitude: String,
-        @Query("longitude") longitude: String
-    ): RuangResponse
 }

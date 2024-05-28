@@ -1,19 +1,20 @@
 package com.mfa.view.adapter
 
 import android.content.Intent
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.mfa.api.response.DataJadwalItemPertemuan
+import com.mfa.api.response.PertemuanResponseItem
 
 import com.mfa.databinding.ItemPertemuanBinding
 import com.mfa.view.activity.PertemuanActivity
 import com.mfa.view.activity.PresensiActivity
 
 class PertemuanAdapter :
-    ListAdapter<DataJadwalItemPertemuan, PertemuanAdapter.PertemuanViewHolder>(
+    ListAdapter<PertemuanResponseItem, PertemuanAdapter.PertemuanViewHolder>(
         DIFF_CALLBACK
     ) {
 
@@ -26,13 +27,13 @@ class PertemuanAdapter :
     }
 
     override fun onBindViewHolder(holder: PertemuanViewHolder, position: Int) {
-
         val pertemuan = getItem(position)
         if (pertemuan != null) {
             holder.bind(pertemuan)
             holder.itemView.setOnClickListener {
                 val sendData = Intent(holder.itemView.context, PresensiActivity::class.java)
-
+                Log.d("PertemuanAdapter", "Sending jadwal: ${pertemuan.jadwal}, ruang: ${pertemuan.ruang}")
+                sendData.putExtra(PresensiActivity.GETRUANG, pertemuan.jadwal)
                 sendData.putExtra(PresensiActivity.ISVALID,isvalid)
                 holder.itemView.context.startActivity(sendData)
             }
@@ -40,27 +41,26 @@ class PertemuanAdapter :
     }
 
     inner class PertemuanViewHolder(val binding: ItemPertemuanBinding) : RecyclerView.ViewHolder(binding.root) {
-        fun bind(pertemuan: DataJadwalItemPertemuan) {
+        fun bind(pertemuan: PertemuanResponseItem) {
             binding.tanggal.text = pertemuan.tanggal
-            binding.namaMatkul.text = pertemuan.kodeJadwal
-            binding.jadwalMatkul.text = "${pertemuan.kodeSesi}"
+            binding.namaMatkul.text = pertemuan.mataKuliah
+            binding.ruangKelas.text = pertemuan.ruang
+            binding.jadwalMatkul.text = "${pertemuan.sesiStart} - ${pertemuan.sesiEnd}"
         }
     }
 
     companion object {
-        val DIFF_CALLBACK = object : DiffUtil.ItemCallback<DataJadwalItemPertemuan>() {
-            override fun areItemsTheSame(oldItem: DataJadwalItemPertemuan, newItem: DataJadwalItemPertemuan): Boolean {
+        val DIFF_CALLBACK = object : DiffUtil.ItemCallback<PertemuanResponseItem>() {
+            override fun areItemsTheSame(oldItem: PertemuanResponseItem, newItem: PertemuanResponseItem): Boolean {
                 return oldItem == newItem
             }
 
             override fun areContentsTheSame(
-                oldItem: DataJadwalItemPertemuan,
-                newItem: DataJadwalItemPertemuan
+                newItem: PertemuanResponseItem,
+                oldItem: PertemuanResponseItem
             ): Boolean {
                 return oldItem == newItem
             }
         }
-//        const val ISVALID ="isValid"
     }
-
 }

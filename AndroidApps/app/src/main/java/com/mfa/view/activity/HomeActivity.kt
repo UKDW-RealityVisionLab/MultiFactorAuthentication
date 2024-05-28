@@ -16,7 +16,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.mfa.Helper
 import com.mfa.view.adapter.JadwalAdapter
 import com.mfa.R
-import com.mfa.api.response.DataJadwalItem
+import com.mfa.api.response.HomeResponseItem
 import com.mfa.databinding.ActivityHomeBinding
 import com.mfa.di.Injection
 import com.mfa.utils.PreferenceUtils
@@ -52,32 +52,6 @@ class HomeActivity : AppCompatActivity() {
         requestPermissionLauncher.launch(android.Manifest.permission.ACCESS_FINE_LOCATION)
         setDate()
 
-        adapter.setOnItemClickListener { position ->
-            val mataKuliah = adapter.getItemAtPosition(position).namaMatakuliah
-            val sendData = Intent(this, PertemuanActivity::class.java)
-            sendData.putExtra(PertemuanActivity.NAME, mataKuliah)
-            startActivity(sendData)
-        }
-    }
-
-    private fun setupRecyclerView() {
-        val layoutManager = LinearLayoutManager(this)
-        binding.rvJadwal.layoutManager = layoutManager
-        val itemDecoration = DividerItemDecoration(this, layoutManager.orientation)
-        binding.rvJadwal.addItemDecoration(itemDecoration)
-
-
-        binding.rvJadwal.adapter = adapter
-
-        viewModel.getJadwal()
-        viewModel.getJadwalLiveData.observe(this) { stories ->
-            if (stories != null) {
-                when (stories) {
-                    is Helper.Success -> setStory(stories.data.jadwal?.dataJadwal)
-                    else -> {}
-                }
-            }
-        }
     }
 
     private val requestPermissionLauncher =
@@ -85,15 +59,32 @@ class HomeActivity : AppCompatActivity() {
             ActivityResultContracts.RequestPermission()
         ) { isGranted: Boolean ->
             if (isGranted) {
-//                getMyLocation()
             }
         }
 
+    private fun setupRecyclerView() {
+        val layoutManager = LinearLayoutManager(this)
+        binding.rvJadwal.layoutManager = layoutManager
+        val itemDecoration = DividerItemDecoration(this, layoutManager.orientation)
+        binding.rvJadwal.addItemDecoration(itemDecoration)
 
-    private fun setStory(data: List<DataJadwalItem?>?) {
+        binding.rvJadwal.adapter = adapter
+
+        viewModel.getJadwal()
+        viewModel.getJadwalLiveData.observe(this) { stories ->
+            if (stories != null) {
+                when (stories) {
+                    is Helper.Success -> setStory(stories.data)
+                    else -> {}
+                }
+            }
+        }
+    }
+
+    private fun setStory(data: List<HomeResponseItem?>?) {
         if (data != null) {
             adapter.submitList(data)
-            Log.d("data:", "$data")
+            Log.d("data Home:", "$data")
         } else {
             // Handle null data if needed
             Toast.makeText(this, "Data is null", Toast.LENGTH_SHORT).show()

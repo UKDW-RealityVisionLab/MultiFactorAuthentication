@@ -4,33 +4,19 @@ import com.google.gson.annotations.SerializedName
 
 data class RuangResponse(
 
-	@field:SerializedName("ruang")
-	val ruang: Ruang? = null
+	@field:SerializedName("RuangResponse")
+	val ruangResponse: List<RuangResponseItem>? = null
 )
 
-data class DataRuangItem(
+data class RuangRequest(
+	@SerializedName("idJadwal") val idJadwal: String
+)
 
-	@field:SerializedName("nama")
-	val nama: String? = null,
+data class RuangResponseItem(
 
 	@field:SerializedName("latitude")
-	val latitude: Any? = null,
+	val latitude: Double? = null,
 
-	@field:SerializedName("kodeRuang")
-	val kodeRuang: String? = null,
-
-	@field:SerializedName("longitude")
-	val longitude: Any? = null
-)
-
-data class Ruang(
-
-	@field:SerializedName("message")
-	val message: String? = null,
-
-	@field:SerializedName("dataRuang")
-	val dataRuang: List<DataRuangItem?>? = null,
-
-	@field:SerializedName("status")
-	val status: Int? = null
+	@field:SerializedName("longtitude")
+	val longitude: Double? = null
 )
