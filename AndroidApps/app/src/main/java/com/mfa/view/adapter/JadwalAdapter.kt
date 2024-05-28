@@ -8,16 +8,16 @@ import androidx.core.app.ActivityOptionsCompat
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.mfa.api.response.DataJadwalItem
+import com.mfa.api.response.HomeResponseItem
 import com.mfa.databinding.ItemJadwalBinding
 import com.mfa.view.activity.HomeActivity
 import com.mfa.view.activity.PertemuanActivity
 
 class JadwalAdapter :
-    ListAdapter<DataJadwalItem, JadwalAdapter.MyViewHolder>(
+    ListAdapter<HomeResponseItem, JadwalAdapter.MyViewHolder>(
         DIFF_CALLBACK
     ) {
-    fun getItemAtPosition(position: Int): DataJadwalItem {
+    fun getItemAtPosition(position: Int): HomeResponseItem? {
         return getItem(position)
     }
     private var onItemClickListener: ((Int) -> Unit)? = null
@@ -27,26 +27,25 @@ class JadwalAdapter :
         onItemClickListener = listener
     }
 
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
         val binding = ItemJadwalBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return MyViewHolder(binding)
     }
 
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
-        val user = getItem(position)
-        if (user != null) {
-            holder.bind(user)
-            // Set listener onItemClickListener di sini di luar dari itemView.setOnClickListener
-            holder.setOnItemClickListener { position ->
-                // Handler ketika item diklik dengan onItemClickListener
-                val pertemuan = getItem(position)
+        val pertemuan = getItem(position)
+        if (pertemuan != null) {
+            holder.bind(pertemuan)
+            holder.setOnItemClickListener {
                 val sendData = Intent(holder.itemView.context, PertemuanActivity::class.java)
-                sendData.putExtra(PertemuanActivity.RUANG, pertemuan?.kodeRuang )
-                sendData.putExtra(PertemuanActivity.KODEJADWAL,pertemuan?.kodeJadwal)
+//                sendData.putExtra(PertemuanActivity.GETRUANG, pertemuan.kodeJadwal) // Mengambil kodeJadwal dari pertemuan
+                sendData.putExtra(PertemuanActivity.KODEKELAS, pertemuan.kodeKelas)
                 holder.itemView.context.startActivity(sendData)
             }
         }
     }
+
 
     inner class MyViewHolder(val binding: ItemJadwalBinding) : RecyclerView.ViewHolder(binding.root) {
         init {
@@ -58,7 +57,7 @@ class JadwalAdapter :
                     HomeActivity.TAG,
                     getItem(adapterPosition).kodeKelas
                 )
-                sendData.putExtra(HomeActivity.NAME, getItem(adapterPosition).namaMatakuliah)
+                sendData.putExtra(HomeActivity.NAME, getItem(adapterPosition).matakuliah)
                 binding.root.context.startActivity(
                     sendData,
                     ActivityOptionsCompat.makeSceneTransitionAnimation(binding.root.context as Activity)
@@ -67,11 +66,11 @@ class JadwalAdapter :
             }
         }
 
-        fun bind(review: DataJadwalItem) {
-            binding.namaMatkul.text = "${review.namaMatakuliah}"
-            binding.grupMatkul.text = review.groupKelas
-            binding.ruanganMatkul.text = review.kodeRuang
-            binding.jadwalMatkul.text = review.tanggal
+        fun bind(review: HomeResponseItem) {
+            binding.namaMatkul.text = "${review.matakuliah}"
+            binding.grupMatkul.text = review.grup
+            binding.ruanganMatkul.text = review.dosen
+            binding.jadwalMatkul.text=""
         }
 
         fun setOnItemClickListener(listener: (Int) -> Unit) {
@@ -82,14 +81,14 @@ class JadwalAdapter :
     }
 
     companion object {
-        val DIFF_CALLBACK = object : DiffUtil.ItemCallback<DataJadwalItem>() {
-            override fun areItemsTheSame(oldItem: DataJadwalItem, newItem: DataJadwalItem): Boolean {
+        val DIFF_CALLBACK = object : DiffUtil.ItemCallback<HomeResponseItem>() {
+            override fun areItemsTheSame(oldItem: HomeResponseItem, newItem: HomeResponseItem): Boolean {
                 return oldItem == newItem
             }
 
             override fun areContentsTheSame(
-                oldItem: DataJadwalItem,
-                newItem: DataJadwalItem
+                oldItem: HomeResponseItem,
+                newItem: HomeResponseItem
             ): Boolean {
                 return oldItem == newItem
             }
