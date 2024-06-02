@@ -1,6 +1,5 @@
 package com.mfa.view.activity
 
-import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
@@ -20,7 +19,6 @@ class QRCodeScanActivity : AppCompatActivity() {
     private lateinit var scanAgainButton: Button
     private val qrCodeViewModel: QRCodeViewModel by viewModels()
 
-    @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_qr_code_scan)
