@@ -1,6 +1,8 @@
 package com.mfa.api.retrofit
 
+import com.mfa.api.request.KodeJadwalRequest
 import com.mfa.api.response.HomeResponseItem
+import com.mfa.api.response.KodeJadwalResponse
 import com.mfa.api.response.PertemuanRequest
 import com.mfa.api.response.PertemuanResponse
 import com.mfa.api.response.PertemuanResponseItem
@@ -25,5 +27,6 @@ interface ApiService {
     @POST("ruang/selectRuang")
     suspend fun getRuang(@Body request: RuangRequest): RuangResponseItem
 
-
+    @POST("presensi/kodeJadwal")
+    suspend fun getKodeJadwal(@Body request: KodeJadwalRequest): KodeJadwalResponse
 }

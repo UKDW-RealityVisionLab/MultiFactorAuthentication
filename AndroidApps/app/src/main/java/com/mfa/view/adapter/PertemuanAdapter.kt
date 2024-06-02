@@ -32,7 +32,7 @@ class PertemuanAdapter :
             holder.bind(pertemuan)
             holder.itemView.setOnClickListener {
                 val sendData = Intent(holder.itemView.context, PresensiActivity::class.java)
-                Log.d("PertemuanAdapter", "Sending jadwal: ${pertemuan.jadwal}, ruang: ${pertemuan.ruang}")
+                Log.d("PertemuanAdapter", "Sending jadwal: ${pertemuan.jadwal}, ruang: ${pertemuan.jadwal}")
                 sendData.putExtra(PresensiActivity.GETRUANG, pertemuan.jadwal)
                 sendData.putExtra(PresensiActivity.ISVALID,isvalid)
                 holder.itemView.context.startActivity(sendData)
@@ -44,7 +44,7 @@ class PertemuanAdapter :
         fun bind(pertemuan: PertemuanResponseItem) {
             binding.tanggal.text = pertemuan.tanggal
             binding.namaMatkul.text = pertemuan.mataKuliah
-            binding.ruangKelas.text = pertemuan.ruang
+//            binding.ruangKelas.text = pertemuan.ruang
             binding.jadwalMatkul.text = "${pertemuan.sesiStart} - ${pertemuan.sesiEnd}"
         }
     }
