@@ -7,8 +7,8 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.mfa.api.response.DataJadwalItem
 import com.mfa.api.response.PertemuanResponseItem
-
 import com.mfa.databinding.ItemPertemuanBinding
 import com.mfa.view.activity.PertemuanActivity
 import com.mfa.view.activity.PresensiActivity
@@ -18,8 +18,7 @@ class PertemuanAdapter :
         DIFF_CALLBACK
     ) {
 
-    var isvalid :Boolean? = null
-
+    var isvalid : Boolean? = null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PertemuanViewHolder {
         val binding = ItemPertemuanBinding.inflate(LayoutInflater.from(parent.context), parent, false)
@@ -44,7 +43,7 @@ class PertemuanAdapter :
         fun bind(pertemuan: PertemuanResponseItem) {
             binding.tanggal.text = pertemuan.tanggal
             binding.namaMatkul.text = pertemuan.mataKuliah
-//            binding.ruangKelas.text = pertemuan.ruang
+            // binding.ruangKelas.text = pertemuan.ruang // Uncomment this line if you want to display ruang
             binding.jadwalMatkul.text = "${pertemuan.sesiStart} - ${pertemuan.sesiEnd}"
         }
     }

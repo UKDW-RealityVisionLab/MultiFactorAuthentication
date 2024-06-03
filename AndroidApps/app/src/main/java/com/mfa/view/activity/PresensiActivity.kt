@@ -57,8 +57,14 @@ class PresensiActivity : AppCompatActivity() {
 
         // Setup onClickListener for "Scan QR" button
         binding.btnScanQr.setOnClickListener {
-            val intent = Intent(this, QRCodeScanActivity::class.java)
-            startActivity(intent)
+            if (adapter.isvalid == true) {
+                // User is inside the classroom, allow QR code scanning
+                val intent = Intent(this, QRCodeScanActivity::class.java)
+                startActivity(intent)
+            } else {
+                // User is not inside the classroom, show a message or disable the button
+                Toast.makeText(this, "Anda harus berada di dalam kelas untuk melakukan pemindaian QR.", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 

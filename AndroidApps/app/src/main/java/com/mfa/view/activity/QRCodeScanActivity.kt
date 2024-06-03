@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
@@ -18,6 +19,22 @@ class QRCodeScanActivity : AppCompatActivity() {
     private lateinit var scanResultTextView: TextView
     private lateinit var scanAgainButton: Button
     private val qrCodeViewModel: QRCodeViewModel by viewModels()
+
+    private val qrCodeScannerLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        val intentResult = IntentIntegrator.parseActivityResult(result.resultCode, result.data)
+        if (intentResult != null) {
+            if (intentResult.contents != null) {
+                // QR code scanned successfully, handle the result
+                val scannedResult = intentResult.contents
+                val kodeJadwal = extractKodeJadwal(scannedResult)
+                val kodeJadwalRequest = KodeJadwalRequest(qrCodeData = scannedResult, kodeJadwal = kodeJadwal)
+                scanResultTextView.text = "Scanned: $kodeJadwalRequest"
+                qrCodeViewModel.checkKodeJadwal(kodeJadwalRequest)
+            } else {
+                scanResultTextView.text = "Scan canceled"
+            }
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,17 +54,12 @@ class QRCodeScanActivity : AppCompatActivity() {
         // Observe the ViewModel for API response
         qrCodeViewModel.kodeJadwalResponse.observe(this, Observer { result ->
             result.fold(onSuccess = { matched ->
-                if (matched) {
-                    Toast.makeText(this, "QR Code matched!", Toast.LENGTH_SHORT).show()
-                    // Start the face scanner activity
-                    val intent = Intent(this, FaceScannerActivity::class.java)
-                    startActivity(intent)
-                } else {
-                    Toast.makeText(this, "QR Code matched!", Toast.LENGTH_SHORT).show()
-                    val intent = Intent(this, FaceScannerActivity::class.java)
-                    startActivity(intent)
-                }
-                scanResultTextView.text = if (matched) "QR Code matched!" else "QR Code matched!"
+                val message = "QR Code matched!"
+                Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+                scanResultTextView.text = message
+
+                val intent = Intent(this, FaceScannerActivity::class.java)
+                startActivity(intent)
             }, onFailure = {
                 Toast.makeText(this, "Error: ${it.message}", Toast.LENGTH_SHORT).show()
                 scanResultTextView.text = "Error: ${it.message}"
@@ -57,42 +69,20 @@ class QRCodeScanActivity : AppCompatActivity() {
 
     private fun startQRCodeScanner() {
         val integrator = IntentIntegrator(this)
-        integrator.setOrientationLocked(true) // Allow orientation rotation
+        integrator.setOrientationLocked(true) // Lock orientation
         integrator.setPrompt("Scan a QR code")
         integrator.setBeepEnabled(true)
-        integrator.initiateScan() // Start scanning
-    }
-
-    @Deprecated("Deprecated in Java")
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        // Handle scan result
-        val result = IntentIntegrator.parseActivityResult(requestCode, resultCode, data)
-        if (result != null) {
-            if (result.contents != null) {
-                // QR code scanned successfully, handle the result
-                val scannedResult = result.contents
-                val kodeJadwal = extractKodeJadwal(scannedResult)
-                val kodeJadwalRequest = KodeJadwalRequest(qrCodeData = scannedResult, kodeJadwal = kodeJadwal)
-                scanResultTextView.text = "Scanned: $kodeJadwalRequest"
-                qrCodeViewModel.checkKodeJadwal(kodeJadwalRequest)
-            } else {
-                scanResultTextView.text = "Scan canceled"
-            }
-        } else {
-            super.onActivityResult(requestCode, resultCode, data)
-        }
+        qrCodeScannerLauncher.launch(integrator.createScanIntent())
     }
 
     private fun extractKodeJadwal(qrCodeData: String): String {
-        // Adjust this method to extract the correct part of the QR code data
-        // This is a placeholder, adjust according to your QR code structure
+        // Extract the relevant part of the QR code data
+        // Assuming the format is: "PROGWEB 1 6/3/2024, 10:57:02"
         val parts = qrCodeData.split(" ")
-        return if (parts.isNotEmpty()) {
-            parts[0]+" "+parts[1]
+        return if (parts.size >= 2) {
+            "${parts[0]} ${parts[1]}"
         } else {
             ""
         }
     }
-
 }
