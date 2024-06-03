@@ -54,6 +54,18 @@ class PresensiActivity : AppCompatActivity() {
         Log.d("id jadwal untuk getjadwal", idJadwal)
 
         getMyLocation()
+
+        // Setup onClickListener for "Scan QR" button
+        binding.btnScanQr.setOnClickListener {
+            if (adapter.isvalid == true) {
+                // User is inside the classroom, allow QR code scanning
+                val intent = Intent(this, QRCodeScanActivity::class.java)
+                startActivity(intent)
+            } else {
+                // User is not inside the classroom, show a message or disable the button
+                Toast.makeText(this, "Anda harus berada di dalam kelas untuk melakukan pemindaian QR.", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
     private fun getMyLocation() {
@@ -62,16 +74,13 @@ class PresensiActivity : AppCompatActivity() {
                 android.Manifest.permission.ACCESS_FINE_LOCATION
             ) == PackageManager.PERMISSION_GRANTED
         ) {
-            // mendapatkan lokasi pengguna
             fusedLocationClient.lastLocation
                 .addOnSuccessListener { location ->
-                    // Lokasi berhasil didapatkan
                     if (location != null) {
                         userLatitude = location.latitude
                         userLongitude = location.longitude
                         Log.d("latitude", location.latitude.toString())
                         Log.d("longitude", location.longitude.toString())
-                        // Memanggil fungsi validasiLocation setelah mendapatkan lokasi pengguna
                         lifecycleScope.launch {
                             validasiLocation()
                         }
@@ -83,7 +92,6 @@ class PresensiActivity : AppCompatActivity() {
                     Toast.makeText(this, "Gagal mendapatkan lokasi: ${e.message}", Toast.LENGTH_SHORT).show()
                 }
         } else {
-            // lokasi belum aktif, minta izin aktifkan
             requestPermissionLauncher.launch(android.Manifest.permission.ACCESS_FINE_LOCATION)
         }
     }
@@ -113,7 +121,7 @@ class PresensiActivity : AppCompatActivity() {
 
                         if (userLatitude != null && userLongitude != null && validLatitude != null && validLongitude != null) {
                             Log.d("lokasimu", "Latitude: $userLatitude, Longitude: $userLongitude")
-                            val radius = 100.0 // radius dalam meter
+                            val radius = 100.0
                             val isWithin100m = isWithinRadius(
                                 userLatitude!!,
                                 userLongitude!!,
@@ -147,7 +155,6 @@ class PresensiActivity : AppCompatActivity() {
                         Log.e("Error", "RUANG KOSONG")
                     }
                 }
-
                 is Helper.Error -> {
                     Log.e("Error", "GAGAL MENDAPATKAN LOKASI")
                 }
@@ -162,7 +169,6 @@ class PresensiActivity : AppCompatActivity() {
         targetLongitude: Double,
         radius: Double
     ): Boolean {
-        //Location untuk lokasi pengguna dan lokasi target
         val userLocation = Location("").apply {
             latitude = userLatitude
             longitude = userLongitude
@@ -171,9 +177,7 @@ class PresensiActivity : AppCompatActivity() {
             latitude = targetLatitude
             longitude = targetLongitude
         }
-        // Hitung jarak antara lokasi pengguna dan lokasi target
         val distance = userLocation.distanceTo(targetLocation)
-        // Cek apakah jarak kurang dari atau sama dengan radius
         return distance <= radius
     }
 }
