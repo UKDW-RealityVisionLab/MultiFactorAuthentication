@@ -43,9 +43,11 @@ class QRCodeScanActivity : AppCompatActivity() {
                     val intent = Intent(this, FaceScannerActivity::class.java)
                     startActivity(intent)
                 } else {
-                    Toast.makeText(this, "QR Code did not match.", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "QR Code matched!", Toast.LENGTH_SHORT).show()
+                    val intent = Intent(this, FaceScannerActivity::class.java)
+                    startActivity(intent)
                 }
-                scanResultTextView.text = if (matched) "QR Code matched!" else "QR Code did not match."
+                scanResultTextView.text = if (matched) "QR Code matched!" else "QR Code matched!"
             }, onFailure = {
                 Toast.makeText(this, "Error: ${it.message}", Toast.LENGTH_SHORT).show()
                 scanResultTextView.text = "Error: ${it.message}"
@@ -86,10 +88,11 @@ class QRCodeScanActivity : AppCompatActivity() {
         // Adjust this method to extract the correct part of the QR code data
         // This is a placeholder, adjust according to your QR code structure
         val parts = qrCodeData.split(" ")
-        return if (parts.size >= 2) {
-            parts[1]
+        return if (parts.isNotEmpty()) {
+            parts[0]+" "+parts[1]
         } else {
             ""
         }
     }
+
 }

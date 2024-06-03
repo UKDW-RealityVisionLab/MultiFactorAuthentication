@@ -24,17 +24,18 @@
         android:theme="@style/Theme.AndroidApps"
         tools:targetApi="31">
 
-        <activity
-            android:name=".view.activity.PresensiActivity"
-            android:exported="false" />
+
 
         <activity
             android:name=".view.activity.UserProfileActivity"
             android:exported="false" />
 
-        <activity
-            android:name=".view.activity.QRCodeScanActivity"
-            android:exported="false" /> <!-- Set to false for security -->
+
+        <activity android:name=".view.activity.QRCodeScanActivity" />
+
+        <!-- Main activity declaration -->
+        <activity android:name=".view.activity.PresensiActivity"/>
+
 
         <activity
             android:name=".view.activity.HomeActivity"
@@ -43,7 +44,7 @@
         <activity
             android:name=".view.activity.PertemuanActivity"
             android:exported="false" />
-
+        <activity android:name=".view.activity.FaceScannerActivity" />
         <activity
             android:name=".view.activity.FaceProcessorActivity"
             android:exported="false" />

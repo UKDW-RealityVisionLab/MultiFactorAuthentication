@@ -6,7 +6,6 @@ import androidx.lifecycle.liveData
 import com.mfa.Helper
 import com.mfa.api.response.PertemuanRequest
 import com.mfa.api.response.RuangRequest
-import com.mfa.api.response.RuangResponse
 import com.mfa.api.response.RuangResponseItem
 import com.mfa.api.retrofit.ApiService
 import kotlinx.coroutines.Dispatchers
