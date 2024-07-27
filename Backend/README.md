@@ -230,7 +230,10 @@ Request Body
 ## cara testing qr
 - endpoint: http://localhost:3000/presensi/kode_jadwal
 example:
-![alt text](image-3.png)
+{
+    "qrCodeData": "PROGWEB 1 7/28/2024, 00:29:4",
+    "idJadwal": "PROGWEB 1"
+}
 
 pastikan posisi di lab fti atau sesuaikan latitute longtitude pada table ruang
 nyalakann gps
