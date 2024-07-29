@@ -1,5 +1,3 @@
-// API_manajemen_presensi.js
-
 const express = require('express');
 const cors = require('cors');
 const db = require("../config/db");
@@ -30,56 +28,83 @@ const dataPresensi =  async (req, res) => {
 
 const getProfile = async (req, res) => {
   try {
-      let email;
-      let source;
+    let email;
+    let source;
 
-      if (req.body.email) {
-          email = req.body.email;
-          source = "req.body";
-      } else if (req.params.email) {
-          email = req.params.email;
-          source = "req.params";
-      }
+    if (req.body.email) {
+        email = req.body.email;
+        source = "req.body";
+    } else if (req.params.email) {
+        email = req.params.email;
+        source = "req.params";
+    }
 
-      if (!email) {
-          return res.status(400).json({ message: "email is required" });
-      }
+    if (!email) {
+        return res.status(400).json({ message: "email is required" });
+    } else {
+        console.log("Received email:", email, "from", source);
 
-      console.log("Received email:", email, "from", source);
+        const queryGet = `SELECT user_mahasiswa.email, user_mahasiswa.nim, user_mahasiswa.nama
+        FROM user_mahasiswa
+        WHERE user_mahasiswa.email = ?;`
+        
+        const result = await new Promise((resolve, reject) => {
+            db.all(queryGet, [email], (error, rows) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    resolve(rows);
+                }
+            });
+        });
 
-      const queryGet = `SELECT user_mahasiswa.email, user_mahasiswa.nim, user_mahasiswa.nama
-      FROM user_mahasiswa
-      WHERE user_mahasiswa.email = ?;`
-      
-      const result = await new Promise((resolve, reject) => {
-          db.all(queryGet, [email], (error, rows) => {
-              if (error) {
-                  reject(error);
-              } else {
-                  resolve(rows);
-              }
-          });
-      });
+        // Check if user hasn't registered
+        if (result.length === 0) {
+            let nameOfEmail = email.substring(0, email.lastIndexOf("@"));
+            let defaultNim = 71210714;
+            const regisToDb = `INSERT INTO user_mahasiswa (nim, kode_prodi, tahun_angkatan, nama, email) VALUES (?, 71, 2021, ?, ?)`;
 
-      if (result.length === 0) {
-          return res.status(404).json({ message: "Data not found" });
-      }
+            await new Promise((resolve, reject) => {
+                db.run(regisToDb, [defaultNim + 1, nameOfEmail, email], (error) => {
+                    if (error) {
+                        return reject(error);
+                    } else {
+                        return resolve();
+                    }
+                });
+            });
 
-      let respond = {};
-      result.forEach(result => {
-        respond= {
-          nama: result.nama,
-          nim: result.nim,
-          email:result.email
-        };
-      });
+            // Fetch the newly registered user
+            const newResult = await new Promise((resolve, reject) => {
+                db.all(queryGet, [email], (error, rows) => {
+                    if (error) {
+                        reject(error);
+                    } else {
+                        resolve(rows);
+                    }
+                });
+            });
 
-      res.json(respond);
+            result.push(...newResult);
+        }
+
+        let respond = {};
+        result.forEach(row => {
+            respond = {
+                nama: row.nama,
+                nim: row.nim,
+                email: row.email
+            };
+        });
+
+        res.json(respond);
+    }
   } catch (error) {
-      console.error(error);
-      return res.status(500).json({ message: "Terjadi kesalahan" });
+    console.error(error);
+    return res.status(500).json({ message: "Terjadi kesalahan" });
   }
 }
+
 
 const cekStatusPresensi = async (req, res) => {
   const { idJadwal, nim } = req.body;
