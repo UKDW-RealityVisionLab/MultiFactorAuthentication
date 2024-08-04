@@ -61,11 +61,28 @@ const getProfile = async (req, res) => {
         // Check if user hasn't registered
         if (result.length === 0) {
             let nameOfEmail = email.substring(0, email.lastIndexOf("@"));
-            let defaultNim = 71210714;
+            // let defaultNim = 71210714;
             const regisToDb = `INSERT INTO user_mahasiswa (nim, kode_prodi, tahun_angkatan, nama, email) VALUES (?, 71, 2021, ?, ?)`;
 
+            const cekLastNim= `SELECT user_mahasiswa.nim FROM user_mahasiswa ORDER BY nim DESC LIMIT 1;`
+            const getLastNim= await new Promise((resolve, reject)=>{
+              db.all(cekLastNim,(error,row)=>{
+                if (error) {
+                  reject(error);
+              } else {
+                  resolve(row);
+              }
+              })
+            })
+            
+            let lastNim = getLastNim.length > 0 ? parseInt(getLastNim[0].nim, 10) : 0;
+
+            // Increment the NIM to get the new NIM
+            let newNim = lastNim + 1;
+              
+            // run regis
             await new Promise((resolve, reject) => {
-                db.run(regisToDb, [defaultNim + 1, nameOfEmail, email], (error) => {
+                db.run(regisToDb,[newNim, nameOfEmail, email], (error) => {
                     if (error) {
                         return reject(error);
                     } else {
