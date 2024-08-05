@@ -20,3 +20,4 @@ data class RuangResponseItem(
 	@field:SerializedName("longtitude")
 	val longitude: Double? = null
 )
+
