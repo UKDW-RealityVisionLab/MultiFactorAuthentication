@@ -124,4 +124,6 @@
     <string name="hadir">Hadir</string>
     <string name="alpha">alpha</string>
     <string name="capture_image">Take Capture</string>
+    <string name="description_verify">Pastikan wajah anda \nlurus menghadap kamera</string>
+    <string name="mulai_verifikasi">Mulai Verifikasi</string>
 </resources>

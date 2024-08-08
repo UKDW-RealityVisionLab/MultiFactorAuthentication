@@ -58,7 +58,7 @@ class QRCodeScanActivity : AppCompatActivity() {
                 Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
                 scanResultTextView.text = message
 
-                val intent = Intent(this, FaceScannerActivity::class.java)
+                val intent = Intent(this, FaceVerificationActivity::class.java)
                 startActivity(intent)
             }, onFailure = {
                 Toast.makeText(this, "Error: ${it.message}", Toast.LENGTH_SHORT).show()
