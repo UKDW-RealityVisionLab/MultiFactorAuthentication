@@ -2,7 +2,6 @@ package com.mfa.view.activity
 
 import android.app.Activity
 import android.content.Intent
-import android.graphics.Bitmap
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
@@ -10,24 +9,32 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import com.google.firebase.auth.FirebaseAuth
 import com.mfa.R
 import com.mfa.databinding.ActivityFaceVerificationBinding
 import com.mfa.utils.Utils
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
+import org.json.JSONObject
 import kotlin.math.sqrt
 
 class FaceVerificationActivity : AppCompatActivity() {
     private val TAG = "FaceVerificationActivity"
     private lateinit var binding: ActivityFaceVerificationBinding
     private lateinit var takePhotoLauncher: ActivityResultLauncher<Intent>
-
     private val EMBEDDING_THRESHOLD = 0.8
+    private var kodeJadwal: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityFaceVerificationBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Initialize the ActivityResultLauncher
+        // Get kodeJadwal from the intent
+        kodeJadwal = intent.getStringExtra("KODE_JADWAL")
+
         takePhotoLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
                 val embeddings = result.data?.getStringArrayListExtra(FaceProcessorActivity.EXTRA_FACE_EMBEDDING)
@@ -60,6 +67,7 @@ class FaceVerificationActivity : AppCompatActivity() {
                 val similarity = calculateCosineSimilarity(newEmbedding, savedEmbeddingList)
 
                 if (similarity > EMBEDDING_THRESHOLD) {
+                    updateAttendance()
                     showVerificationSuccessDialog()
                 } else {
                     Toast.makeText(this, "Face verification failed!", Toast.LENGTH_LONG).show()
@@ -72,15 +80,53 @@ class FaceVerificationActivity : AppCompatActivity() {
         }
     }
 
+    private fun updateAttendance() {
+        val email = FirebaseAuth.getInstance().currentUser?.email
+
+        if (email != null && kodeJadwal != null) {
+            val client = OkHttpClient()
+            val json = JSONObject()
+            json.put("email", email)
+            json.put("idJadwal", kodeJadwal)
+
+            val requestBody = json.toString().toRequestBody("application/json".toMediaTypeOrNull())
+
+            val request = Request.Builder()
+                .url("http://localhost:3000/faceVerify")
+                .post(requestBody)
+                .build()
+
+            client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) {
+                    Log.e(TAG, "Failed to update attendance: ${response.message}")
+                    runOnUiThread {
+                        Toast.makeText(this, "Failed to update attendance", Toast.LENGTH_LONG).show()
+                    }
+                } else {
+                    Log.i(TAG, "Attendance updated successfully")
+                }
+            }
+        } else {
+            Log.e(TAG, "User email or kodeJadwal not found")
+        }
+    }
+
     private fun showVerificationSuccessDialog() {
         AlertDialog.Builder(this)
             .setTitle("Verification Successful")
             .setMessage("Face has been verified successfully!")
             .setPositiveButton("OK") { dialog, _ ->
                 dialog.dismiss()
+
+                // Return to HomeActivity
+                val intent = Intent(this, HomeActivity::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+                startActivity(intent)
+                finish()
             }
             .show()
     }
+
 
     private fun calculateCosineSimilarity(vecA: FloatArray, vecB: FloatArray): Float {
         val dotProduct = vecA.zip(vecB).sumOf { (a, b) -> (a * b).toDouble() }.toFloat()
