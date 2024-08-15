@@ -25,15 +25,11 @@ class FaceVerificationActivity : AppCompatActivity() {
     private lateinit var binding: ActivityFaceVerificationBinding
     private lateinit var takePhotoLauncher: ActivityResultLauncher<Intent>
     private val EMBEDDING_THRESHOLD = 0.8
-    private var kodeJadwal: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityFaceVerificationBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
-        // Get kodeJadwal from the intent
-        kodeJadwal = intent.getStringExtra("KODE_JADWAL")
 
         takePhotoLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
@@ -65,9 +61,7 @@ class FaceVerificationActivity : AppCompatActivity() {
 
             if (savedEmbeddingList != null) {
                 val similarity = calculateCosineSimilarity(newEmbedding, savedEmbeddingList)
-
                 if (similarity > EMBEDDING_THRESHOLD) {
-                    updateAttendance()
                     showVerificationSuccessDialog()
                 } else {
                     Toast.makeText(this, "Face verification failed!", Toast.LENGTH_LONG).show()
@@ -80,36 +74,6 @@ class FaceVerificationActivity : AppCompatActivity() {
         }
     }
 
-    private fun updateAttendance() {
-        val email = FirebaseAuth.getInstance().currentUser?.email
-
-        if (email != null && kodeJadwal != null) {
-            val client = OkHttpClient()
-            val json = JSONObject()
-            json.put("email", email)
-            json.put("idJadwal", kodeJadwal)
-
-            val requestBody = json.toString().toRequestBody("application/json".toMediaTypeOrNull())
-
-            val request = Request.Builder()
-                .url("http://localhost:3000/faceVerify")
-                .post(requestBody)
-                .build()
-
-            client.newCall(request).execute().use { response ->
-                if (!response.isSuccessful) {
-                    Log.e(TAG, "Failed to update attendance: ${response.message}")
-                    runOnUiThread {
-                        Toast.makeText(this, "Failed to update attendance", Toast.LENGTH_LONG).show()
-                    }
-                } else {
-                    Log.i(TAG, "Attendance updated successfully")
-                }
-            }
-        } else {
-            Log.e(TAG, "User email or kodeJadwal not found")
-        }
-    }
 
     private fun showVerificationSuccessDialog() {
         AlertDialog.Builder(this)
@@ -117,8 +81,6 @@ class FaceVerificationActivity : AppCompatActivity() {
             .setMessage("Face has been verified successfully!")
             .setPositiveButton("OK") { dialog, _ ->
                 dialog.dismiss()
-
-                // Return to HomeActivity
                 val intent = Intent(this, HomeActivity::class.java)
                 intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
                 startActivity(intent)
