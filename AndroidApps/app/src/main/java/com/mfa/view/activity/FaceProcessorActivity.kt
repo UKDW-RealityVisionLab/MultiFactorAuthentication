@@ -6,14 +6,12 @@ import android.graphics.Bitmap
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.ImageCaptureException
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.mfa.camerax.CameraManager
 import com.mfa.databinding.ActivityCaptureFaceBinding
-import com.mfa.databinding.DialogAddFaceBinding
 import com.mfa.facedetector.FaceAntiSpoofing
 import com.mfa.facedetector.FaceRecognizer
 
@@ -50,14 +48,6 @@ class FaceProcessorActivity : AppCompatActivity(), CameraManager.OnTakeImageCall
             //todo : show loading screen when processing
             cameraManager.onTakeImage(this)
         }
-//        binding.buttonStopCamera.setOnClickListener {
-//            cameraManager.cameraStop()
-//            buttonVisibility(false)
-//        }
-//        binding.buttonStartCamera.setOnClickListener {
-//            cameraManager.cameraStart()
-//            buttonVisibility(true)
-//        }
     }
 
     private fun askCameraPermission() {
@@ -88,59 +78,46 @@ class FaceProcessorActivity : AppCompatActivity(), CameraManager.OnTakeImageCall
     }
 
     override fun onTakeImageSuccess(image: Bitmap) {
-        //todo : dismiss loading screen
-        val addFaceBinding = DialogAddFaceBinding.inflate(layoutInflater)
-        addFaceBinding.capturedFace.setImageBitmap(image)
-        AlertDialog.Builder(this)
-            .setView(addFaceBinding.root)
-            .setTitle("Confirm Face")
-            .setPositiveButton("OK", { dialog, which ->
-                //check face spoof
-                if (antiSpoofDetection(image)) {
-                    //add image to embeddings process
-                    val embedings: Array<FloatArray> = faceRecognizer.getEmbeddingsOfImage(image)
-                    Log.d(TAG, "embedings : " + embedings.toString())
-                    val embedingFloatList = ArrayList<String>()
-                    for (value in embedings.get(0)) {
-                        embedingFloatList.add(value.toString())
-                    }
-                    Toast.makeText(this, "Save Face Success", Toast.LENGTH_LONG).show()
-                    val intent = Intent()
-                    intent.putStringArrayListExtra(EXTRA_FACE_EMBEDDING, embedingFloatList)
-                    setResult(RESULT_OK, intent)
-                    finish()
-                }
-                setResult(RESULT_CANCELED)
-                finish()
-            })
-            .setNegativeButton("Cancel", { dialog, which ->
-                dialog.cancel()
-            })
-            .show()
+        // Handle image processing directly without confirmation dialog
+        if (antiSpoofDetection(image)) {
+            // Process and get embeddings
+            val embeddings: Array<FloatArray> = faceRecognizer.getEmbeddingsOfImage(image)
+            Log.d(TAG, "Embeddings: ${embeddings.joinToString()}")
+            val embeddingFloatList = embeddings[0].map { it.toString() }.toCollection(ArrayList())
+
+            // Pass embeddings back to previous activity
+            val intent = Intent().apply {
+                putStringArrayListExtra(EXTRA_FACE_EMBEDDING, embeddingFloatList)
+            }
+            setResult(RESULT_OK, intent)
+        } else {
+            setResult(RESULT_CANCELED)
+        }
+        finish()
     }
 
     private fun antiSpoofDetection(faceBitmap: Bitmap): Boolean {
-        //preprocessing part
+        // Preprocessing part
         val laplaceScore: Int = fas.laplacian(faceBitmap)
         if (laplaceScore < FaceAntiSpoofing.LAPLACIAN_THRESHOLD) {
             Toast.makeText(this, "Image too blurry!", Toast.LENGTH_LONG).show()
+            return false
         } else {
             // Liveness detection
             val start = System.currentTimeMillis()
             val score = fas.antiSpoofing(faceBitmap)
             val end = System.currentTimeMillis()
-            Log.d(TAG, "Spoof detection process time : " + (end - start))
+            Log.d(TAG, "Spoof detection process time: ${end - start} ms")
             if (score < FaceAntiSpoofing.THRESHOLD) {
                 return true
             }
-            Toast.makeText(this, "Face are spoof!", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, "Face appears to be a spoof!", Toast.LENGTH_LONG).show()
+            return false
         }
-        return false
     }
 
-
     override fun onTakeImageError(exception: ImageCaptureException) {
-        Toast.makeText(this, "onTakeImageError : " + exception.message, Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, "Image capture error: ${exception.message}", Toast.LENGTH_SHORT).show()
     }
 
     companion object {
