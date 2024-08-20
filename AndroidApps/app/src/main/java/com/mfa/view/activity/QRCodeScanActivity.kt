@@ -15,7 +15,6 @@ import com.mfa.api.request.KodeJadwalRequest
 import com.mfa.viewmodel.QRCodeViewModel
 
 class QRCodeScanActivity : AppCompatActivity() {
-
     private lateinit var scanResultTextView: TextView
     private lateinit var scanAgainButton: Button
     private val qrCodeViewModel: QRCodeViewModel by viewModels()
@@ -58,8 +57,9 @@ class QRCodeScanActivity : AppCompatActivity() {
                 Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
                 scanResultTextView.text = message
 
-                val intent = Intent(this, FaceScannerActivity::class.java)
+                val intent = Intent(this, FaceVerificationActivity::class.java)
                 startActivity(intent)
+
             }, onFailure = {
                 Toast.makeText(this, "Error: ${it.message}", Toast.LENGTH_SHORT).show()
                 scanResultTextView.text = "Error: ${it.message}"
