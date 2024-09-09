@@ -17,6 +17,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.mfa.Helper
 import com.mfa.view.adapter.JadwalAdapter
 import com.mfa.R
+import com.mfa.api.request.EmailRequest
 import com.mfa.api.response.HomeResponseItem
 import com.mfa.databinding.ActivityHomeBinding
 import com.mfa.di.Injection
@@ -24,6 +25,8 @@ import com.mfa.utils.PreferenceUtils
 import com.mfa.view_model.JadwalViewModel
 import com.mfa.view_model.ProfileViewModel
 import com.mfa.view_model.ViewModelFactory
+import okhttp3.OkHttpClient
+import okhttp3.Response
 import java.text.SimpleDateFormat
 import java.util.Date
 
@@ -67,10 +70,13 @@ class HomeActivity : AppCompatActivity() {
         requestPermissionLauncher.launch(android.Manifest.permission.ACCESS_FINE_LOCATION)
 //        get data by email
         val getEmail= intent.getStringExtra("email")
-        profileViewModel.getProfile(getEmail)
+        val dataEmail = EmailRequest(getEmail)
+        profileViewModel.getProfile(dataEmail)
 
         Log.d("email", getEmail.toString())
-
+        profileViewModel.getData.observe(this){
+            binding.namaUser.text= it.nama
+        }
         setDate()
 
 

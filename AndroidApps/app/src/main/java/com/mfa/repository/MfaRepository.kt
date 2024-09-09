@@ -6,6 +6,7 @@ import androidx.lifecycle.liveData
 import com.mfa.Helper
 import com.mfa.api.request.EmailRequest
 import com.mfa.api.response.PertemuanRequest
+import com.mfa.api.response.ProfileResponse
 import com.mfa.api.response.RuangRequest
 import com.mfa.api.response.RuangResponseItem
 import com.mfa.api.retrofit.ApiService
@@ -48,9 +49,11 @@ class MfaRepository private constructor(
         }
     }
 
-    suspend fun getProfile(email:String?) {
+    suspend fun getProfile(email:EmailRequest) = liveData{
         try {
-             apiService.getProfile(email)
+             val response= apiService.getProfile(email)
+            Log.d("profile", "$response")
+            emit(response)
         }
         catch (e:Exception){
             Log.d("MfaRepository", "Permintaan email gagal $email", e)

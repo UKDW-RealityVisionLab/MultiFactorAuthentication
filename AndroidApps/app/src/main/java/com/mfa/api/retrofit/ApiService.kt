@@ -7,6 +7,7 @@ import com.mfa.api.response.KodeJadwalResponse
 import com.mfa.api.response.PertemuanRequest
 import com.mfa.api.response.PertemuanResponse
 import com.mfa.api.response.PertemuanResponseItem
+import com.mfa.api.response.ProfileResponse
 import com.mfa.api.response.RuangRequest
 import com.mfa.api.response.RuangResponse
 import com.mfa.api.response.RuangResponseItem
@@ -26,7 +27,7 @@ interface ApiService {
     suspend fun getRuang(@Body request: RuangRequest): RuangResponseItem
 
     @POST("daftarpresensi/getProfile/req")
-    suspend fun getProfile(@Body request: String?)
+    suspend fun getProfile(@Body request: EmailRequest?) :ProfileResponse
 
     @POST("presensi/android")
     suspend fun getKodeJadwal(@Body request: KodeJadwalRequest): KodeJadwalResponse

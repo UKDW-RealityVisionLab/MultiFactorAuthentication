@@ -52,7 +52,7 @@ class SplashScreenActivity : AppCompatActivity() {
     private fun onSignInResult(result: FirebaseAuthUIAuthenticationResult) {
         val response = result.idpResponse
         if (result.resultCode == RESULT_OK) {
-            val intent = Intent(this, HomeActivity::class.java)
+//            val intent = Intent(this, HomeActivity::class.java)
             // Successfully signed in
             val user = FirebaseAuth.getInstance().currentUser
             Log.d("FIREBASE", "onSignInResult: " + user!!.email)
