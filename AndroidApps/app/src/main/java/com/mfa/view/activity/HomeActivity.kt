@@ -1,6 +1,7 @@
 package com.mfa.view.activity
 
 import android.annotation.SuppressLint
+import android.content.ComponentName
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -21,6 +22,7 @@ import com.mfa.databinding.ActivityHomeBinding
 import com.mfa.di.Injection
 import com.mfa.utils.PreferenceUtils
 import com.mfa.view_model.JadwalViewModel
+import com.mfa.view_model.ProfileViewModel
 import com.mfa.view_model.ViewModelFactory
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -30,11 +32,19 @@ class HomeActivity : AppCompatActivity() {
     private lateinit var binding: ActivityHomeBinding
     private lateinit var viewModel: JadwalViewModel
     private lateinit var adapter: JadwalAdapter
+    private lateinit var profileViewModel: ProfileViewModel
+    lateinit var nama: String
+    lateinit var email: String
+    lateinit var nim: String
+
+
 
     companion object {
         const val TAG = "HomeActivity"
         const val NAME = "name"
     }
+
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,10 +57,22 @@ class HomeActivity : AppCompatActivity() {
             ViewModelFactory(Injection.provideRepository(this))
         ).get(JadwalViewModel::class.java)
 
+        profileViewModel = ViewModelProvider(
+            this,
+            ViewModelFactory(Injection.provideRepository(this))
+        ).get(ProfileViewModel::class.java)
+
         adapter = JadwalAdapter()
         setupRecyclerView()
         requestPermissionLauncher.launch(android.Manifest.permission.ACCESS_FINE_LOCATION)
+//        get data by email
+        val getEmail= intent.getStringExtra("email")
+        profileViewModel.getProfile(getEmail)
+
+        Log.d("email", getEmail.toString())
+
         setDate()
+
 
     }
 

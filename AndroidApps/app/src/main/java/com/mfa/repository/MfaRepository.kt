@@ -4,11 +4,14 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.liveData
 import com.mfa.Helper
+import com.mfa.api.request.EmailRequest
 import com.mfa.api.response.PertemuanRequest
 import com.mfa.api.response.RuangRequest
 import com.mfa.api.response.RuangResponseItem
 import com.mfa.api.retrofit.ApiService
+import com.mfa.api.retrofit.RetrofitInstance.api
 import kotlinx.coroutines.Dispatchers
+
 
 class MfaRepository private constructor(
     private val apiService: ApiService
@@ -42,6 +45,15 @@ class MfaRepository private constructor(
             Log.d("get ruang by kode jadwal", "$idJadwal")
         } catch (e: Exception) {
             Log.e("MfaRepository", "Failed to fetch room data: ${e.message}", e)
+        }
+    }
+
+    suspend fun getProfile(email:String?) {
+        try {
+             apiService.getProfile(email)
+        }
+        catch (e:Exception){
+            Log.d("MfaRepository", "Permintaan email gagal $email", e)
         }
     }
 

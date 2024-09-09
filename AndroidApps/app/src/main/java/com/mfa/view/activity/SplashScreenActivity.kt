@@ -57,8 +57,10 @@ class SplashScreenActivity : AppCompatActivity() {
             val user = FirebaseAuth.getInstance().currentUser
             Log.d("FIREBASE", "onSignInResult: " + user!!.email)
             //create session
-            PreferenceUtils.saveUsername(this, user.displayName)
-
+//            PreferenceUtils.saveUsername(this, user.displayName)
+           val sendEmail= Intent(this, HomeActivity::class.java)
+            sendEmail.putExtra("email", user.email)
+            startActivity(sendEmail)
             //check embeddings
             val embeddingReference = Utils.getFirebaseEmbedding()
             embeddingReference.addListenerForSingleValueEvent(object : ValueEventListener {
