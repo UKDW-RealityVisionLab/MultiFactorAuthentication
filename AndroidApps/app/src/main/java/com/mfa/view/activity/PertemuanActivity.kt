@@ -31,6 +31,9 @@ class PertemuanActivity : AppCompatActivity() {
 
     companion object {
         const val KODEKELAS = "jadwal"
+        const val NAMAUSER = "nama"
+        const val NIM= "nim"
+        const val EMAIL= "email"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -45,6 +48,9 @@ class PertemuanActivity : AppCompatActivity() {
 
         adapter = PertemuanAdapter()
         setupRecyclerView()
+
+        Log.d("pertemuan", " ${intent.getStringExtra(EMAIL)} ${intent.getStringExtra(NAMAUSER)} ${intent.getStringExtra(
+            NIM)}")
 
         val kodeKelas = intent.getIntExtra(KODEKELAS, 0)
         Log.d("pertemuan menerima kode ", kodeKelas.toString())

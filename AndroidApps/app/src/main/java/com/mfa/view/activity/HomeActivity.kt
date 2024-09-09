@@ -36,9 +36,6 @@ class HomeActivity : AppCompatActivity() {
     private lateinit var viewModel: JadwalViewModel
     private lateinit var adapter: JadwalAdapter
     private lateinit var profileViewModel: ProfileViewModel
-    var nama: String? = null
-    var email: String?= null
-    var nim: String?= null
 
 
 
@@ -75,11 +72,13 @@ class HomeActivity : AppCompatActivity() {
 
         Log.d("email", getEmail.toString())
         profileViewModel.getData.observe(this){
-            nama=it.nama
-            email= it.email
-            nim= it.nim
-
             binding.namaUser.text= it.nama
+
+            val adapter= JadwalAdapter()
+            adapter.nama= it.nama
+            adapter.email= it.email
+            adapter.nim= it.email
+
 
         }
 

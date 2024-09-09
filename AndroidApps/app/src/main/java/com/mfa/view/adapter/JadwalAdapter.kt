@@ -17,9 +17,15 @@ class JadwalAdapter :
     ListAdapter<HomeResponseItem, JadwalAdapter.MyViewHolder>(
         DIFF_CALLBACK
     ) {
+
+    var email:String? = null
+    var nama :String?= null
+    var nim :String? = null
+
     fun getItemAtPosition(position: Int): HomeResponseItem? {
         return getItem(position)
     }
+
     private var onItemClickListener: ((Int) -> Unit)? = null
 
     // Metode untuk menetapkan listener
@@ -41,13 +47,17 @@ class JadwalAdapter :
                 val sendData = Intent(holder.itemView.context, PertemuanActivity::class.java)
 //                sendData.putExtra(PertemuanActivity.GETRUANG, pertemuan.kodeJadwal) // Mengambil kodeJadwal dari pertemuan
                 sendData.putExtra(PertemuanActivity.KODEKELAS, pertemuan.kodeKelas)
+                sendData.putExtra(PertemuanActivity.EMAIL, email)
+                sendData.putExtra(PertemuanActivity.NAMAUSER, nama)
+                sendData.putExtra(PertemuanActivity.NIM, nim)
                 holder.itemView.context.startActivity(sendData)
             }
         }
     }
 
 
-    inner class MyViewHolder(val binding: ItemJadwalBinding) : RecyclerView.ViewHolder(binding.root) {
+    inner class MyViewHolder(val binding: ItemJadwalBinding) :
+        RecyclerView.ViewHolder(binding.root) {
         init {
             // Set OnClickListener untuk itemView
             binding.root.setOnClickListener {
@@ -70,7 +80,7 @@ class JadwalAdapter :
             binding.namaMatkul.text = "${review.matakuliah}"
             binding.grupMatkul.text = review.grup
             binding.ruanganMatkul.text = review.dosen
-            binding.jadwalMatkul.text=""
+            binding.jadwalMatkul.text = ""
         }
 
         fun setOnItemClickListener(listener: (Int) -> Unit) {
@@ -82,7 +92,10 @@ class JadwalAdapter :
 
     companion object {
         val DIFF_CALLBACK = object : DiffUtil.ItemCallback<HomeResponseItem>() {
-            override fun areItemsTheSame(oldItem: HomeResponseItem, newItem: HomeResponseItem): Boolean {
+            override fun areItemsTheSame(
+                oldItem: HomeResponseItem,
+                newItem: HomeResponseItem
+            ): Boolean {
                 return oldItem == newItem
             }
 
