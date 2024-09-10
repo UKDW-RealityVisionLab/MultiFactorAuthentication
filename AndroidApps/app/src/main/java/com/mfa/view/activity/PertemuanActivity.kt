@@ -16,11 +16,14 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.mfa.Helper
+import com.mfa.api.request.EmailRequest
 import com.mfa.view.adapter.PertemuanAdapter
 import com.mfa.api.response.PertemuanResponseItem
 import com.mfa.databinding.ActivityPertemuanBinding
 import com.mfa.di.Injection
+import com.mfa.view.Email
 import com.mfa.view_model.JadwalViewModel
+import com.mfa.view_model.ProfileViewModel
 import com.mfa.view_model.ViewModelFactory
 import kotlinx.coroutines.launch
 
@@ -28,12 +31,11 @@ class PertemuanActivity : AppCompatActivity() {
     private lateinit var binding: ActivityPertemuanBinding
     private lateinit var viewModel: JadwalViewModel
     private lateinit var adapter: PertemuanAdapter
+    private lateinit var profileViewModel: ProfileViewModel
+
 
     companion object {
         const val KODEKELAS = "jadwal"
-        const val NAMAUSER = "nama"
-        const val NIM= "nim"
-        const val EMAIL= "email"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -46,14 +48,30 @@ class PertemuanActivity : AppCompatActivity() {
             ViewModelFactory(Injection.provideRepository(this))
         ).get(JadwalViewModel::class.java)
 
+        profileViewModel = ViewModelProvider(
+            this,
+            ViewModelFactory(Injection.provideRepository(this))
+        ).get(ProfileViewModel::class.java)
+
         adapter = PertemuanAdapter()
         setupRecyclerView()
 
-        Log.d("pertemuan", " ${intent.getStringExtra(EMAIL)} ${intent.getStringExtra(NAMAUSER)} ${intent.getStringExtra(
-            NIM)}")
+        val dataEmail = EmailRequest(Email.email)
+
+        profileViewModel.getProfile(dataEmail)
+
+        profileViewModel.getData.observe(this){
+            val name= it.nama
+            val nim= it.nim
+            val email= it.email
+            Log.d("email pertemuan","$email $dataEmail" )
+        }
 
         val kodeKelas = intent.getIntExtra(KODEKELAS, 0)
         Log.d("pertemuan menerima kode ", kodeKelas.toString())
+
+
+
         viewModel.getPertemuan(kodeKelas)
 
         viewModel.getPertemuanData.observe(this) { pertemuans ->
@@ -67,6 +85,7 @@ class PertemuanActivity : AppCompatActivity() {
             }
         }
     }
+
 
     private fun setupRecyclerView() {
         val layoutManager = LinearLayoutManager(this)

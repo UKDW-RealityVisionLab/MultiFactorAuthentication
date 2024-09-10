@@ -22,6 +22,7 @@ import com.mfa.api.response.HomeResponseItem
 import com.mfa.databinding.ActivityHomeBinding
 import com.mfa.di.Injection
 import com.mfa.utils.PreferenceUtils
+import com.mfa.view.Email
 import com.mfa.view_model.JadwalViewModel
 import com.mfa.view_model.ProfileViewModel
 import com.mfa.view_model.ViewModelFactory
@@ -37,13 +38,10 @@ class HomeActivity : AppCompatActivity() {
     private lateinit var adapter: JadwalAdapter
     private lateinit var profileViewModel: ProfileViewModel
 
-
-
     companion object {
         const val TAG = "HomeActivity"
         const val NAME = "name"
     }
-
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -65,27 +63,33 @@ class HomeActivity : AppCompatActivity() {
         adapter = JadwalAdapter()
         setupRecyclerView()
         requestPermissionLauncher.launch(android.Manifest.permission.ACCESS_FINE_LOCATION)
+
 //        get data by email
-        val getEmail= intent.getStringExtra("email")
+        val getEmail = intent.getStringExtra("email")
+        Email.email= getEmail
+
         val dataEmail = EmailRequest(getEmail)
         profileViewModel.getProfile(dataEmail)
 
         Log.d("email", getEmail.toString())
-        profileViewModel.getData.observe(this){
-            binding.namaUser.text= it.nama
 
-            val adapter= JadwalAdapter()
-            adapter.nama= it.nama
-            adapter.email= it.email
-            adapter.nim= it.email
-
-
+        getNama {
+            binding.namaUser.text = it ?: "unregis user"
         }
 
         setDate()
-
-
     }
+
+    //    this is response
+    fun getNama(callback: (String?) -> Unit) {
+        profileViewModel.getData.observe(this) {
+            val name = it.nama
+            callback(name)
+        }
+    }
+
+
+
 
     private val requestPermissionLauncher =
         registerForActivityResult(

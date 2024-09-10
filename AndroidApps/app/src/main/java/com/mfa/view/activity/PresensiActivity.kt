@@ -15,10 +15,14 @@ import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.mfa.Helper
 import com.mfa.R
+import com.mfa.api.request.EmailRequest
+import com.mfa.api.request.StatusReq
 import com.mfa.databinding.ActivityPresensiBinding
 import com.mfa.di.Injection
+import com.mfa.view.Email
 import com.mfa.view.adapter.PertemuanAdapter
 import com.mfa.view_model.JadwalViewModel
+import com.mfa.view_model.ProfileViewModel
 import com.mfa.view_model.ViewModelFactory
 import kotlinx.coroutines.launch
 
@@ -27,6 +31,7 @@ class PresensiActivity : AppCompatActivity() {
     private lateinit var viewModel: JadwalViewModel
     private lateinit var adapter: PertemuanAdapter
     private lateinit var fusedLocationClient: FusedLocationProviderClient
+    private lateinit var profileViewModel: ProfileViewModel
 
     private var userLatitude: Double? = null
     private var userLongitude: Double? = null
@@ -47,6 +52,10 @@ class PresensiActivity : AppCompatActivity() {
             this,
             ViewModelFactory(Injection.provideRepository(this))
         ).get(JadwalViewModel::class.java)
+        profileViewModel = ViewModelProvider(
+            this,
+            ViewModelFactory(Injection.provideRepository(this))
+        ).get(ProfileViewModel::class.java)
 
         adapter = PertemuanAdapter()
 
@@ -66,6 +75,27 @@ class PresensiActivity : AppCompatActivity() {
                 Toast.makeText(this, "Anda harus berada di dalam kelas untuk melakukan pemindaian QR.", Toast.LENGTH_SHORT).show()
             }
         }
+        checkStatus()
+    }
+
+    private fun checkStatus(){
+        val idJadwal = intent.getStringExtra(GETRUANG).toString()
+        val dataEmail = EmailRequest(Email.email)
+        profileViewModel.getProfile(dataEmail)
+        profileViewModel.getData.observe(this){
+            val nim= it.nim
+            val data= StatusReq(idJadwal, nim)
+            profileViewModel.getStatus(data)
+            profileViewModel.getDataStatus.observe(this){ status->
+                Log.d("status"," $data $status ${it.email}" )
+                if (status == true){
+                    binding.status.text= "Status: Hadir"
+                }else if (status == false){
+                    binding.status.text="Status: Alpha"
+                }
+            }
+        }
+
     }
 
     private fun getMyLocation() {

@@ -18,10 +18,6 @@ class JadwalAdapter :
         DIFF_CALLBACK
     ) {
 
-    var email:String? = null
-    var nama :String?= null
-    var nim :String? = null
-
     fun getItemAtPosition(position: Int): HomeResponseItem? {
         return getItem(position)
     }
@@ -47,9 +43,6 @@ class JadwalAdapter :
                 val sendData = Intent(holder.itemView.context, PertemuanActivity::class.java)
 //                sendData.putExtra(PertemuanActivity.GETRUANG, pertemuan.kodeJadwal) // Mengambil kodeJadwal dari pertemuan
                 sendData.putExtra(PertemuanActivity.KODEKELAS, pertemuan.kodeKelas)
-                sendData.putExtra(PertemuanActivity.EMAIL, email)
-                sendData.putExtra(PertemuanActivity.NAMAUSER, nama)
-                sendData.putExtra(PertemuanActivity.NIM, nim)
                 holder.itemView.context.startActivity(sendData)
             }
         }

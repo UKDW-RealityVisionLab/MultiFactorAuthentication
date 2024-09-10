@@ -2,6 +2,7 @@ package com.mfa.api.retrofit
 
 import com.mfa.api.request.EmailRequest
 import com.mfa.api.request.KodeJadwalRequest
+import com.mfa.api.request.StatusReq
 import com.mfa.api.response.HomeResponseItem
 import com.mfa.api.response.KodeJadwalResponse
 import com.mfa.api.response.PertemuanRequest
@@ -11,6 +12,7 @@ import com.mfa.api.response.ProfileResponse
 import com.mfa.api.response.RuangRequest
 import com.mfa.api.response.RuangResponse
 import com.mfa.api.response.RuangResponseItem
+import com.mfa.api.response.cekStatus
 import retrofit2.http.Body
 import retrofit2.http.Field
 import retrofit2.http.GET
@@ -31,4 +33,7 @@ interface ApiService {
 
     @POST("presensi/android")
     suspend fun getKodeJadwal(@Body request: KodeJadwalRequest): KodeJadwalResponse
+
+    @POST("daftarpresensi/cekStatusPresensi")
+    suspend fun cekStatusKehadiran(@Body req :StatusReq) :Boolean
 }

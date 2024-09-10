@@ -7,8 +7,10 @@ import androidx.lifecycle.asFlow
 import androidx.lifecycle.viewModelScope
 import com.mfa.Helper
 import com.mfa.api.request.EmailRequest
+import com.mfa.api.request.StatusReq
 import com.mfa.api.response.ProfileResponse
 import com.mfa.api.response.RuangResponseItem
+import com.mfa.api.response.cekStatus
 import com.mfa.repository.MfaRepository
 import kotlinx.coroutines.launch
 
@@ -16,12 +18,22 @@ class ProfileViewModel(private val repository: MfaRepository): ViewModel() {
     private val data = MutableLiveData<ProfileResponse>()
     val getData: LiveData<ProfileResponse> = data
 
+    private val dataStatus = MutableLiveData<Boolean>()
+    val getDataStatus: LiveData<Boolean> = dataStatus
+
     fun getProfile(email:EmailRequest) {
         viewModelScope.launch {
             repository.getProfile(email).asFlow().collect{
                 data.value=it
             }
-            repository.getProfile(email)
+        }
+    }
+
+    fun getStatus(req: StatusReq) {
+        viewModelScope.launch {
+            repository.cekStatusUser(req).asFlow().collect{
+                dataStatus.value=it
+            }
         }
     }
 }
