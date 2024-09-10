@@ -36,4 +36,7 @@ interface ApiService {
 
     @POST("daftarpresensi/cekStatusPresensi")
     suspend fun cekStatusKehadiran(@Body req :StatusReq) :Boolean
+
+    @POST("face/faceVerify")
+    suspend fun updateStatusKehadiran(@Body req: StatusReq):Boolean
 }

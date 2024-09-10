@@ -6,11 +6,13 @@ import android.location.Location
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import androidx.transition.Visibility
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.mfa.Helper
@@ -20,6 +22,7 @@ import com.mfa.api.request.StatusReq
 import com.mfa.databinding.ActivityPresensiBinding
 import com.mfa.di.Injection
 import com.mfa.view.Email
+import com.mfa.view.IdJadwal
 import com.mfa.view.adapter.PertemuanAdapter
 import com.mfa.view_model.JadwalViewModel
 import com.mfa.view_model.ProfileViewModel
@@ -72,7 +75,7 @@ class PresensiActivity : AppCompatActivity() {
                 startActivity(intent)
             } else {
                 // User is not inside the classroom, show a message or disable the button
-                Toast.makeText(this, "Anda harus berada di dalam kelas untuk melakukan pemindaian QR.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Tidak dapat presensi\n silahkan masuk kelas", Toast.LENGTH_SHORT).show()
             }
         }
         checkStatus()
@@ -80,6 +83,7 @@ class PresensiActivity : AppCompatActivity() {
 
     private fun checkStatus(){
         val idJadwal = intent.getStringExtra(GETRUANG).toString()
+       IdJadwal.idJadwal= idJadwal
         val dataEmail = EmailRequest(Email.email)
         profileViewModel.getProfile(dataEmail)
         profileViewModel.getData.observe(this){
@@ -90,6 +94,7 @@ class PresensiActivity : AppCompatActivity() {
                 Log.d("status"," $data $status ${it.email}" )
                 if (status == true){
                     binding.status.text= "Status: Hadir"
+                    binding.btnScanQr.visibility=View.GONE
                 }else if (status == false){
                     binding.status.text="Status: Alpha"
                 }

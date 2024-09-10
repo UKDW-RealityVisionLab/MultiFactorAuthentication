@@ -21,6 +21,9 @@ class ProfileViewModel(private val repository: MfaRepository): ViewModel() {
     private val dataStatus = MutableLiveData<Boolean>()
     val getDataStatus: LiveData<Boolean> = dataStatus
 
+    private val updateDataStatus = MutableLiveData<Boolean>()
+    val getUpdateDataStatus: LiveData<Boolean> = updateDataStatus
+
     fun getProfile(email:EmailRequest) {
         viewModelScope.launch {
             repository.getProfile(email).asFlow().collect{
@@ -32,6 +35,14 @@ class ProfileViewModel(private val repository: MfaRepository): ViewModel() {
     fun getStatus(req: StatusReq) {
         viewModelScope.launch {
             repository.cekStatusUser(req).asFlow().collect{
+                dataStatus.value=it
+            }
+        }
+    }
+
+    fun updateStatus(req: StatusReq) {
+        viewModelScope.launch {
+            repository.updateStatus(req).asFlow().collect{
                 dataStatus.value=it
             }
         }

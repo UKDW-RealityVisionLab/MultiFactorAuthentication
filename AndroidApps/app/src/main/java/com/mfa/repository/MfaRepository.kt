@@ -72,6 +72,17 @@ class MfaRepository private constructor(
         }
     }
 
+    suspend fun updateStatus(req: StatusReq) = liveData{
+        try {
+            val response= apiService.updateStatusKehadiran(req)
+            Log.d("status update", "$response")
+            emit(response)
+        }
+        catch (e:Exception){
+            Log.d("MfaRepository status", "Permintaan email gagal $req", e)
+        }
+    }
+
 
 
     companion object {
