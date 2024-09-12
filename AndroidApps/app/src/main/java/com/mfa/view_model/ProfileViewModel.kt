@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.mfa.Helper
 import com.mfa.api.request.EmailRequest
 import com.mfa.api.request.StatusReq
+import com.mfa.api.request.UpdateStatusReq
 import com.mfa.api.response.ProfileResponse
 import com.mfa.api.response.RuangResponseItem
 import com.mfa.api.response.cekStatus
@@ -40,10 +41,10 @@ class ProfileViewModel(private val repository: MfaRepository): ViewModel() {
         }
     }
 
-    fun updateStatus(req: StatusReq) {
+    fun updateStatus(req: UpdateStatusReq) {
         viewModelScope.launch {
             repository.updateStatus(req).asFlow().collect{
-                dataStatus.value=it
+                updateDataStatus.value=it
             }
         }
     }

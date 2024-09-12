@@ -6,6 +6,7 @@ import androidx.lifecycle.liveData
 import com.mfa.Helper
 import com.mfa.api.request.EmailRequest
 import com.mfa.api.request.StatusReq
+import com.mfa.api.request.UpdateStatusReq
 import com.mfa.api.response.PertemuanRequest
 import com.mfa.api.response.ProfileResponse
 import com.mfa.api.response.RuangRequest
@@ -68,14 +69,14 @@ class MfaRepository private constructor(
             emit(response)
         }
         catch (e:Exception){
-            Log.d("MfaRepository status", "Permintaan email gagal $req", e)
+            Log.d("MfaRepository status", "Permintaan di cek status gagal $req", e)
         }
     }
 
-    suspend fun updateStatus(req: StatusReq) = liveData{
+    suspend fun updateStatus(req: UpdateStatusReq) = liveData{
         try {
             val response= apiService.updateStatusKehadiran(req)
-            Log.d("status update", "$response")
+            Log.d("repo: status update", "$response")
             emit(response)
         }
         catch (e:Exception){

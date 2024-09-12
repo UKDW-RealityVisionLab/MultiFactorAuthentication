@@ -1,7 +1,6 @@
 package com.mfa.view.activity
 
 import android.annotation.SuppressLint
-import android.content.ComponentName
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -22,12 +21,10 @@ import com.mfa.api.response.HomeResponseItem
 import com.mfa.databinding.ActivityHomeBinding
 import com.mfa.di.Injection
 import com.mfa.utils.PreferenceUtils
-import com.mfa.view.Email
+import com.mfa.`object`.Email
 import com.mfa.view_model.JadwalViewModel
 import com.mfa.view_model.ProfileViewModel
 import com.mfa.view_model.ViewModelFactory
-import okhttp3.OkHttpClient
-import okhttp3.Response
 import java.text.SimpleDateFormat
 import java.util.Date
 
@@ -65,20 +62,17 @@ class HomeActivity : AppCompatActivity() {
         requestPermissionLauncher.launch(android.Manifest.permission.ACCESS_FINE_LOCATION)
 
 //        get data by email
-        val getEmail = intent.getStringExtra("email")
-        Email.email= getEmail
+//        val getEmail = intent.getStringExtra("email")
+//        Email.email= getEmail
 
-        val dataEmail = EmailRequest(getEmail)
+        val dataEmail = EmailRequest(Email.email)
         profileViewModel.getProfile(dataEmail)
 
-        Log.d("email", getEmail.toString())
+        Log.d("email", Email.email.toString())
 
-        getNama {
-            binding.namaUser.text = it ?: "unregis user"
-        }
 
-        setDate()
     }
+
 
     //    this is response
     fun getNama(callback: (String?) -> Unit) {
@@ -132,6 +126,11 @@ class HomeActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         Log.d(TAG, "onResume: ")
+        getNama {
+            binding.namaUser.text = it ?: "unregis user"
+        }
+
+        setDate()
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {

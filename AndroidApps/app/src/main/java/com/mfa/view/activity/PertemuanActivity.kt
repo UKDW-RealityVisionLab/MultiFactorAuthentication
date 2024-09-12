@@ -1,31 +1,22 @@
 package com.mfa.view.activity
 
-import android.content.Intent
-import android.content.pm.PackageManager
-import android.location.Location
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationServices
 import com.mfa.Helper
 import com.mfa.api.request.EmailRequest
 import com.mfa.view.adapter.PertemuanAdapter
 import com.mfa.api.response.PertemuanResponseItem
 import com.mfa.databinding.ActivityPertemuanBinding
 import com.mfa.di.Injection
-import com.mfa.view.Email
+import com.mfa.`object`.Email
 import com.mfa.view_model.JadwalViewModel
 import com.mfa.view_model.ProfileViewModel
 import com.mfa.view_model.ViewModelFactory
-import kotlinx.coroutines.launch
 
 class PertemuanActivity : AppCompatActivity() {
     private lateinit var binding: ActivityPertemuanBinding

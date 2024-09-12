@@ -1,4 +1,4 @@
-package com.mfa.view
+package com.mfa.`object`
 
 object Email {
     var email:String?= null
