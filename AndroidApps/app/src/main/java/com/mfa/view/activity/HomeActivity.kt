@@ -16,11 +16,14 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.mfa.Helper
 import com.mfa.view.adapter.JadwalAdapter
 import com.mfa.R
+import com.mfa.api.request.EmailRequest
 import com.mfa.api.response.HomeResponseItem
 import com.mfa.databinding.ActivityHomeBinding
 import com.mfa.di.Injection
 import com.mfa.utils.PreferenceUtils
+import com.mfa.`object`.Email
 import com.mfa.view_model.JadwalViewModel
+import com.mfa.view_model.ProfileViewModel
 import com.mfa.view_model.ViewModelFactory
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -30,11 +33,13 @@ class HomeActivity : AppCompatActivity() {
     private lateinit var binding: ActivityHomeBinding
     private lateinit var viewModel: JadwalViewModel
     private lateinit var adapter: JadwalAdapter
+    private lateinit var profileViewModel: ProfileViewModel
 
     companion object {
         const val TAG = "HomeActivity"
         const val NAME = "name"
     }
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,12 +52,38 @@ class HomeActivity : AppCompatActivity() {
             ViewModelFactory(Injection.provideRepository(this))
         ).get(JadwalViewModel::class.java)
 
+        profileViewModel = ViewModelProvider(
+            this,
+            ViewModelFactory(Injection.provideRepository(this))
+        ).get(ProfileViewModel::class.java)
+
         adapter = JadwalAdapter()
         setupRecyclerView()
         requestPermissionLauncher.launch(android.Manifest.permission.ACCESS_FINE_LOCATION)
-        setDate()
+
+//        get data by email
+//        val getEmail = intent.getStringExtra("email")
+//        Email.email= getEmail
+
+        val dataEmail = EmailRequest(Email.email)
+        profileViewModel.getProfile(dataEmail)
+
+        Log.d("email", Email.email.toString())
+
 
     }
+
+
+    //    this is response
+    fun getNama(callback: (String?) -> Unit) {
+        profileViewModel.getData.observe(this) {
+            val name = it.nama
+            callback(name)
+        }
+    }
+
+
+
 
     private val requestPermissionLauncher =
         registerForActivityResult(
@@ -95,6 +126,11 @@ class HomeActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         Log.d(TAG, "onResume: ")
+        getNama {
+            binding.namaUser.text = it ?: "unregis user"
+        }
+
+        setDate()
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {

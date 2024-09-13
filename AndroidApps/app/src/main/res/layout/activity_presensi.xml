@@ -62,6 +62,19 @@
             app:layout_constraintTop_toBottomOf="@id/cardView" />
 
         <Button
+            android:id="@+id/btnBackHome"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="500dp"
+            android:paddingEnd="15dp"
+            android:paddingStart="15dp"
+            android:padding="15dp"
+            android:visibility="gone"
+            android:text="Kembali ke home"
+            app:layout_constraintStart_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/cardView" />
+
+        <Button
             android:id="@+id/btnKeluar"
             android:layout_width="match_parent"
             android:layout_height="match_parent"

@@ -14,6 +14,7 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
 import com.mfa.databinding.ActivitySplashScreenBinding
+import com.mfa.`object`.Email
 import com.mfa.utils.PreferenceUtils
 import com.mfa.utils.Utils
 import java.util.*
@@ -52,13 +53,16 @@ class SplashScreenActivity : AppCompatActivity() {
     private fun onSignInResult(result: FirebaseAuthUIAuthenticationResult) {
         val response = result.idpResponse
         if (result.resultCode == RESULT_OK) {
-            val intent = Intent(this, HomeActivity::class.java)
+//            val intent = Intent(this, HomeActivity::class.java)
             // Successfully signed in
             val user = FirebaseAuth.getInstance().currentUser
             Log.d("FIREBASE", "onSignInResult: " + user!!.email)
             //create session
-            PreferenceUtils.saveUsername(this, user.displayName)
-
+//            PreferenceUtils.saveUsername(this, user.displayName)
+           val sendEmail= Intent(this, HomeActivity::class.java)
+            sendEmail.putExtra("email", user.email)
+            Email.email= user.email
+            startActivity(sendEmail)
             //check embeddings
             val embeddingReference = Utils.getFirebaseEmbedding()
             embeddingReference.addListenerForSingleValueEvent(object : ValueEventListener {

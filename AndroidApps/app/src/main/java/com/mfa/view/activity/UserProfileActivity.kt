@@ -70,6 +70,7 @@ class UserProfileActivity : AppCompatActivity() {
         binding.btnSimpanProfile.setOnClickListener {
             Utils.setFirebaseEmbedding(this.embedding)
             PreferenceUtils.saveFaceEmbeddings(applicationContext, this.embedding)
+            Toast.makeText(this,"Data tersimpan", Toast.LENGTH_SHORT).show()
         }
     }
 }

@@ -9,15 +9,23 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import com.google.zxing.integration.android.IntentIntegrator
+import com.journeyapps.barcodescanner.ScanContract
+import com.journeyapps.barcodescanner.ScanIntentResult
+import com.journeyapps.barcodescanner.ScanOptions
 import com.mfa.R
 import com.mfa.api.request.KodeJadwalRequest
+import com.mfa.di.Injection
+import com.mfa.view_model.ProfileViewModel
+import com.mfa.view_model.ViewModelFactory
 import com.mfa.viewmodel.QRCodeViewModel
 
 class QRCodeScanActivity : AppCompatActivity() {
     private lateinit var scanResultTextView: TextView
     private lateinit var scanAgainButton: Button
     private val qrCodeViewModel: QRCodeViewModel by viewModels()
+
 
     private val qrCodeScannerLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         val intentResult = IntentIntegrator.parseActivityResult(result.resultCode, result.data)
@@ -27,7 +35,6 @@ class QRCodeScanActivity : AppCompatActivity() {
                 val scannedResult = intentResult.contents
                 val kodeJadwal = extractKodeJadwal(scannedResult)
                 val kodeJadwalRequest = KodeJadwalRequest(qrCodeData = scannedResult, kodeJadwal = kodeJadwal)
-                scanResultTextView.text = "Scanned: $kodeJadwalRequest"
                 qrCodeViewModel.checkKodeJadwal(kodeJadwalRequest)
             } else {
                 scanResultTextView.text = "Scan canceled"
@@ -42,8 +49,11 @@ class QRCodeScanActivity : AppCompatActivity() {
         scanResultTextView = findViewById(R.id.scan_result)
         scanAgainButton = findViewById(R.id.scan_again_button)
 
+
+
         // Initialize the QR code scanner
         startQRCodeScanner()
+
 
         // Set up the button to restart the scan
         scanAgainButton.setOnClickListener {
@@ -53,16 +63,15 @@ class QRCodeScanActivity : AppCompatActivity() {
         // Observe the ViewModel for API response
         qrCodeViewModel.kodeJadwalResponse.observe(this, Observer { result ->
             result.fold(onSuccess = { matched ->
-                val message = "QR Code matched!"
+                val message = "verify qrcode berhasil"
                 Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
-                scanResultTextView.text = message
-
+//                scanResultTextView.text = message
                 val intent = Intent(this, FaceVerificationActivity::class.java)
                 startActivity(intent)
 
             }, onFailure = {
                 Toast.makeText(this, "Error: ${it.message}", Toast.LENGTH_SHORT).show()
-                scanResultTextView.text = "Error: ${it.message}"
+//                scanResultTextView.text = "Error: ${it.message}"
             })
         })
     }
@@ -85,4 +94,6 @@ class QRCodeScanActivity : AppCompatActivity() {
             ""
         }
     }
+
+
 }

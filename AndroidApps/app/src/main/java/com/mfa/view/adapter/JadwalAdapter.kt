@@ -17,9 +17,11 @@ class JadwalAdapter :
     ListAdapter<HomeResponseItem, JadwalAdapter.MyViewHolder>(
         DIFF_CALLBACK
     ) {
+
     fun getItemAtPosition(position: Int): HomeResponseItem? {
         return getItem(position)
     }
+
     private var onItemClickListener: ((Int) -> Unit)? = null
 
     // Metode untuk menetapkan listener
@@ -47,7 +49,8 @@ class JadwalAdapter :
     }
 
 
-    inner class MyViewHolder(val binding: ItemJadwalBinding) : RecyclerView.ViewHolder(binding.root) {
+    inner class MyViewHolder(val binding: ItemJadwalBinding) :
+        RecyclerView.ViewHolder(binding.root) {
         init {
             // Set OnClickListener untuk itemView
             binding.root.setOnClickListener {
@@ -70,7 +73,7 @@ class JadwalAdapter :
             binding.namaMatkul.text = "${review.matakuliah}"
             binding.grupMatkul.text = review.grup
             binding.ruanganMatkul.text = review.dosen
-            binding.jadwalMatkul.text=""
+            binding.jadwalMatkul.text = ""
         }
 
         fun setOnItemClickListener(listener: (Int) -> Unit) {
@@ -82,7 +85,10 @@ class JadwalAdapter :
 
     companion object {
         val DIFF_CALLBACK = object : DiffUtil.ItemCallback<HomeResponseItem>() {
-            override fun areItemsTheSame(oldItem: HomeResponseItem, newItem: HomeResponseItem): Boolean {
+            override fun areItemsTheSame(
+                oldItem: HomeResponseItem,
+                newItem: HomeResponseItem
+            ): Boolean {
                 return oldItem == newItem
             }
 

@@ -15,6 +15,10 @@ class ViewModelFactory(private val repository: MfaRepository) :
                 JadwalViewModel(repository) as T
             }
 
+            modelClass.isAssignableFrom(ProfileViewModel::class.java) -> {
+                ProfileViewModel(repository) as T
+            }
+
 
 
             else -> throw IllegalArgumentException("Unknown ViewModel class: " + modelClass.name)

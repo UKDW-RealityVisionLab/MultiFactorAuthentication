@@ -35,7 +35,8 @@
             android:id="@+id/btnSimpanProfile"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Simpan" />
+            android:text="Simpan"
+            />
 
         <Button
             android:id="@+id/btn_spoof_test"

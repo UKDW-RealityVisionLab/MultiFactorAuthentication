@@ -94,12 +94,12 @@ class FaceProcessorActivity : AppCompatActivity(), CameraManager.OnTakeImageCall
         AlertDialog.Builder(this)
             .setView(addFaceBinding.root)
             .setTitle("Confirm Face")
-            .setPositiveButton("OK", { dialog, which ->
+            .setPositiveButton("OK") { dialog, which ->
                 //check face spoof
                 if (antiSpoofDetection(image)) {
                     //add image to embeddings process
                     val embedings: Array<FloatArray> = faceRecognizer.getEmbeddingsOfImage(image)
-                    Log.d(TAG, "embedings : " + embedings.toString())
+                    Log.d(TAG, "embedings : $embedings")
                     val embedingFloatList = ArrayList<String>()
                     for (value in embedings.get(0)) {
                         embedingFloatList.add(value.toString())
@@ -112,10 +112,10 @@ class FaceProcessorActivity : AppCompatActivity(), CameraManager.OnTakeImageCall
                 }
                 setResult(RESULT_CANCELED)
                 finish()
-            })
-            .setNegativeButton("Cancel", { dialog, which ->
+            }
+            .setNegativeButton("Cancel") { dialog, which ->
                 dialog.cancel()
-            })
+            }
             .show()
     }
 

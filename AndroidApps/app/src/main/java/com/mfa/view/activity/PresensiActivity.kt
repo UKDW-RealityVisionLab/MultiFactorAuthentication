@@ -6,6 +6,7 @@ import android.location.Location
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
@@ -14,11 +15,16 @@ import androidx.lifecycle.lifecycleScope
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.mfa.Helper
-import com.mfa.R
+import com.mfa.api.request.EmailRequest
+import com.mfa.api.request.StatusReq
 import com.mfa.databinding.ActivityPresensiBinding
 import com.mfa.di.Injection
+import com.mfa.`object`.Email
+import com.mfa.`object`.IdJadwal
+import com.mfa.`object`.StatusMhs
 import com.mfa.view.adapter.PertemuanAdapter
 import com.mfa.view_model.JadwalViewModel
+import com.mfa.view_model.ProfileViewModel
 import com.mfa.view_model.ViewModelFactory
 import kotlinx.coroutines.launch
 
@@ -27,6 +33,7 @@ class PresensiActivity : AppCompatActivity() {
     private lateinit var viewModel: JadwalViewModel
     private lateinit var adapter: PertemuanAdapter
     private lateinit var fusedLocationClient: FusedLocationProviderClient
+    private lateinit var profileViewModel: ProfileViewModel
 
     private var userLatitude: Double? = null
     private var userLongitude: Double? = null
@@ -47,6 +54,10 @@ class PresensiActivity : AppCompatActivity() {
             this,
             ViewModelFactory(Injection.provideRepository(this))
         ).get(JadwalViewModel::class.java)
+        profileViewModel = ViewModelProvider(
+            this,
+            ViewModelFactory(Injection.provideRepository(this))
+        ).get(ProfileViewModel::class.java)
 
         adapter = PertemuanAdapter()
 
@@ -63,9 +74,55 @@ class PresensiActivity : AppCompatActivity() {
                 startActivity(intent)
             } else {
                 // User is not inside the classroom, show a message or disable the button
-                Toast.makeText(this, "Anda harus berada di dalam kelas untuk melakukan pemindaian QR.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    this,
+                    "Tidak dapat presensi\n silahkan masuk kelas",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         }
+
+    }
+
+    override fun onResume() {
+        super.onResume()
+        checkStatus()
+    }
+
+    private fun checkStatus() {
+        val idJadwal = intent.getStringExtra(GETRUANG).toString()
+        IdJadwal.idJadwal = idJadwal
+        val dataEmail = EmailRequest(Email.email)
+        profileViewModel.getProfile(dataEmail)
+        profileViewModel.getData.observe(this) {
+            val nim = it.nim
+            val data = StatusReq(idJadwal, nim)
+            profileViewModel.getStatus(data)
+            profileViewModel.getDataStatus.observe(this) { status ->
+
+                if (status == true) {
+                    StatusMhs.statusMhs = true
+                    Log.d("status", " $data ${StatusMhs.statusMhs} ${it.email}")
+                    if (StatusMhs.statusMhs == true) {
+                        binding.status.text = "Status: Hadir"
+                        binding.btnScanQr.visibility = View.GONE
+                        binding.btnBackHome.visibility = View.VISIBLE
+                        binding.btnBackHome.setOnClickListener {
+                            intent.flags =
+                                Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+                            startActivity(Intent(this, HomeActivity::class.java))
+                        }
+                    }
+                } else if (status == false) {
+                    StatusMhs.statusMhs = false
+                    if (StatusMhs.statusMhs == false) {
+                        binding.status.text = "Status: Alpha"
+                    }
+                }
+
+            }
+        }
+
     }
 
     private fun getMyLocation() {
@@ -89,7 +146,11 @@ class PresensiActivity : AppCompatActivity() {
                     }
                 }
                 .addOnFailureListener { e ->
-                    Toast.makeText(this, "Gagal mendapatkan lokasi: ${e.message}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        this,
+                        "Gagal mendapatkan lokasi: ${e.message}",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
         } else {
             requestPermissionLauncher.launch(android.Manifest.permission.ACCESS_FINE_LOCATION)
@@ -117,7 +178,10 @@ class PresensiActivity : AppCompatActivity() {
                     if (ruangResponseObject != null) {
                         val validLatitude = ruangResponseObject.latitude?.toDouble()
                         val validLongitude = ruangResponseObject.longitude?.toDouble()
-                        Log.d("lokasi valid", "Latitude: $validLatitude, Longitude: $validLongitude")
+                        Log.d(
+                            "lokasi valid",
+                            "Latitude: $validLatitude, Longitude: $validLongitude"
+                        )
 
                         if (userLatitude != null && userLongitude != null && validLatitude != null && validLongitude != null) {
                             Log.d("lokasimu", "Latitude: $userLatitude, Longitude: $userLongitude")
@@ -136,7 +200,7 @@ class PresensiActivity : AppCompatActivity() {
                                         "Lokasi valid",
                                         Toast.LENGTH_SHORT
                                     ).show()
-                                    binding.position.text = "Anda di dalam kelas"
+                                    binding.position.text = "Anda di dalam kelas $idJadwal"
                                     adapter.isvalid = true
                                 }
                             } else {
@@ -155,6 +219,7 @@ class PresensiActivity : AppCompatActivity() {
                         Log.e("Error", "RUANG KOSONG")
                     }
                 }
+
                 is Helper.Error -> {
                     Log.e("Error", "GAGAL MENDAPATKAN LOKASI")
                 }

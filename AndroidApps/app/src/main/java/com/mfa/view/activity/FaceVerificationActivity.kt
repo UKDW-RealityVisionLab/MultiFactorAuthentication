@@ -9,15 +9,18 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import com.google.firebase.auth.FirebaseAuth
-import com.mfa.R
+import androidx.lifecycle.ViewModelProvider
+import com.mfa.api.request.EmailRequest
+import com.mfa.api.request.StatusReq
+import com.mfa.api.request.UpdateStatusReq
 import com.mfa.databinding.ActivityFaceVerificationBinding
+import com.mfa.di.Injection
 import com.mfa.utils.Utils
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.RequestBody.Companion.toRequestBody
-import org.json.JSONObject
+import com.mfa.`object`.Email
+import com.mfa.`object`.IdJadwal
+import com.mfa.`object`.StatusMhs
+import com.mfa.view_model.ProfileViewModel
+import com.mfa.view_model.ViewModelFactory
 import kotlin.math.sqrt
 
 class FaceVerificationActivity : AppCompatActivity() {
@@ -25,6 +28,7 @@ class FaceVerificationActivity : AppCompatActivity() {
     private lateinit var binding: ActivityFaceVerificationBinding
     private lateinit var takePhotoLauncher: ActivityResultLauncher<Intent>
     private val EMBEDDING_THRESHOLD = 0.8
+    private lateinit var profileViewModel: ProfileViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,8 +45,13 @@ class FaceVerificationActivity : AppCompatActivity() {
                 Log.i(TAG, "Result not OK: ${result.toString()}")
             }
         }
+        profileViewModel = ViewModelProvider(
+            this,
+            ViewModelFactory(Injection.provideRepository(this))
+        ).get(ProfileViewModel::class.java)
 
         setupListeners()
+
     }
 
     private fun setupListeners() {
@@ -63,6 +72,7 @@ class FaceVerificationActivity : AppCompatActivity() {
                 val similarity = calculateCosineSimilarity(newEmbedding, savedEmbeddingList)
                 if (similarity > EMBEDDING_THRESHOLD) {
                     showVerificationSuccessDialog()
+                    reqFaceApi()
                 } else {
                     Toast.makeText(this, "Face verification failed!", Toast.LENGTH_LONG).show()
                 }
@@ -81,12 +91,33 @@ class FaceVerificationActivity : AppCompatActivity() {
             .setMessage("Face has been verified successfully!")
             .setPositiveButton("OK") { dialog, _ ->
                 dialog.dismiss()
-                val intent = Intent(this, HomeActivity::class.java)
+                val intent = Intent(this, PresensiActivity::class.java)
                 intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
                 startActivity(intent)
                 finish()
             }
             .show()
+    }
+
+    private fun reqFaceApi(){
+        val dataEmail = EmailRequest(Email.email)
+        profileViewModel.getProfile(dataEmail)
+        profileViewModel.getData.observe(this){
+            val nim= it.nim
+            val data= UpdateStatusReq(IdJadwal.idJadwal, nim)
+            profileViewModel.updateStatus(data)
+            profileViewModel.getUpdateDataStatus.observe(this){ statusUpdate->
+                Log.d("status update"," $data $statusUpdate ${it.nim}" )
+                if (statusUpdate){
+                    StatusMhs.statusMhs= true
+                    Log.d("status update to be","${StatusMhs.statusMhs}")
+                   Toast.makeText(this,"Berhasil presensi",Toast.LENGTH_SHORT).show()
+                }else if (statusUpdate == false){
+                    StatusMhs.statusMhs= false
+                    Toast.makeText(this,"failed face verify",Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
     }
 
 
