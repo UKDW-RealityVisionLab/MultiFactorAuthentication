@@ -3,6 +3,7 @@ package com.mfa.api.retrofit
 import com.mfa.api.request.EmailRequest
 import com.mfa.api.request.KodeJadwalRequest
 import com.mfa.api.request.StatusReq
+import com.mfa.api.request.UpdateStatusReq
 import com.mfa.api.response.HomeResponseItem
 import com.mfa.api.response.KodeJadwalResponse
 import com.mfa.api.response.PertemuanRequest
@@ -38,5 +39,5 @@ interface ApiService {
     suspend fun cekStatusKehadiran(@Body req :StatusReq) :Boolean
 
     @POST("face/faceVerify")
-    suspend fun updateStatusKehadiran(@Body req: StatusReq):Boolean
+    suspend fun updateStatusKehadiran(@Body req: UpdateStatusReq):Boolean
 }
