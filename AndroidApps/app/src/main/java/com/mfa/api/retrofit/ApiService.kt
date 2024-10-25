@@ -32,7 +32,7 @@ interface ApiService {
     @POST("daftarpresensi/getProfile/req")
     suspend fun getProfile(@Body request: EmailRequest?) :ProfileResponse
 
-    @POST("presensi/android")
+    @POST("presensi/kodeJadwal")
     suspend fun getKodeJadwal(@Body request: KodeJadwalRequest): KodeJadwalResponse
 
     @POST("daftarpresensi/cekStatusPresensi")

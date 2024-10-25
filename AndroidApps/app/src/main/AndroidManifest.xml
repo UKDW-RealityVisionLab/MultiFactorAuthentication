@@ -24,12 +24,6 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
         <activity
-            android:name=".view.activity.CustomScannerActivity"
-            android:exported="false" />
-        <activity
-            android:name=".view.activity.LocationActivity"
-            android:exported="false" />
-        <activity
             android:name=".view.activity.UserProfileActivity"
             android:exported="false" />
         <activity android:name=".view.activity.QRCodeScanActivity" />
@@ -41,7 +35,6 @@
         <activity
             android:name=".view.activity.PertemuanActivity"
             android:exported="false" />
-        <activity android:name=".view.activity.FaceScannerActivity" />
         <activity
             android:name=".view.activity.FaceProcessorActivity"
             android:exported="false" />
@@ -50,7 +43,6 @@
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>

@@ -34,6 +34,7 @@ class FaceVerificationActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityFaceVerificationBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        supportActionBar?.title="Verifikasi Wajah"
 
         takePhotoLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {

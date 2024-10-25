@@ -29,7 +29,7 @@ const generateQr = (req, res) => {
         //     qrCodeData: `${kode_jadwal} ${created_at}`,
         //     kodeJadwal: `${kode_jadwal}`
         // }
-        const data= `${kode_jadwal} ${created_at}`
+        const data = `${kode_jadwal} ${created_at}`
 
         QRCode.toDataURL(data, { scale: 8 }, (err, url) => {
             console.log('data generate is:', data);
@@ -57,11 +57,27 @@ const validation = async (req, res) => {
     let dataReceived;
     let dataQrReceive;
     let receivedKodeJadwal;
-    
+    let kode_jadwal;
+
     try {
         dataReceived = req.body.qrCodeData + req.body.kode_jadwal;
         dataQrReceive = req.body.qrCodeData;
         receivedKodeJadwal = req.body.kodeJadwal;
+
+        // Pisahkan string berdasarkan tanda koma untuk memisahkan tanggal dan waktu
+        let parts = dataQrReceive.split(',');
+
+        // Bagian sebelum koma (tanggal dan informasi lainnya)
+        let dateInfo = parts[0];
+
+        // Temukan posisi terakhir spasi untuk memisahkan tanggal dari teks sebelumnya
+        let lastSpaceIndex = dateInfo.lastIndexOf(' ');
+
+        // Ambil data jadwal sebelum spasi terakhir (tanggal)
+        kode_jadwal = dateInfo.substring(0, lastSpaceIndex);
+
+        console.log("kode  jadwal: "+ kode_jadwal);
+
     } catch (error) {
         res.status(400).json({ message: 'Invalid request body structure' });
         return;
@@ -72,7 +88,7 @@ const validation = async (req, res) => {
 
     if (timeReceive > expiryTime.toLocaleString()) {
         res.status(500).json("QR is expired");
-    } else if (dataQrReceive !== dataQr) {
+    } else if (dataQrReceive !== dataQr && receivedKodeJadwal !== kode_jadwal ) {
         res.status(500).json('QR is not matching');
     } else {
         // Valid QR code, continue processing
@@ -80,4 +96,4 @@ const validation = async (req, res) => {
         res.json({ qrCodeData: "verify qrcode berhasil" });
     }
 };
-module.exports = { generateQr, validation};
+module.exports = { generateQr, validation };

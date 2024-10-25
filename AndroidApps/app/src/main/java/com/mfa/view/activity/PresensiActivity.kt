@@ -40,13 +40,15 @@ class PresensiActivity : AppCompatActivity() {
 
     companion object {
         const val ISVALID = "isValid"
-        const val GETRUANG = "r"
+        const val GETJADWAL = "jadwal"
+        const val RUANG="ruang"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityPresensiBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
@@ -61,7 +63,8 @@ class PresensiActivity : AppCompatActivity() {
 
         adapter = PertemuanAdapter()
 
-        val idJadwal = intent.getStringExtra(GETRUANG).toString()
+        val idJadwal = intent.getStringExtra(GETJADWAL).toString()
+        supportActionBar?.title="Presensi $idJadwal"
         Log.d("id jadwal untuk getjadwal", idJadwal)
 
         getMyLocation()
@@ -71,6 +74,7 @@ class PresensiActivity : AppCompatActivity() {
             if (adapter.isvalid == true) {
                 // User is inside the classroom, allow QR code scanning
                 val intent = Intent(this, QRCodeScanActivity::class.java)
+                intent.putExtra("kodeJadwal","$idJadwal")
                 startActivity(intent)
             } else {
                 // User is not inside the classroom, show a message or disable the button
@@ -90,7 +94,7 @@ class PresensiActivity : AppCompatActivity() {
     }
 
     private fun checkStatus() {
-        val idJadwal = intent.getStringExtra(GETRUANG).toString()
+        val idJadwal = intent.getStringExtra(GETJADWAL).toString()
         IdJadwal.idJadwal = idJadwal
         val dataEmail = EmailRequest(Email.email)
         profileViewModel.getProfile(dataEmail)
@@ -167,10 +171,10 @@ class PresensiActivity : AppCompatActivity() {
         }
 
     private fun validasiLocation() {
-        val idJadwal = intent.getStringExtra(GETRUANG).toString()
+        val idJadwal = intent.getStringExtra(GETJADWAL).toString()
         viewModel.getKelasByKodeRuang(idJadwal)
         Log.d("kode jadwal pertemuan activity :", idJadwal)
-
+        val ruang = intent.getStringExtra(RUANG).toString()
         viewModel.getLokasiData.observe(this) { locationData ->
             when (locationData) {
                 is Helper.Success -> {
@@ -200,7 +204,7 @@ class PresensiActivity : AppCompatActivity() {
                                         "Lokasi valid",
                                         Toast.LENGTH_SHORT
                                     ).show()
-                                    binding.position.text = "Anda di dalam kelas $idJadwal"
+                                    binding.position.text = "Anda di dalam ruang $ruang"
                                     adapter.isvalid = true
                                 }
                             } else {
@@ -210,7 +214,7 @@ class PresensiActivity : AppCompatActivity() {
                                         "Lokasi tidak valid",
                                         Toast.LENGTH_SHORT
                                     ).show()
-                                    binding.position.text = "Anda di luar kelas"
+                                    binding.position.text = "Anda di luar ruang $ruang"
                                     adapter.isvalid = false
                                 }
                             }

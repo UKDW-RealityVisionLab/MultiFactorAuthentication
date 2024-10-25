@@ -43,6 +43,7 @@ class JadwalAdapter :
                 val sendData = Intent(holder.itemView.context, PertemuanActivity::class.java)
 //                sendData.putExtra(PertemuanActivity.GETRUANG, pertemuan.kodeJadwal) // Mengambil kodeJadwal dari pertemuan
                 sendData.putExtra(PertemuanActivity.KODEKELAS, pertemuan.kodeKelas)
+                sendData.putExtra(PertemuanActivity.NAMAPERTEMUAN,pertemuan.matakuliah)
                 holder.itemView.context.startActivity(sendData)
             }
         }

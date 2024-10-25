@@ -2,6 +2,7 @@ package com.mfa.view.activity
 
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.content.IntentSender
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
@@ -13,6 +14,10 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.gms.common.api.ResolvableApiException
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.LocationSettingsRequest
 import com.mfa.Helper
 import com.mfa.view.adapter.JadwalAdapter
 import com.mfa.R
@@ -59,11 +64,7 @@ class HomeActivity : AppCompatActivity() {
 
         adapter = JadwalAdapter()
         setupRecyclerView()
-        requestPermissionLauncher.launch(android.Manifest.permission.ACCESS_FINE_LOCATION)
 
-//        get data by email
-//        val getEmail = intent.getStringExtra("email")
-//        Email.email= getEmail
 
         val dataEmail = EmailRequest(Email.email)
         profileViewModel.getProfile(dataEmail)
@@ -72,7 +73,6 @@ class HomeActivity : AppCompatActivity() {
 
 
     }
-
 
     //    this is response
     fun getNama(callback: (String?) -> Unit) {
@@ -83,15 +83,6 @@ class HomeActivity : AppCompatActivity() {
     }
 
 
-
-
-    private val requestPermissionLauncher =
-        registerForActivityResult(
-            ActivityResultContracts.RequestPermission()
-        ) { isGranted: Boolean ->
-            if (isGranted) {
-            }
-        }
 
     private fun setupRecyclerView() {
         val layoutManager = LinearLayoutManager(this)
@@ -121,7 +112,6 @@ class HomeActivity : AppCompatActivity() {
             Toast.makeText(this, "Data is null", Toast.LENGTH_SHORT).show()
         }
     }
-
 
     override fun onResume() {
         super.onResume()
@@ -160,6 +150,7 @@ class HomeActivity : AppCompatActivity() {
 
     @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
+        super.onBackPressed()
         AlertDialog.Builder(this).apply {
             setTitle("Keluar")
             setMessage("Anda yakin ingin keluar dari aplikasi?")
