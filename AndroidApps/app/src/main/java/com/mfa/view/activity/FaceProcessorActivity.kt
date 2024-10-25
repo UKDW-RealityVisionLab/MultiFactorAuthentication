@@ -49,9 +49,9 @@ class FaceProcessorActivity : AppCompatActivity(), CameraManager.OnTakeImageCall
         }
         binding.buttonStopCamera.setOnClickListener {
             //todo : show loading screen when processing
-//            binding.progressBar.visibility= View.VISIBLE
+            binding.progressBar.visibility= View.VISIBLE
             cameraManager.onTakeImage(this)
-//            binding.progressBar.visibility=View.INVISIBLE
+
         }
     }
 
@@ -105,11 +105,13 @@ class FaceProcessorActivity : AppCompatActivity(), CameraManager.OnTakeImageCall
                     setResult(RESULT_OK, intent)
                     finish()
                 }
+
                 setResult(RESULT_CANCELED)
                 finish()
             }
             .setNegativeButton("Cancel") { dialog, which ->
                 dialog.cancel()
+                binding.progressBar.visibility=View.INVISIBLE
             }
             .show()
     }
