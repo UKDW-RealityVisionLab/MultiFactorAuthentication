@@ -45,7 +45,6 @@ class HomeActivity : AppCompatActivity() {
         const val NAME = "name"
     }
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityHomeBinding.inflate(layoutInflater)
@@ -65,13 +64,10 @@ class HomeActivity : AppCompatActivity() {
         adapter = JadwalAdapter()
         setupRecyclerView()
 
-
         val dataEmail = EmailRequest(Email.email)
         profileViewModel.getProfile(dataEmail)
 
         Log.d("email", Email.email.toString())
-
-
     }
 
     //    this is response
@@ -82,8 +78,6 @@ class HomeActivity : AppCompatActivity() {
         }
     }
 
-
-
     private fun setupRecyclerView() {
         val layoutManager = LinearLayoutManager(this)
         binding.rvJadwal.layoutManager = layoutManager
@@ -93,17 +87,19 @@ class HomeActivity : AppCompatActivity() {
         binding.rvJadwal.adapter = adapter
 
         viewModel.getJadwal()
-        viewModel.getJadwalLiveData.observe(this) { stories ->
-            if (stories != null) {
-                when (stories) {
-                    is Helper.Success -> setStory(stories.data)
-                    else -> {}
+        viewModel.getJadwalLiveData.observe(this) {
+            if (it != null) {
+                when (it) {
+                    is Helper.Success -> setJadwal(it.data)
+                    else -> {
+                        Toast.makeText(this,"Jadwal tidak ditemuka",Toast.LENGTH_SHORT).show()
+                    }
                 }
             }
         }
     }
 
-    private fun setStory(data: List<HomeResponseItem?>?) {
+    private fun setJadwal(data: List<HomeResponseItem?>?) {
         if (data != null) {
             adapter.submitList(data)
             Log.d("data Home:", "$data")
@@ -119,7 +115,6 @@ class HomeActivity : AppCompatActivity() {
         getNama {
             binding.namaUser.text = it ?: "unregis user"
         }
-
         setDate()
     }
 

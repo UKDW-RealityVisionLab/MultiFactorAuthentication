@@ -9,6 +9,7 @@ import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -24,6 +25,7 @@ import com.mfa.`object`.IdJadwal
 import com.mfa.`object`.StatusMhs
 import com.mfa.view.adapter.PertemuanAdapter
 import com.mfa.view_model.JadwalViewModel
+import com.mfa.view_model.LocationViewModel
 import com.mfa.view_model.ProfileViewModel
 import com.mfa.view_model.ViewModelFactory
 import kotlinx.coroutines.launch
@@ -31,6 +33,7 @@ import kotlinx.coroutines.launch
 class PresensiActivity : AppCompatActivity() {
     private lateinit var binding: ActivityPresensiBinding
     private lateinit var viewModel: JadwalViewModel
+    private lateinit var locationViewModel: LocationViewModel
     private lateinit var adapter: PertemuanAdapter
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var profileViewModel: ProfileViewModel
@@ -56,6 +59,10 @@ class PresensiActivity : AppCompatActivity() {
             this,
             ViewModelFactory(Injection.provideRepository(this))
         ).get(JadwalViewModel::class.java)
+        locationViewModel = ViewModelProvider(
+            this,
+            ViewModelFactory(Injection.provideRepository(this))
+        ).get(LocationViewModel::class.java)
         profileViewModel = ViewModelProvider(
             this,
             ViewModelFactory(Injection.provideRepository(this))
@@ -77,16 +84,33 @@ class PresensiActivity : AppCompatActivity() {
                 intent.putExtra("kodeJadwal","$idJadwal")
                 startActivity(intent)
             } else {
-                // User is not inside the classroom, show a message or disable the button
-                Toast.makeText(
-                    this,
-                    "Tidak dapat presensi\n silahkan masuk kelas",
-                    Toast.LENGTH_SHORT
-                ).show()
+                alertDialog(title="Pemberitahuan", text = "Anda berada di luar kelas\nsilahkan masuk kelas untuk presensi")
             }
         }
 
     }
+
+    fun alertDialog(title:String,text:String){
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle(title)
+        builder.setMessage(text)
+
+        builder.setPositiveButton("Oke") { dialog, which ->
+            onResume()
+        }
+
+//        builder.setNegativeButton(android.R.string.no) { dialog, which ->
+//            Toast.makeText(applicationContext,
+//                android.R.string.no, Toast.LENGTH_SHORT).show()
+//        }
+//
+//        builder.setNeutralButton("Maybe") { dialog, which ->
+//            Toast.makeText(applicationContext,
+//                "Maybe", Toast.LENGTH_SHORT).show()
+//        }
+        builder.show()
+    }
+
 
     override fun onResume() {
         super.onResume()
@@ -172,10 +196,10 @@ class PresensiActivity : AppCompatActivity() {
 
     private fun validasiLocation() {
         val idJadwal = intent.getStringExtra(GETJADWAL).toString()
-        viewModel.getKelasByKodeRuang(idJadwal)
+        locationViewModel.getKelasByKodeRuang(idJadwal)
         Log.d("kode jadwal pertemuan activity :", idJadwal)
         val ruang = intent.getStringExtra(RUANG).toString()
-        viewModel.getLokasiData.observe(this) { locationData ->
+        locationViewModel.getLokasiData.observe(this) { locationData ->
             when (locationData) {
                 is Helper.Success -> {
                     val ruangResponseObject = locationData.data
@@ -227,6 +251,8 @@ class PresensiActivity : AppCompatActivity() {
                 is Helper.Error -> {
                     Log.e("Error", "GAGAL MENDAPATKAN LOKASI")
                 }
+
+                Helper.Loading -> binding.progressBar.visibility=View.INVISIBLE
             }
         }
     }

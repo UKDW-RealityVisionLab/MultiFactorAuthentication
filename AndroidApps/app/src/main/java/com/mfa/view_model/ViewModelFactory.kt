@@ -18,6 +18,12 @@ class ViewModelFactory(private val repository: MfaRepository) :
             modelClass.isAssignableFrom(ProfileViewModel::class.java) -> {
                 ProfileViewModel(repository) as T
             }
+            modelClass.isAssignableFrom(PertemuanViewModel::class.java) -> {
+                PertemuanViewModel(repository) as T
+            }
+            modelClass.isAssignableFrom(LocationViewModel::class.java) -> {
+                LocationViewModel(repository) as T
+            }
 
 
 

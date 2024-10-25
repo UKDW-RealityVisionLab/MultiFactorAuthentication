@@ -19,12 +19,6 @@ class JadwalViewModel(private val repository: MfaRepository) : ViewModel() {
     private val jadwalLiveData = MutableLiveData<Helper.Success<List<HomeResponseItem>>>()
     val getJadwalLiveData: LiveData<Helper.Success<List<HomeResponseItem>>> = jadwalLiveData
 
-    private val pertemuanData = MutableLiveData<Helper<List<PertemuanResponseItem>?>>()
-    val getPertemuanData: LiveData<Helper<List<PertemuanResponseItem>?>> = pertemuanData
-
-    private val lokasiData = MutableLiveData<Helper<RuangResponseItem>>()
-    val getLokasiData: LiveData<Helper<RuangResponseItem>> = lokasiData
-
     fun getJadwal() {
         viewModelScope.launch {
             repository.getKelas().asFlow().collect {
@@ -33,24 +27,5 @@ class JadwalViewModel(private val repository: MfaRepository) : ViewModel() {
         }
     }
 
-    fun getPertemuan(kodeKelas: Int) {
-        viewModelScope.launch {
-            repository.getPertemuan(kodeKelas).asFlow().collect { result ->
-                pertemuanData.value = result
-            }
-        }
-    }
 
-    fun getKelasByKodeRuang(idJadwal: String) {
-        viewModelScope.launch {
-            try {
-                repository.getRuangByKodeJadwal(idJadwal).asFlow().collect { helperResult ->
-                    lokasiData.value = helperResult
-                    Log.d("getkelasbykoderuang mendapatkan nilai :", idJadwal)
-                }
-            } catch (e: Exception) {
-                Log.e("JadwalViewModel", "Error: ${e.message}")
-            }
-        }
-    }
 }

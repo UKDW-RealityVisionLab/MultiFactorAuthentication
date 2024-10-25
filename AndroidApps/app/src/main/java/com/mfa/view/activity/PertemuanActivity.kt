@@ -1,8 +1,10 @@
 package com.mfa.view.activity
 
+import android.content.Intent
 import android.content.IntentSender
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -21,19 +23,22 @@ import com.mfa.databinding.ActivityPertemuanBinding
 import com.mfa.di.Injection
 import com.mfa.`object`.Email
 import com.mfa.view_model.JadwalViewModel
+import com.mfa.view_model.PertemuanViewModel
 import com.mfa.view_model.ProfileViewModel
 import com.mfa.view_model.ViewModelFactory
 
 class PertemuanActivity : AppCompatActivity() {
     private lateinit var binding: ActivityPertemuanBinding
     private lateinit var viewModel: JadwalViewModel
+    private lateinit var pertemuanViewModel: PertemuanViewModel
+
     private lateinit var adapter: PertemuanAdapter
     private lateinit var profileViewModel: ProfileViewModel
     private val REQUEST_CHECK_SETTINGS = 1001
 
 
     companion object {
-        const val KODEKELAS = "jadwal"
+        const val KODEKELAS = "kode_kelas"
         const val NAMAPERTEMUAN = "pertemuan"
     }
 
@@ -46,6 +51,11 @@ class PertemuanActivity : AppCompatActivity() {
             this,
             ViewModelFactory(Injection.provideRepository(this))
         ).get(JadwalViewModel::class.java)
+
+        pertemuanViewModel = ViewModelProvider(
+            this,
+            ViewModelFactory(Injection.provideRepository(this))
+        ).get(PertemuanViewModel::class.java)
 
         profileViewModel = ViewModelProvider(
             this,
@@ -72,15 +82,16 @@ class PertemuanActivity : AppCompatActivity() {
 
         supportActionBar?.title = "Pertemuan $matkul"
 
-        viewModel.getPertemuan(kodeKelas)
-
-        viewModel.getPertemuanData.observe(this) { pertemuans ->
+        pertemuanViewModel.getPertemuan(kodeKelas)
+        pertemuanViewModel.getPertemuanData.observe(this) { pertemuans ->
             if (pertemuans != null) {
                 when (pertemuans) {
                     is Helper.Success -> setPertemuan(pertemuans.data)
                     is Helper.Error -> {
                         Toast.makeText(this, "Gagal memuat data", Toast.LENGTH_SHORT).show()
                     }
+
+                    Helper.Loading -> binding.progressBar.visibility=View.INVISIBLE
                 }
             }
         }
@@ -92,15 +103,37 @@ class PertemuanActivity : AppCompatActivity() {
             ActivityResultContracts.RequestPermission()
         ) { isGranted: Boolean ->
             if (isGranted) {
+                Log.d("PERMISSION", "Location permission granted.")
                 turnOnGPS()
+            } else {
+                Log.d("PERMISSION", "Location permission denied.")
+                Toast.makeText(this, "Permission denied", Toast.LENGTH_SHORT).show()
             }
         }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        when (requestCode) {
+            REQUEST_CHECK_SETTINGS -> {
+                when (resultCode) {
+                    RESULT_OK -> {
+                        Log.d("GPS_STATUS", "User enabled GPS.")
+                        Toast.makeText(this, "GPS on", Toast.LENGTH_SHORT).show()
+                    }
+                    RESULT_CANCELED -> {
+                        Log.d("GPS_STATUS", "User refused to enable GPS.")
+                        Toast.makeText(this, "GPS not enabled", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        }
+    }
+
 
     private fun turnOnGPS() {
         val locationRequest = LocationRequest.create().apply {
             priority = LocationRequest.PRIORITY_HIGH_ACCURACY
         }
-
         val builder = LocationSettingsRequest.Builder()
             .addLocationRequest(locationRequest)
 
@@ -108,20 +141,21 @@ class PertemuanActivity : AppCompatActivity() {
         val task = settingsClient.checkLocationSettings(builder.build())
 
         task.addOnSuccessListener {
-            // All location settings are satisfied, start location requests
+            Log.d("GPS_STATUS", "GPS has been turned on.")
+            Toast.makeText(this, "GPS on", Toast.LENGTH_SHORT).show()
         }
 
         task.addOnFailureListener { exception ->
+            Log.d("GPS_STATUS", "Failed to turn on GPS.")
             if (exception is ResolvableApiException) {
                 try {
-                    // Show the dialog by calling startResolutionForResult(),
-                    // and check the result in onActivityResult().
                     exception.startResolutionForResult(this, REQUEST_CHECK_SETTINGS)
                 } catch (sendEx: IntentSender.SendIntentException) {
-                    // Ignore the error.
+                    Log.d("GPS_STATUS", "Failed to resolve GPS settings: ${sendEx.message}")
                 }
             }
         }
+
     }
 
     private fun setupRecyclerView() {

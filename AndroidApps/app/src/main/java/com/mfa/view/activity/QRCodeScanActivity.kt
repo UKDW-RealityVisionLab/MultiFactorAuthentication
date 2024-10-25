@@ -39,16 +39,11 @@ class QRCodeScanActivity : AppCompatActivity() {
 
                 // Process the result
                 val scannedResult = result.text
-                val kodeJadwal = extractKodeJadwal(scannedResult)
                 val jadwal:String= intent.getStringExtra("kodeJadwal").toString()
                 Log.d("data scan","$scannedResult, $jadwal ")
                 val kodeJadwalRequest = KodeJadwalRequest(qrCodeData = scannedResult, kodeJadwal = jadwal)
                 qrCodeViewModel.checkKodeJadwal(kodeJadwalRequest)
             }
-        }
-
-        override fun possibleResultPoints(resultPoints: List<ResultPoint>?) {
-            // Optional: handle possible result points
         }
     }
 
@@ -131,15 +126,6 @@ class QRCodeScanActivity : AppCompatActivity() {
                 Toast.makeText(this, "Camera permission is required", Toast.LENGTH_SHORT).show()
                 finish()
             }
-        }
-    }
-
-    private fun extractKodeJadwal(qrCodeData: String): String {
-        val parts = qrCodeData.split(" ")
-        return if (parts.size >= 2) {
-            "${parts[0]} ${parts[1]}"
-        } else {
-            ""
         }
     }
 }
