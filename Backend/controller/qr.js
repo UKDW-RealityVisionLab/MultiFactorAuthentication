@@ -41,6 +41,7 @@ const generateQr = (req, res) => {
                 dataQr = data;
                 generateQr.QRCode = url;
                 res.json(url);
+                return dataQr;
             }
         });
         generateQr.isQRGenerated = true;
@@ -83,13 +84,17 @@ const validation = async (req, res) => {
         return;
     }
 
-    console.log(`validasi dataQr data: ${dataQrReceive}`);
-    console.log(`validasi kode jadwal data: ${receivedKodeJadwal}`);
+    console.log(`dataQr data yang diterima: ${dataQrReceive}`);
+    console.log(`kode jadwal datayang diterima: ${receivedKodeJadwal}`);
 
     if (timeReceive > expiryTime.toLocaleString()) {
         res.status(500).json("QR is expired");
-    } else if (dataQrReceive !== dataQr && receivedKodeJadwal !== kode_jadwal ) {
+    } else if (dataQrReceive !== dataQr ) {
         res.status(500).json('QR is not matching');
+        console.log("validasi data qr: "+ dataQrReceive +"="+ dataQr)
+    }else if (receivedKodeJadwal !== kode_jadwal ) {
+        res.status(500).json('QR is not matching');
+        console.log("validasi kode jadwal: "+ receivedKodeJadwal +"="+ kode_jadwal)
     } else {
         // Valid QR code, continue processing
         // await presensIfvalid(req, res);
