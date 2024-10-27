@@ -1,43 +1,48 @@
 package com.mfa.view.activity
 
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
+import android.util.Log
+import android.view.View
 import android.widget.Button
+import android.widget.RelativeLayout
 import android.widget.TextView
 import android.widget.Toast
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
-import com.google.zxing.integration.android.IntentIntegrator
-import com.journeyapps.barcodescanner.ScanContract
-import com.journeyapps.barcodescanner.ScanIntentResult
-import com.journeyapps.barcodescanner.ScanOptions
+import com.google.zxing.ResultPoint
+import com.journeyapps.barcodescanner.BarcodeCallback
+import com.journeyapps.barcodescanner.BarcodeResult
+import com.journeyapps.barcodescanner.DecoratedBarcodeView
 import com.mfa.R
 import com.mfa.api.request.KodeJadwalRequest
-import com.mfa.di.Injection
-import com.mfa.view_model.ProfileViewModel
-import com.mfa.view_model.ViewModelFactory
-import com.mfa.viewmodel.QRCodeViewModel
+import com.mfa.view_model.QRCodeViewModel
 
 class QRCodeScanActivity : AppCompatActivity() {
     private lateinit var scanResultTextView: TextView
     private lateinit var scanAgainButton: Button
+    private lateinit var barcodeView: DecoratedBarcodeView
     private val qrCodeViewModel: QRCodeViewModel by viewModels()
 
+    private val CAMERA_PERMISSION_REQUEST_CODE = 100
 
-    private val qrCodeScannerLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        val intentResult = IntentIntegrator.parseActivityResult(result.resultCode, result.data)
-        if (intentResult != null) {
-            if (intentResult.contents != null) {
-                // QR code scanned successfully, handle the result
-                val scannedResult = intentResult.contents
-                val kodeJadwal = extractKodeJadwal(scannedResult)
-                val kodeJadwalRequest = KodeJadwalRequest(qrCodeData = scannedResult, kodeJadwal = kodeJadwal)
+    private val barcodeCallback = object : BarcodeCallback {
+        override fun barcodeResult(result: BarcodeResult?) {
+            result?.let {
+                // Pause scanning
+                barcodeView.pause()
+
+                // Process the result
+                val scannedResult = result.text
+                val jadwal:String= intent.getStringExtra("kodeJadwal").toString()
+                Log.d("data scan","$scannedResult, $jadwal ")
+                val kodeJadwalRequest = KodeJadwalRequest(qrCodeData = scannedResult, kodeJadwal = jadwal)
                 qrCodeViewModel.checkKodeJadwal(kodeJadwalRequest)
-            } else {
-                scanResultTextView.text = "Scan canceled"
             }
         }
     }
@@ -46,18 +51,21 @@ class QRCodeScanActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_qr_code_scan)
 
+        // Initialize views
+        barcodeView = findViewById(R.id.barcode_scanner)
         scanResultTextView = findViewById(R.id.scan_result)
         scanAgainButton = findViewById(R.id.scan_again_button)
 
+        supportActionBar?.title = "Scan QR Code"
 
-
-        // Initialize the QR code scanner
-        startQRCodeScanner()
-
+        // Check camera permission
+        checkCameraPermission()
 
         // Set up the button to restart the scan
         scanAgainButton.setOnClickListener {
-            startQRCodeScanner()
+            findViewById<RelativeLayout>(R.id.layout_eror).visibility = View.INVISIBLE
+            findViewById<DecoratedBarcodeView>(R.id.barcode_scanner).visibility = View.VISIBLE
+            resumeScanning()
         }
 
         // Observe the ViewModel for API response
@@ -65,35 +73,59 @@ class QRCodeScanActivity : AppCompatActivity() {
             result.fold(onSuccess = { matched ->
                 val message = "verify qrcode berhasil"
                 Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
-//                scanResultTextView.text = message
                 val intent = Intent(this, FaceVerificationActivity::class.java)
                 startActivity(intent)
-
             }, onFailure = {
                 Toast.makeText(this, "Error: ${it.message}", Toast.LENGTH_SHORT).show()
-//                scanResultTextView.text = "Error: ${it.message}"
+                findViewById<RelativeLayout>(R.id.layout_eror).visibility = View.VISIBLE
+                findViewById<DecoratedBarcodeView>(R.id.barcode_scanner).visibility=View.INVISIBLE
             })
         })
     }
 
-    private fun startQRCodeScanner() {
-        val integrator = IntentIntegrator(this)
-        integrator.setOrientationLocked(true) // Lock orientation
-        integrator.setPrompt("Scan a QR code")
-        integrator.setBeepEnabled(true)
-        qrCodeScannerLauncher.launch(integrator.createScanIntent())
-    }
-
-    private fun extractKodeJadwal(qrCodeData: String): String {
-        // Extract the relevant part of the QR code data
-        // Assuming the format is: "PROGWEB 1 6/3/2024, 10:57:02"
-        val parts = qrCodeData.split(" ")
-        return if (parts.size >= 2) {
-            "${parts[0]} ${parts[1]}"
+    private fun checkCameraPermission() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+            != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,
+                arrayOf(Manifest.permission.CAMERA),
+                CAMERA_PERMISSION_REQUEST_CODE)
         } else {
-            ""
+            initializeScanner()
         }
     }
 
+    private fun initializeScanner() {
+        barcodeView.decodeContinuous(barcodeCallback)
+    }
 
+    private fun resumeScanning() {
+        barcodeView.resume()
+        barcodeView.decodeContinuous(barcodeCallback)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        barcodeView.resume()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        barcodeView.pause()
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == CAMERA_PERMISSION_REQUEST_CODE) {
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                initializeScanner()
+            } else {
+                Toast.makeText(this, "Camera permission is required", Toast.LENGTH_SHORT).show()
+                finish()
+            }
+        }
+    }
 }

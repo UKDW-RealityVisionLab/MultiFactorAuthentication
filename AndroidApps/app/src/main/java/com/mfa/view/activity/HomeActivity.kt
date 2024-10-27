@@ -2,6 +2,7 @@ package com.mfa.view.activity
 
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.content.IntentSender
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
@@ -13,6 +14,10 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.gms.common.api.ResolvableApiException
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.LocationSettingsRequest
 import com.mfa.Helper
 import com.mfa.view.adapter.JadwalAdapter
 import com.mfa.R
@@ -40,7 +45,6 @@ class HomeActivity : AppCompatActivity() {
         const val NAME = "name"
     }
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityHomeBinding.inflate(layoutInflater)
@@ -59,20 +63,12 @@ class HomeActivity : AppCompatActivity() {
 
         adapter = JadwalAdapter()
         setupRecyclerView()
-        requestPermissionLauncher.launch(android.Manifest.permission.ACCESS_FINE_LOCATION)
-
-//        get data by email
-//        val getEmail = intent.getStringExtra("email")
-//        Email.email= getEmail
 
         val dataEmail = EmailRequest(Email.email)
         profileViewModel.getProfile(dataEmail)
 
         Log.d("email", Email.email.toString())
-
-
     }
-
 
     //    this is response
     fun getNama(callback: (String?) -> Unit) {
@@ -81,17 +77,6 @@ class HomeActivity : AppCompatActivity() {
             callback(name)
         }
     }
-
-
-
-
-    private val requestPermissionLauncher =
-        registerForActivityResult(
-            ActivityResultContracts.RequestPermission()
-        ) { isGranted: Boolean ->
-            if (isGranted) {
-            }
-        }
 
     private fun setupRecyclerView() {
         val layoutManager = LinearLayoutManager(this)
@@ -102,17 +87,19 @@ class HomeActivity : AppCompatActivity() {
         binding.rvJadwal.adapter = adapter
 
         viewModel.getJadwal()
-        viewModel.getJadwalLiveData.observe(this) { stories ->
-            if (stories != null) {
-                when (stories) {
-                    is Helper.Success -> setStory(stories.data)
-                    else -> {}
+        viewModel.getJadwalLiveData.observe(this) {
+            if (it != null) {
+                when (it) {
+                    is Helper.Success -> setJadwal(it.data)
+                    else -> {
+                        Toast.makeText(this,"Jadwal tidak ditemuka",Toast.LENGTH_SHORT).show()
+                    }
                 }
             }
         }
     }
 
-    private fun setStory(data: List<HomeResponseItem?>?) {
+    private fun setJadwal(data: List<HomeResponseItem?>?) {
         if (data != null) {
             adapter.submitList(data)
             Log.d("data Home:", "$data")
@@ -122,14 +109,12 @@ class HomeActivity : AppCompatActivity() {
         }
     }
 
-
     override fun onResume() {
         super.onResume()
         Log.d(TAG, "onResume: ")
         getNama {
             binding.namaUser.text = it ?: "unregis user"
         }
-
         setDate()
     }
 
@@ -160,6 +145,7 @@ class HomeActivity : AppCompatActivity() {
 
     @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
+        super.onBackPressed()
         AlertDialog.Builder(this).apply {
             setTitle("Keluar")
             setMessage("Anda yakin ingin keluar dari aplikasi?")

@@ -8,4 +8,6 @@ sealed class Helper <out R>private constructor(){
     data class Error<out E>(
         val eror:E
     ):Helper<E>()
+
+    object Loading : Helper<Nothing>()
 }

@@ -32,7 +32,8 @@ class PertemuanAdapter :
             holder.itemView.setOnClickListener {
                 val sendData = Intent(holder.itemView.context, PresensiActivity::class.java)
                 Log.d("PertemuanAdapter", "Sending jadwal: ${pertemuan.jadwal}, ruang: ${pertemuan.jadwal}")
-                sendData.putExtra(PresensiActivity.GETRUANG, pertemuan.jadwal)
+                sendData.putExtra(PresensiActivity.GETJADWAL, pertemuan.jadwal)
+                sendData.putExtra(PresensiActivity.RUANG, pertemuan.ruang)
                 sendData.putExtra(PresensiActivity.ISVALID,isvalid)
                 holder.itemView.context.startActivity(sendData)
             }
@@ -42,7 +43,7 @@ class PertemuanAdapter :
     inner class PertemuanViewHolder(val binding: ItemPertemuanBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(pertemuan: PertemuanResponseItem) {
             binding.tanggal.text = pertemuan.tanggal
-            binding.namaMatkul.text = pertemuan.mataKuliah
+            binding.namaMatkul.text = pertemuan.jadwal
             // binding.ruangKelas.text = pertemuan.ruang // Uncomment this line if you want to display ruang
             binding.jadwalMatkul.text = "${pertemuan.sesiStart} - ${pertemuan.sesiEnd}"
         }

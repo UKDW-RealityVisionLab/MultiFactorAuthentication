@@ -2,52 +2,70 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FFF"
-    android:orientation="vertical">
+    android:id="@+id/scan_state"
+    android:background="@android:color/transparent">
 
-    <!-- Barcode Scanner View -->
     <com.journeyapps.barcodescanner.DecoratedBarcodeView
         android:id="@+id/barcode_scanner"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_alignParentTop="true"
-        android:layout_centerInParent="true" />
+        android:layout_height="match_parent"
+        android:layout_centerInParent="true">
 
-    <!-- ImageView for error or other icons -->
-    <ImageView
-        android:id="@+id/error_image"
-        android:layout_width="200dp"
-        android:layout_height="200dp"
-        android:layout_centerHorizontal="true"
-        android:layout_below="@id/barcode_scanner"
-        android:layout_marginTop="100dp"
-        android:src="@drawable/wrong" />
+        <com.journeyapps.barcodescanner.ViewfinderView
+            android:id="@+id/zxing_viewfinder_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
 
-    <!-- Scanned Result Display -->
-    <TextView
-        android:id="@+id/scan_result"
+    </com.journeyapps.barcodescanner.DecoratedBarcodeView>
+
+    <!-- Custom Scanner Overlay -->
+    <View
+        android:layout_width="250dp"
+        android:layout_height="250dp"
+        android:layout_centerInParent="true"
+        android:background="@drawable/scanner_border" />
+
+<!--    layout for error state-->
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/error_image"
-        android:layout_marginTop="16dp"
-        android:gravity="center"
-        android:padding="16dp"
-        android:text="Terjadi kesalahan"
-        android:textColor="@android:color/black"
-        android:textSize="18sp"
-        android:textStyle="bold" />
+        android:id="@+id/layout_eror"
+        android:visibility="invisible">
+        <!-- ImageView for error or other icons -->
+        <ImageView
+            android:id="@+id/error_image"
+            android:layout_width="200dp"
+            android:layout_height="200dp"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="100dp"
+            android:src="@drawable/wrong" />
 
-    <!-- Scan Again Button -->
-    <Button
-        android:id="@+id/scan_again_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/scan_result"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="24dp"
-        android:text="Scan Again"
-        android:textSize="16sp"
-        android:textColor="@android:color/white"
-        android:backgroundTint="#3c39d5"
-        android:padding="12dp" />
+        <!-- Scanned Result Display -->
+        <TextView
+            android:id="@+id/scan_result"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/error_image"
+            android:layout_marginTop="16dp"
+            android:gravity="center"
+            android:padding="16dp"
+            android:text="Terjadi kesalahan"
+            android:textColor="@android:color/black"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <!-- Scan Again Button -->
+        <Button
+            android:id="@+id/scan_again_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/scan_result"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="24dp"
+            android:text="Scan Again"
+            android:textSize="16sp"
+            android:textColor="@android:color/white"
+            android:backgroundTint="#3c39d5"
+            android:padding="12dp" />
+    </RelativeLayout>
 </RelativeLayout>
