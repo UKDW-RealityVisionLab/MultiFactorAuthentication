@@ -1,3 +1,4 @@
+const { query } = require("express");
 const db = require("../config/db");
 
 const getRuang = async (req, res) => {
@@ -14,6 +15,22 @@ const getRuang = async (req, res) => {
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: "Terjadi kesalahan" });
+    }
+};
+
+const getRuangByid = async (req, res) => {
+    const queryId = `SELECT * FROM ruang WHERE kodeRuang="${req.params.kodeRuang}"`;
+
+    try {
+        const result = await new Promise((resolve, reject) => {
+            db.all(queryId, (err, rows) => {
+                if (err) return reject(err);
+                resolve(rows);
+            });
+        });
+        res.json(result); 
+    } catch (error) {
+        res.status(500).json({ error: error.message }); 
     }
 };
 
@@ -164,4 +181,4 @@ const editruang = async (req, res) => {
 
 
 
-module.exports = { getRuang, addRuang, editruang, deleteRuang, getRuangByIdJadwal };
+module.exports = { getRuang, addRuang, editruang, deleteRuang, getRuangByIdJadwal, getRuangByid };
