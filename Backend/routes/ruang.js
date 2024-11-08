@@ -4,6 +4,7 @@ const route = express.Router();
 const controller= require('../controller/ruang')
 
 route.get('/', controller.getRuang)
+route.get('/getEdit/:kodeRuang', controller.getRuangByid)
 
 route.post('/', controller.addRuang)
 
