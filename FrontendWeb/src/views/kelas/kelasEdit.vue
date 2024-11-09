@@ -1,42 +1,21 @@
 <script setup>
+import { useApp } from '../../stores/app.store.js';
+import path from '../../router/kelas.routes';
 import { Form, Field } from "vee-validate";
 import * as Yup from "yup";
-import { useRoute } from "vue-router";
-import { ref, onMounted } from "vue";
-import axios from "axios";
-
 import { useAlertStore } from "@/stores";
-import { useRouter } from "vue-router";
-
+import { useRouter, useRoute } from "vue-router"; 
+import { ref, onMounted } from 'vue';
+import { fetchWrapper } from '@/helpers';
 const alertStore = useAlertStore();
-const route = useRoute();
 const router = useRouter();
-const kode_kelas = route.params.kode_kelas;
-const baseUrl = "http://localhost:3000/kelas";
+const route = useRoute();
+const kodeKelas = route.params.kode_kelas;
+
 const kelasData = ref({
     dataId: [],
     loading: false,
     error: null,
-});
-
-const fetchKelasById = async (url) => {
-    try {
-        const response = await axios.get(url);
-        kelasData.value.dataId = response.data;
-        console.log('Data by kode kelas:', kelasData.value.dataId);
-    } catch (error) {
-        kelasData.value.error = "Failed to fetch kelas data";
-        alertStore.error(kelasData.value.error);
-    } finally {
-        kelasData.value.loading = false;
-    }
-};
-
-onMounted(() => {
-    if (kode_kelas) {
-        kelasData.value.loading = true;
-        fetchKelasById(`${baseUrl}/${kode_kelas}`);
-    }
 });
 
 const schema = Yup.object().shape({
@@ -46,41 +25,50 @@ const schema = Yup.object().shape({
     kode_dosen: Yup.number(),
 });
 
-const editKelas = async (values) => {
-    let message;
-    kelasData.value.loading = true;
-    try {
-        const data = {
-            kode_matakuliah: values.kode_matakuliah,
-            group_kelas: values.group_kelas,
-            kode_semester: values.kode_semester,
-            kode_dosen: values.kode_dosen,
-        };
-        console.log("Data yang disend request:", data);
-        await axios.patch(`${baseUrl}/${kode_kelas}`, data);
+const fetchDataKelas = async () => {
+  kelasData.value.loading = true;
+  try {
+    const app = useApp();
+    const response = await app.getDataById(path.path, kodeKelas);
+    kelasData.value.dataId = response; 
+    console.log("Data yang didapat:", kelasData.value.dataId); 
+  } catch (error) {
+    kelasData.value.error = error.message;
+  } finally {
+    kelasData.value.loading = false;
+  }
+};
 
-        message = "Kelas updated=" + kode_kelas;
-        alertStore.success(message);
-        await router.push("/kelas");
+onMounted(() => {
+  if (kodeKelas) {
+    fetchDataKelas();
+  }
+});
+
+async function onSubmit(values) {
+    const alertStore = useAlertStore();
+    const app = useApp();
+    try {
+        kelasData.value.loading = true;
+        const data = {
+            kode_matakuliah: values.kodeMatakuliah,
+            group_kelas: values.grup,
+            kode_semester: values.semester,
+            kode_dosen: values.kodeDosen,
+        };
+        kelasData.value.loading = true;
+        console.log(path);
+        await app.editData(path.path, kodeKelas, data);
+        await router.push(path.path);
+        alertStore.success("Kelas update successfully");
     } catch (error) {
-        console.error("Failed to update Kelas:", error.message);
-        alertStore.error("Failed to update Kelas");
-        kelasData.value.error = error.message;
+        alertStore.error(error.message || "Failed to update");
     } finally {
         kelasData.value.loading = false;
     }
 };
-
-async function onSubmit(values) {
-    try {
-        if (kode_kelas) {
-            await editKelas(values);
-        }
-    } catch (error) {
-        alertStore.error(error.message);
-    }
-}
 </script>
+
 <template>
   <h1>Edit Kelas</h1>
   <template v-if="!(kelasData.loading || kelasData.error)">
@@ -97,42 +85,42 @@ async function onSubmit(values) {
               <div class="form-group col">
                   <label>Kode Matakuliah</label>
                   <Field
-                      name="kode_matakuliah"
+                      name="kodeMatakuliah"
                       type="text"
                       class="form-control"
-                      :class="{ 'is-invalid': errors.kode_matakuliah }"
+                      :class="{ 'is-invalid': errors.kodeMatakuliah }"
                   />
-                  <div class="invalid-feedback">{{ errors.kode_matakuliah }}</div>
+                  <div class="invalid-feedback">{{ errors.kodeMatakuliah }}</div>
               </div>
               <div class="form-group col">
                   <label>Group Kelas</label>
                   <Field
-                      name="group_kelas"
+                      name="grup"
                       type="text"
                       class="form-control"
-                      :class="{ 'is-invalid': errors.group_kelas }"
+                      :class="{ 'is-invalid': errors.grup }"
                   />
-                  <div class="invalid-feedback">{{ errors.group_kelas }}</div>
+                  <div class="invalid-feedback">{{ errors.grup }}</div>
               </div>
               <div class="form-group col">
                   <label>Kode Semester</label>
                   <Field
-                      name="kode_semester"
+                      name="semester"
                       type="text"
                       class="form-control"
-                      :class="{ 'is-invalid': errors.kode_semester }"
+                      :class="{ 'is-invalid': errors.semester }"
                   />
-                  <div class="invalid-feedback">{{ errors.kode_semester }}</div>
+                  <div class="invalid-feedback">{{ errors.semester }}</div>
               </div>
               <div class="form-group col">
                   <label>Kode Dosen</label>
                   <Field
-                      name="kode_dosen"
+                      name="kodeDosen"
                       type="text"
                       class="form-control"
-                      :class="{ 'is-invalid': errors.kode_dosen }"
+                      :class="{ 'is-invalid': errors.kodeDosen }"
                   />
-                  <div class="invalid-feedback">{{ errors.kode_dosen }}</div>
+                  <div class="invalid-feedback">{{ errors.kodeDosen }}</div>
               </div>
           </div>
           <div class="form-group">

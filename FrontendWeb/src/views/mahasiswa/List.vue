@@ -1,32 +1,38 @@
 <script setup>
 import { ref, onMounted } from 'vue';
-import axios from 'axios';
-
-const baseUrl = "http://localhost:3000/users";
+import { useApp } from '../../stores/app.store.js';
+ 
+import path from '../../router/mahasiswa.router';
 const dataMahasiswa = ref({
   data: [],
-  // loading: false,
+  loading: false,
   error: null,
 });
 
 const fetchDataMahasiswa = async () => {
-  // kelass.value.loading = true;
+  dataMahasiswa.value.loading = true;
   try {
-    const response = await axios.get(baseUrl);
-    dataMahasiswa.value.data = response.data;
+    const app = useApp();
+    const response = await app.getData(path.path);
+    dataMahasiswa.value.data = response;
+    console.log("Data yang didapat:", dataMahasiswa.value.data); 
   } catch (error) {
     dataMahasiswa.value.error = error.message;
   } finally {
-    // kelass.value.loading = false;
+    dataMahasiswa.value.loading = false;
   }
 };
 
-const deleteMahasiswa = async (kodedataMahasiswa) => {
+const deleteMahasiswa = async (nim) => {
+  dataMahasiswa.value.loading = true;
   try {
-    await axios.delete(`${baseUrl}/${kodedataMahasiswa}`);
-    await fetchDataMahasiswa();
+    const app = useApp();
+    await app.deleteData(path.path, nim);
+    await fetchDataMahasiswa();  
   } catch (error) {
-    console.error("Error deleting mahasiswa:", error);
+    console.error("Error deleting data semester:", error); 
+  } finally {
+    dataMahasiswa.value.loading = false;  
   }
 };
 

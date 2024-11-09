@@ -1,8 +1,8 @@
 <script setup>
 import { ref, onMounted } from 'vue';
-import axios from 'axios';
+import { useApp } from '../../stores/app.store.js';
 
-const baseUrl = "http://localhost:3000/jadwal";
+import path from '../../router/jadwal.router';
 const dataApi = ref({
   data: [],
   loading: false,
@@ -12,8 +12,10 @@ const dataApi = ref({
 const fetchDataJadwal = async () => {
   dataApi.value.loading = true;
   try {
-    const response = await axios.get(baseUrl);
-    dataApi.value.data = response.data;
+    const app = useApp();
+    const response = await app.getData(path.path);
+    dataApi.value.data = response;
+    console.log("Data yang didapat:", dataApi.value.data); 
   } catch (error) {
     dataApi.value.error = error.message;
   } finally {
@@ -22,15 +24,17 @@ const fetchDataJadwal = async () => {
 };
 
 const deleteJadwal = async (kodeJadwal) => {
+  dataApi.value.loading = true;
   try {
-    await axios.delete(`${baseUrl}/${kodeJadwal}`);
-    await fetchDataJadwal();
+    const app = useApp();
+    await app.deleteData(path.path, kodeJadwal);
+    await fetchDataJadwal();  
   } catch (error) {
-    console.error("Error deleting :", error);
-    alertStore.error("Failed to delete ");
+    console.error("Error deleting data jadwal:", error); 
+  } finally {
+    dataApi.value.loading = false;  
   }
 };
-
 
 onMounted(() => {
   fetchDataJadwal();

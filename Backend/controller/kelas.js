@@ -9,6 +9,7 @@ const getKelas = async (req, res) => {
     user_dosen.nidn,
     user_dosen.nama,
     kelas.kode_matakuliah,
+    kelas.kode_dosen,
 	mata_kuliah.nama_matakuliah
 FROM 
     kelas 
@@ -31,7 +32,8 @@ INNER join mata_kuliah ON kelas.kode_matakuliah= mata_kuliah.kode_matakuliah;
       dosen: result.nama,
       grup: result.group_kelas,
       matakuliah:result.nama_matakuliah,
-      kodeMatakuliah: result.kode_matakuliah
+      kodeMatakuliah: result.kode_matakuliah,
+      kodeDosen: result.kode_dosen
     })));
     
   } catch (error) {
@@ -148,6 +150,7 @@ const getByIdKelas =async (req, res) => {
     user_dosen.nidn,
     user_dosen.nama,
     kelas.kode_matakuliah,
+    kelas.kode_dosen,
 	mata_kuliah.nama_matakuliah
 FROM 
     kelas 
@@ -171,6 +174,7 @@ WHERE kelas.kode_kelas= ${kode_kelas};
       dosen: result.nama,
       grup: result.group_kelas,
       matakuliah:result.nama_matakuliah,
+      kodeDosen: result.kode_dosen,
       kodeMatakuliah: result.kode_matakuliah
     })));
   } catch (error) {

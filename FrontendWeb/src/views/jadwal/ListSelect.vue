@@ -1,36 +1,46 @@
 <script setup>
 import { ref, onMounted } from 'vue';
-import axios from 'axios';
-import { useRoute, useRouter } from "vue-router";
-
-const baseUrl = "http://localhost:3000/jadwal";
-const route = useRoute();
+import { useApp } from '../../stores/app.store.js';
+import { useRouter, useRoute } from "vue-router"; 
+const route = useRoute()
 const router = useRouter();
-const kode_kelas = route.params.kode_kelas;
+import path from '../../router/jadwal.router';
+
+
 const dataApi = ref({
   data: [],
   loading: false,
   error: null,
 });
 
-const fetchDataJadwal = async (url) => {
+let idJadwal= route.params.kode_kelas
+
+const fetchDataJadwal = async () => {
+  dataApi.value.loading = true;
+ 
   try {
-    const response = await axios.post(url);
-    dataApi.value.data = response.data;
-    console.log('Data by kode kelas:', dataApi.value.data);
+    const app = useApp();
+    const response = await app.getDataByIdJadwal(path.path,idJadwal);
+    console.log(`path= ${path.path},id jadwal= ${idJadwal}=`)
+    dataApi.value.data = response;
+    console.log("Data yang didapat:", dataApi.value.data); 
   } catch (error) {
-    console.error("Error fetching data:", error);
-    dataApi.value.error = "Failed to fetch data";
+    dataApi.value.error = error.message;
+  } finally {
+    dataApi.value.loading = false;
   }
 };
 
-const deleteJadwal = async (kodeJadwal) => {
+const deleteJadwal = async (kode_kelas) => {
+  dataApi.value.loading = true;
   try {
-    await axios.delete(`${baseUrl}/${kodeJadwal}`);
-    await fetchDataJadwal(`${baseUrl}/${kode_kelas}`);
+    const app = useApp();
+    await app.deleteData(path.path, kode_kelas);
+    await fetchDataJadwal();  
   } catch (error) {
-    console.error("Error deleting jadwal:", error);
-    dataApi.value.error = "Failed to delete jadwal";
+    console.error("Error deleting data jadwal:", error); 
+  } finally {
+    dataApi.value.loading = false;  
   }
 };
 
@@ -38,13 +48,8 @@ const presensi= (kode_jadwal)=>{
   router.push(`/presensi/${kode_jadwal}`)
 }
 
-onMounted(async () => {
-  try {
-    await fetchDataJadwal(`${baseUrl}/jadwalPresensi/${kode_kelas}`);
-  } catch (error) {
-    console.error("Error fetching data:", error);
-    dataApi.value.error = "Failed to fetch data";
-  }
+onMounted(() => {
+  fetchDataJadwal();
 });
 </script>
 

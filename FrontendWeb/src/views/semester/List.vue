@@ -1,8 +1,8 @@
 <script setup>
 import { ref, onMounted } from 'vue';
-import axios from 'axios';
+import { useApp } from '../../stores/app.store.js';
 
-const baseUrl = "http://localhost:3000/semester";
+import path from '../../router/semester.routes';
 const dataSemester = ref({
   data: [],
   loading: false,
@@ -12,8 +12,10 @@ const dataSemester = ref({
 const fetchDataSemester = async () => {
   dataSemester.value.loading = true;
   try {
-    const response = await axios.get(baseUrl);
-    dataSemester.value.data = response.data;
+    const app = useApp();
+    const response = await app.getData(path.path);
+    dataSemester.value.data = response;
+    console.log("Data yang didapat:", dataSemester.value.data); 
   } catch (error) {
     dataSemester.value.error = error.message;
   } finally {
@@ -22,13 +24,18 @@ const fetchDataSemester = async () => {
 };
 
 const deleteSemester = async (kode_semester) => {
+  dataSemester.value.loading = true;
   try {
-    await axios.delete(`${baseUrl}/${kode_semester}`);
-    await fetchDataSemester();
+    const app = useApp();
+    await app.deleteData(path.path, kode_semester);
+    await fetchDataSemester();  
   } catch (error) {
-    console.error("Error deleting data semester:", error);
+    console.error("Error deleting data semester:", error); 
+  } finally {
+    dataSemester.value.loading = false;  
   }
 };
+
 
 onMounted(() => {
   fetchDataSemester();

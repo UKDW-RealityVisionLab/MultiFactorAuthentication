@@ -6,7 +6,7 @@ const port= 3000;
 
 const kelasRoute= require('./routes/kelas.js');
 const mkRoute= require('./routes/matakuliah.js');
-const userRouter= require('./routes/users')
+const mahasiswaRouter= require('./routes/mahasiswa.js');
 const dosenRouter= require('./routes/dosen.js')
 const logReq= require('./middleware/log.js')
 const sesi= require('./routes/sesi')
@@ -24,7 +24,7 @@ app.use(express.json())
 // app.use('/presensi',presensiRoute);
 app.use('/matakuliah',mkRoute);
 app.use('/kelas',kelasRoute);
-app.use('/users',userRouter)
+app.use('/mahasiswa', mahasiswaRouter)
 app.use('/dosen',dosenRouter)
 app.use('/sesi',sesi)
 app.use('/ruang',ruang)

@@ -1,12 +1,13 @@
 <script setup>
-import axios from 'axios';
 import { ref, onMounted } from 'vue';
-import { useRoute, useRouter } from "vue-router";
 
-const route = useRoute();
+import path from '../../router/qr.router';
+import { useRouter, useRoute } from "vue-router"; 
+import { useApp } from '../../stores/app.store.js';
+const route = useRoute()
 const router = useRouter();
+
 const kode_jadwal = route.params.kode_jadwal;
-const baseURL = 'http://localhost:3000/presensi'; 
 
 const dataApi = ref({
   qrCode: null,
@@ -22,10 +23,11 @@ const isGenerating = ref(false); // Variable to track whether QR is being genera
 const showQr = async () => {
   try {
     isGenerating.value = true; // Set the flag to indicate QR generation is in progress
-    const resp = await axios.get(baseURL + "/" + kode_jadwal);
+    const fun= useApp()
+    const resp = await fun.getDataById(path.path, kode_jadwal);
     const response = { data: resp}
-    console.log('API response:', response.data);
-    const responseData = response.data.data
+    console.log('API response:', response);
+    const responseData = response.data
     dataApi.value.qrCode = responseData;
     const startTime = new Date(); 
     dataApi.value.startTime = startTime.toLocaleTimeString();

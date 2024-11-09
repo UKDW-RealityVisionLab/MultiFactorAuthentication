@@ -1,6 +1,6 @@
 const db = require("../config/db");
 
-const getUsers = async (req, res) => {
+const getMahasiswa = async (req, res) => {
   try {
     const queryGet = 'SELECT * FROM user_mahasiswa';
     const result = await new Promise((resolve, reject) => {
@@ -17,7 +17,7 @@ const getUsers = async (req, res) => {
 }
 };
 
-const addUsers = async (req, res) => {
+const addMahasiswa = async (req, res) => {
   try {
     const {
       nim,
@@ -47,7 +47,7 @@ const addUsers = async (req, res) => {
   }
 };
 
-const deleteUsers = async (req, res) => {
+const deleteMahasiswa = async (req, res) => {
   try{
     const { nim } = req.params;
   console.log("id yang dihapus:", nim);
@@ -68,7 +68,7 @@ const deleteUsers = async (req, res) => {
   }
 };
 
-const editUsers = async (req, res) => {
+const editMahasiswa = async (req, res) => {
   try {
     const { nim } = req.params;
     console.log("nim yang diedit:", nim);
@@ -131,4 +131,4 @@ const getByIdMahasiswa =async (req, res) => {
   }
 };
 
-module.exports = { getUsers, addUsers, editUsers, deleteUsers, getByIdMahasiswa };
+module.exports = { getMahasiswa, addMahasiswa, editMahasiswa, deleteMahasiswa, getByIdMahasiswa };
