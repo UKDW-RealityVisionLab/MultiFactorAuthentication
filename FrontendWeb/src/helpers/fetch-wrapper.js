@@ -4,7 +4,8 @@ export const fetchWrapper = {
     get: request('GET'),
     post: request('POST'),
     put: request('PUT'),
-    delete: request('DELETE')
+    delete: request('DELETE'),
+    patch: request('PATCH')
 };
 
 function request(method) {

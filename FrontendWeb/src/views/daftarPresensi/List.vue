@@ -1,13 +1,8 @@
 <script setup>
 import { ref, onMounted } from 'vue';
-import axios from 'axios';
-import { useRoute, useRouter } from "vue-router";
+import { useApp } from '../../stores/app.store.js';
 
-const route = useRoute();
-const router = useRouter();
-const kode_jadwal = route.params.kode_jadwal;
-
-const baseUrl = "http://localhost:3000/daftarpresensi";
+import path from '../../router/daftarPresensi.router';
 const dataApi = ref({
   data: [],
   loading: false,
@@ -17,16 +12,16 @@ const dataApi = ref({
 const fetchData = async () => {
   dataApi.value.loading = true;
   try {
-    const response = await axios.get(baseUrl+"/"+kode_jadwal);
-    dataApi.value.data = response.data;
+    const app = useApp();
+    const response = await app.getData(path.path);
+    dataApi.value.data = response;
+    console.log("Data yang didapat:", dataApi.value.data); 
   } catch (error) {
     dataApi.value.error = error.message;
   } finally {
     dataApi.value.loading = false;
   }
 };
-
-
 
 onMounted(() => {
   fetchData();

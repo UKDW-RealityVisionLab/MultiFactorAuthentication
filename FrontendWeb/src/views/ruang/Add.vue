@@ -1,16 +1,18 @@
 <script setup>
+import { ref } from 'vue';
+import { useApp } from '../../stores/app.store.js';
+import path from '../../router/ruang.router';
 import { Form, Field } from "vee-validate";
 import * as Yup from "yup";
-import { useRoute } from "vue-router";
-import { ref } from "vue";
-import axios from "axios";
-
 import { useAlertStore } from "@/stores";
-import { router } from "@/router";
+import { useRouter } from 'vue-router';
 
-const alertStore = useAlertStore();
-const route = useRoute();
-const baseUrl = "http://localhost:3000/ruang";
+const router = useRouter();
+
+const ruang = ref({
+  loading: false,
+  error: null,
+});
 
 const schema = Yup.object().shape({
   kodeRuang: Yup.string().required("kode ruang is required"),
@@ -25,39 +27,31 @@ const schema = Yup.object().shape({
     .max(180, "Longitude must be at most 180"),
 });
 
-const ruang = ref({
-  loading: false,
-  error: null,
-});
-
-const addRuang = async (data) => {
-  ruang.value.loading = true; // Fix variable name
-  try {
-    const response = await axios.post(baseUrl, data);
-    alertStore.success(response.data.message);
-  } catch (error) {
-    ruang.value.error = error.message;
-  } finally {
-    ruang.value.loading = false;
-  }
-};
 
 async function onSubmit(values) {
+  const alertStore = useAlertStore();
+  const app = useApp();
+  ruang.value.loading = true;
+
   try {
-    const ruangData = {
+    const newRuang = {
       kodeRuang: values.kodeRuang,
       nama: values.nama,
       latitude: values.latitude, 
       longitude: values.longitude, 
     };
 
-    await addRuang(ruangData);
-    alertStore.success("ruang added");
-    await router.push("/ruang");
+    await app.addData(newRuang, path.path);
+    alertStore.success("Ruang added successfully");
+    await router.push(path.path);
+
   } catch (error) {
+    ruang.value.error = "Failed to add ruang. Please try again.";
     alertStore.error("Failed to add ruang");
+  } finally {
+    ruang.value.loading = false;
   }
-}
+};
 </script>
 
 <template>
@@ -120,7 +114,7 @@ async function onSubmit(values) {
           ></span>
           Save
         </button>
-        <router-link to="/mata-kuliah" class="btn btn-link">Cancel</router-link>
+        <router-link to="/ruang" class="btn btn-link">Cancel</router-link>
       </div>
     </Form>
   </template>

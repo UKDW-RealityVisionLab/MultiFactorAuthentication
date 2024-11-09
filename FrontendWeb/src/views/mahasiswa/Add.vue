@@ -1,36 +1,25 @@
 <script setup>
+import { ref } from 'vue';
+import { useApp } from '../../stores/app.store.js';
+import path from '../../router/mahasiswa.router';
 import { Form, Field } from "vee-validate";
 import * as Yup from "yup";
-import { useRoute } from "vue-router";
-import { ref, onMounted } from "vue";
-import axios from "axios";
-
 import { useAlertStore } from "@/stores";
-import { router } from "@/router";
+import { useRouter } from 'vue-router';
 
-const alertStore = useAlertStore();
-const route = useRoute();
-const baseUrl = "http://localhost:3000/users";
-
-
-const mahasiswa = ref({
+const router = useRouter();
+const dataMahasiswa = ref({
+  data: [],
   loading: false,
   error: null,
 });
 
-const addMahasiswa = async (data) => {
-  mahasiswa.value.loading = true;
-  try {
-    const response = await axios.post(baseUrl, data);
-    alertStore.success(response.data.message);
-  } catch (error) {
-    mahasiswa.value.error = error.message;
-  } finally {
-    mahasiswa.value.loading = false;
-  }
-};
 
 async function onSubmit(values) {
+  const alertStore = useAlertStore();
+  const app = useApp();
+  dataMahasiswa.value.loading = true;
+
   try {
     const newMahasiswa = {
       nim: values.nim,
@@ -39,18 +28,24 @@ async function onSubmit(values) {
       nama: values.nama,
     };
 
-    await addMahasiswa(newMahasiswa);
-    alertStore.success("Mahasiswa added");
-    await router.push("/mahasiswa");
+    await app.addData(newMahasiswa, path.path);
+    alertStore.success("mahasiswa added successfully");
+    await router.push(path.path);
+
   } catch (error) {
-    alertStore.error("Failed to add Mahasiswa");
+    dataMahasiswa.value.error = "Failed to add mahasiswa. Please try again.";
+    alertStore.error("Failed to add mahasiswa");
+  } finally {
+    dataMahasiswa.value.loading = false;
   }
-}
+};
+
 </script>
+
 
 <template>
   <h1>Add Mahasiswa</h1>
-  <template v-if="!(mahasiswa?.loading || mahasiswa?.error)">
+  <template v-if="!(dataMahasiswaa?.loading || dataMahasiswa?.error)">
     <Form
       @submit="onSubmit"
       :validation-schema="schema"
@@ -114,15 +109,15 @@ async function onSubmit(values) {
       </div>
     </Form>
   </template>
-  <template v-if="mahasiswa?.loading">
+  <template v-if="dataMahasiswa?.loading">
     <div class="text-center m-5">
       <span class="spinner-border spinner-border-lg align-center"></span>
     </div>
   </template>
-  <template v-if="mahasiswa?.error">
+  <template v-if="dataMahasiswa?.error">
     <div class="text-center m-5">
       <div class="text-danger">
-        Error loading Kelas: {{ mahasiswa.error }}
+        Error loading Kelas: {{ dataMahasiswa.error }}
       </div>
     </div>
   </template>

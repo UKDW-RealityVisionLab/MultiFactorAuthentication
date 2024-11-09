@@ -1,16 +1,19 @@
 <script setup>
+import { ref } from 'vue';
+import { useApp } from '../../stores/app.store.js';
+import path from '../../router/jadwal.router';
 import { Form, Field } from "vee-validate";
 import * as Yup from "yup";
-import { useRoute } from "vue-router";
-import { ref } from "vue";
-import axios from "axios";
-
 import { useAlertStore } from "@/stores";
-import { router } from "@/router";
+import { useRouter } from 'vue-router';
 
-const alertStore = useAlertStore();
-const route = useRoute();
-const baseUrl = "http://localhost:3000/jadwal";
+const router = useRouter();
+
+const dataApi = ref({
+  data: [],
+  loading: false,
+  error: null,
+});
 
 const schema = Yup.object().shape({
   kode_jadwal: Yup.string().required("kode jadwal is required"),
@@ -20,40 +23,31 @@ const schema = Yup.object().shape({
   tanggal: Yup.date()
 });
 
-const dataApi = ref({
-  loading: false,
-  error: null,
-});
-
-const addJadwal = async (data) => {
+async function onSubmit(values) {
+  const alertStore = useAlertStore();
+  const app = useApp();
   dataApi.value.loading = true;
+
   try {
-    const response = await axios.post(baseUrl, data);
-    alertStore.success(response.data.message);
+    const newJadwal = {
+      kode_jadwal: values.kode_jadwal,
+      kode_kelas: values.kode_kelas,
+      kode_ruang: values.kode_ruang,
+      kode_sesi: values.kode_sesi, 
+      tanggal: values.tanggal, 
+    };
+
+    await app.addData(newJadwal, path.path);
+    alertStore.success("Jadwal added successfully");
+    await router.push(path.path);
+
   } catch (error) {
-    dataApi.value.error = error.message;
+    dataApi.value.error = "Failed to add jadwal. Please try again.";
+    alertStore.error("Failed to add jadwal");
   } finally {
     dataApi.value.loading = false;
   }
 };
-
-async function onSubmit(values) {
-  try {
-    const data = {
-      kodeJadwal: values.kode_jadwal,
-      kodeKelas: values.kode_kelas,
-      kodeRuang: values.kode_ruang,
-      kodeSesi: values.kode_sesi, 
-      tanggal: values.tanggal, 
-    };
-
-    await addJadwal(values);
-    alertStore.success("jadwal added");
-    await router.push("/jadwal");
-  } catch (error) {
-    alertStore.error("Failed to add jadwal");
-  }
-}
 </script>
 
 <template>
