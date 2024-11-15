@@ -25,7 +25,7 @@ const schema = Yup.object().shape({
     .min(0, "SKS must be at least 0")
     .max(9, "SKS must be at most 9"),
   harga: Yup.number(),
-  is_praktikum: Yup.boolean(),
+  is_praktikum: Yup.string(),
   minimal_sks: Yup.number()
     // .required("Minimal SKS is required")
     .min(0, "Minimal SKS must be at least 1"),
@@ -104,7 +104,9 @@ async function onSubmit(values) {
       <div class="form-row">
         <div class="form-group col">
           <label> Praktikum </label>
-          <Field name="is_praktikum" type="checkbox" class="form-check-input" />
+          <Field name="is_praktikum" type="text" class="form-control"
+            :class="{ 'is-invalid': errors.is_praktikum }" />
+          <div class="invalid-feedback">{{ errors.is_praktikum }}</div>
         </div>
         <div class="form-group col">
           <label>Minimal SKS</label>
