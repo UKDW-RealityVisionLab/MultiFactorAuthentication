@@ -1,34 +1,40 @@
 <script setup>
 import { ref, onMounted } from 'vue';
-import axios from 'axios';
+import { useApp } from '../../stores/app.store.js';
 import { router } from "@/router"
+import path from '../../router/kelas.routes';
 
-const baseUrl = "http://localhost:3000/kelas";
-const kelass = ref({
+const dataKelas = ref({
   data: [],
-  // loading: false,
+  loading: false,
   error: null,
 });
 
 
 const fetchDataKelas = async () => {
-  // kelass.value.loading = true;
+  dataKelas.value.loading = true;
   try {
-    const response = await axios.get(baseUrl);
-    kelass.value.data = response.data;
+    const app = useApp();
+    const response = await app.getData(path.path);
+    dataKelas.value.data = response;
+    console.log("Data yang didapat:", dataKelas.value.data); 
   } catch (error) {
-    kelass.value.error = error.message;
+    dataKelas.value.error = error.message;
   } finally {
-    // kelass.value.loading = false;
+    dataKelas.value.loading = false;
   }
 };
 
-const deleteKelas = async (kodeKelass) => {
+const deleteKelas = async (kodeKelas) => {
+  dataKelas.value.loading = true;
   try {
-    await axios.delete(`${baseUrl}/${kodeKelass}`);
-    await fetchDataKelas();
+    const app = useApp();
+    await app.deleteData(path.path, kodeKelas);
+    await fetchDataSemester();  
   } catch (error) {
-    console.error("Error deleting kelas:", error);
+    console.error("Error deleting data kelas:", error); 
+  } finally {
+    dataKelas.value.loading = false;  
   }
 };
 
@@ -38,8 +44,7 @@ onMounted(() => {
 
 const selectKelas= (id)=>{
   router.push(`/jadwal/jadwalPresensi/${id}`)
-}
-
+};
 </script>
 
 <template>
@@ -56,7 +61,7 @@ const selectKelas= (id)=>{
       </tr>
     </thead>
     <tbody>
-      <template v-if="kelass.loading">
+      <template v-if="dataKelas.loading">
         <tr>
           <td colspan="8" class="text-center">
             <span class="spinner-border spinner-border-lg align-center"></span>
@@ -64,16 +69,16 @@ const selectKelas= (id)=>{
         </tr>
       </template>
       
-      <template v-else-if="kelass.error">
+      <template v-else-if="dataKelas.error">
         <tr>
           <td colspan="8">
-            <div class="text-danger">Error loading kelas: {{ kelass.error }}</div>
+            <div class="text-danger">Error loading kelas: {{ dataKelas.error }}</div>
           </td>
         </tr>
       </template>
 
       <template v-else>
-        <tr v-for="item in kelass.data" :key="item.kode_kelas">
+        <tr v-for="item in dataKelas.data" :key="item.kode_kelas">
           <td>{{ item.kodeKelas }}</td>
           <td>{{ item.matakuliah }}</td>
           <td>{{ item.grup }}</td>

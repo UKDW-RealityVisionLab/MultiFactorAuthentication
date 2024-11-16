@@ -1,8 +1,8 @@
 <script setup>
 import { ref, onMounted } from 'vue';
-import axios from 'axios';
+import { useApp } from '../../stores/app.store.js';
 
-const baseUrl = "http://localhost:3000/sesi";
+import path from '../../router/sesi.routes';
 const sesi = ref({
   data: [],
   loading: false,
@@ -12,8 +12,9 @@ const sesi = ref({
 const fetchDataSesi = async () => {
   sesi.value.loading = true;
   try {
-    const response = await axios.get(baseUrl);
-    sesi.value.data = response.data;
+    const app = useApp();
+    const response = await app.getData(path.path);
+    sesi.value.data = response;
     console.log("Data yang didapat:", sesi.value.data); 
   } catch (error) {
     sesi.value.error = error.message;

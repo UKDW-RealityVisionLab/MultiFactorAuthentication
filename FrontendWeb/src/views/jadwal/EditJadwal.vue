@@ -1,43 +1,22 @@
 <script setup>
+import { useApp } from '../../stores/app.store.js';
+import path from '../../router/jadwal.router';
 import { Form, Field } from "vee-validate";
 import * as Yup from "yup";
-import { useRoute, useRouter } from "vue-router";
-import { ref, onMounted } from "vue";
-import axios from "axios";
-
 import { useAlertStore } from "@/stores";
-
+import { useRouter, useRoute } from "vue-router"; 
+import { ref, onMounted } from 'vue';
+import { fetchWrapper } from '@/helpers';
 const alertStore = useAlertStore();
-const route = useRoute();
 const router = useRouter();
+const route = useRoute();
 const kodeJadwal = route.params.kode_jadwal;
-const baseUrl = "http://localhost:3000/jadwal";
+
 const dataApi = ref({
-  data: [],
+  dataId: [],
   loading: false,
   error: null,
 });
-
-const fetchDataJadwal = async (url) => {
-  try {
-    const response = await axios.get(url);
-    dataApi.value.data = response.data;
-    console.log('Data by kode jadwal:', dataApi.value.data);
-  } catch (error) {
-    alertStore.error("Failed to fetch data");
-    console.log(kodeJadwal);
-  }
-};
-
-if (kodeJadwal) {
-  onMounted(async () => {
-    try {
-      await fetchDataJadwal(`${baseUrl}/${kodeJadwal}`);
-    } catch (error) {
-      alertStore.error("Failed to fetch data");
-    }
-  });
-}
 
 const schema = Yup.object().shape({
   kode_ruang: Yup.string().required("Kode ruang is required"),
@@ -45,30 +24,47 @@ const schema = Yup.object().shape({
   tanggal: Yup.date().required("Tanggal is required"),
 });
 
-const editJadwal = async (values) => {
+const fetchDataJadwal = async () => {
+  dataApi.value.loading = true;
   try {
-    const data = {
-      kode_ruang: values.kode_ruang,
-      kode_sesi: values.kode_sesi,
-      tanggal: values.tanggal,
-    };
-    console.log("Data yang disend request:", data);
-    await axios.patch(`${baseUrl}/${kodeJadwal}`, data);
-    alertStore.success("Jadwal updated");
-    router.push("/jadwal");
+    const app = useApp();
+    const response = await app.getDataById(path.path, kodeJadwal);
+    dataApi.value.dataId = response; 
+    console.log("Data yang didapat:", dataApi.value.dataId); 
   } catch (error) {
-    console.error("Failed to update jadwal:", error.message);
-    alertStore.error("Failed to update jadwal");
+    dataApi.value.error = error.message;
+  } finally {
+    dataApi.value.loading = false;
   }
 };
 
-async function onSubmit(values) {
-  try {
-    await editJadwal(values);
-  } catch (error) {
-    alertStore.error("Failed to update jadwal");
+onMounted(() => {
+  if (kodeJadwal) {
+    fetchDataJadwal();
   }
-}
+});
+
+async function onSubmit(values) {
+    const alertStore = useAlertStore();
+    const app = useApp();
+    try {
+        dataApi.value.loading = true;
+        const data = {
+          kode_ruang: values.kode_ruang,
+          kode_sesi: values.kode_sesi,
+          tanggal: values.tanggal,
+        };
+        dataApi.value.loading = true;
+        console.log(path);
+        await app.editData(path.path, kodeJadwal, data);
+        await router.push(path.path);
+        alertStore.success("Jadwal update successfully");
+    } catch (error) {
+        alertStore.error(error.message || "Failed to update");
+    } finally {
+        dataApi.value.loading = false;
+    }
+};
 </script>
 
 <template>
@@ -78,7 +74,7 @@ async function onSubmit(values) {
       @submit="onSubmit"
       :validation-schema="schema"
       v-slot="{ errors, isSubmitting }"
-      v-for="data in dataApi.data" :key="data.kodeJadwal"
+      v-for="data in dataApi.dataId" :key="data.kodeJadwal"
       :initial-values="data"
     >
       <div class="form-row">

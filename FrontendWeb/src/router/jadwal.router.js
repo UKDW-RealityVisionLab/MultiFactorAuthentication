@@ -1,4 +1,4 @@
-import { Layout, List, Add, Edit,ListSelect } from '@/views/jadwal';
+import { Layout, List, Add, Edit, ListSelect} from '@/views/jadwal';
 
 export default {
     path: '/jadwal',

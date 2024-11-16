@@ -1,33 +1,39 @@
 <script setup>
 import { ref, onMounted } from 'vue';
-import axios from 'axios';
+import { useApp } from '../../stores/app.store.js';
 
-const baseUrl = "http://localhost:3000/matakuliah";
-const matkul = ref({
+import path from '../../router/matkul.router';
+
+const dataMatkul = ref({
   data: [],
   loading: false,
   error: null,
 });
 
 const fetchDataMatkul = async () => {
-  matkul.value.loading = true;
+  dataMatkul.value.loading = true;
   try {
-    const response = await axios.get(baseUrl);
-    matkul.value.data = response.data;
+    const app = useApp();
+    const response = await app.getData(path.path);
+    dataMatkul.value.data = response;
+    console.log("Data yang didapat:", dataMatkul.value.data); 
   } catch (error) {
-    matkul.value.error = error.message;
+    dataMatkul.value.error = error.message;
   } finally {
-    matkul.value.loading = false;
+    dataMatkul.value.loading = false;
   }
 };
 
 const deleteMatkul = async (kodeMatakuliah) => {
+  dataMatkul.value.loading = true;
   try {
-    await axios.delete(`${baseUrl}/${kodeMatakuliah}`);
-    await fetchDataMatkul();
+    const app = useApp();
+    await app.deleteData(path.path, kodeMatakuliah);
+    await fetchDataMatkul();  
   } catch (error) {
-    console.error("Error deleting Mata Kuliah:", error);
-    alertStore.error("Failed to delete Mata Kuliah");
+    console.error("Error deleting data mata kuliah:", error); 
+  } finally {
+    dataMatkul.value.loading = false;  
   }
 };
 
@@ -44,7 +50,7 @@ onMounted(() => {
   <table class="table table-striped">
     <thead>
       <tr>
-        <th style="width: 30%">Kode mata kuliah</th>
+        <th style="width: 30%">Kode Mata Kuliah</th>
         <th style="width: 30%">Nama Mata Kuliah</th>
         <th style="width: 25%">SKS</th>
         <th style="width: 25%">Harga</th>
@@ -55,7 +61,7 @@ onMounted(() => {
       </tr>
     </thead>
     <tbody>
-      <template v-if="matkul.loading">
+      <template v-if="dataMatkul.loading">
         <tr>
           <td colspan="8" class="text-center">
             <span class="spinner-border spinner-border-lg align-center"></span>
@@ -63,16 +69,16 @@ onMounted(() => {
         </tr>
       </template>
       
-      <template v-else-if="matkul.error">
+      <template v-else-if="dataMatkul.error">
         <tr>
           <td colspan="8">
-            <div class="text-danger">Error loading matkul: {{ matkul.error }}</div>
+            <div class="text-danger">Error loading matkul: {{ dataMatkul.error }}</div>
           </td>
         </tr>
       </template>
 
       <template v-else>
-        <tr v-for="mat in matkul.data" :key="mat.kode_matakuliah">
+        <tr v-for="mat in dataMatkul.data" :key="mat.kode_matakuliah">
           <td>{{ mat.kode_matakuliah }}</td>
           <td>{{ mat.nama_matakuliah }}</td>
           <td>{{ mat.sks }}</td>

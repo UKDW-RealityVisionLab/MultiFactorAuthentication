@@ -1,102 +1,79 @@
 <script setup>
+import { useApp } from '../../stores/app.store.js';
+import path from '../../router/mahasiswa.router';
 import { Form, Field } from "vee-validate";
 import * as Yup from "yup";
-import { useRoute } from "vue-router";
-import { ref, onMounted } from "vue";
-import axios from "axios";
-
 import { useAlertStore } from "@/stores";
-import { router } from "@/router";
-
+import { useRouter, useRoute } from "vue-router"; 
+import { ref, onMounted } from 'vue';
+import { fetchWrapper } from '@/helpers';
 const alertStore = useAlertStore();
+const router = useRouter();
 const route = useRoute();
-const nim = route.params.nim; // Corrected the variable name
-const baseUrl = "http://localhost:3000/users";
-const mahasiswaData = ref({
+const kodeMahasiswa = route.params.nim;
+
+const dataMahasiswa = ref({
     dataId: [],
     loading: false,
     error: null,
 });
 
-const fetchMahasiswaById = async (url) => {
-    try {
-        const response = await axios.get(url);
-        mahasiswaData.value.dataId = response.data;
-        console.log('Data by Nim:', mahasiswaData.value.dataId);
-    } catch (error) {
-        alertStore.error("Failed to fetch kelas data");
-    }
+
+const fetchDataMahasiswa = async () => {
+  dataMahasiswa.value.loading = true;
+  try {
+    const app = useApp();
+    const response = await app.getDataById(path.path, kodeMahasiswa);
+    dataMahasiswa.value.dataId = response; 
+    console.log("Data yang didapat:", dataMahasiswa.value.dataId); 
+  } catch (error) {
+    dataMahasiswa.value.error = error.message;
+  } finally {
+    dataMahasiswa.value.loading = false;
+  }
 };
 
-if (nim) {
-    onMounted(async () => {
-        try {
-            await fetchMahasiswaById(`${baseUrl}/${nim}`);
-        } catch (error) {
-            alertStore.error("Failed to fetch data mahasiswa");
-        }
-    });
-}
+onMounted(() => {
+  if (kodeMahasiswa) {
+    fetchDataMahasiswa();
+  }
+});
 
-const editMahasiswa = async (values) => {
-    let message;
-    mahasiswaData.value.loading = true;
+
+async function onSubmit(values) {
+    const alertStore = useAlertStore();
+    const app = useApp();
     try {
+        dataMahasiswa.value.loading = true;
         const data = {
             kode_prodi: values.kode_prodi,
             tahun_angkatan: values.tahun_angkatan,
             nama: values.nama,
         };
-        console.log("Data yang disend request:", data);
-        await axios.patch(`${baseUrl}/${nim}`, data);
-
-        message = "Mahasiswa updated=" + nim;
-        alertStore.success(message);
+        dataMahasiswa.value.loading = true;
+        console.log(path);
+        await app.editData(path.path, kodeMahasiswa, data);
+        await router.push(path.path);
+        alertStore.success("Mahasiswa update successfully");
     } catch (error) {
-        if (error.response && error.response.status === 500) {
-            console.error("Internal Server Error:", error.message);
-        } else {
-            console.error("Failed to update mahasiswa:", error.message);
-        }
-        alertStore.error("Failed to update mahasiswa");
-        mahasiswaData.value.error = error.message;
+        alertStore.error(error.message || "Failed to update");
     } finally {
-        mahasiswaData.value.loading = false;
+        dataMahasiswa.value.loading = false;
     }
 };
-
-async function onSubmit(values) {
-    try {
-        let message;
-        if (nim) {
-            try {
-                await editMahasiswa(values);
-                console.log(values);
-                await router.push("/mahasiswa");
-                message = "Kelas updated kode kuliah=" + nim;
-            } catch (error) {
-                alertStore.error("Failed to update");
-            }
-        }
-        alertStore.success(message);
-    } catch (error) {
-        alertStore.error(error);
-    }
-}
 </script>
 
 <template>
   <h1>Edit Mahasiswa</h1>
-  <template v-if="!(mahasiswaData?.loading || mahasiswaData?.error)">
+  <template v-if="!dataMahasiswa.loading && !dataMahasiswa.error">
     <Form
         @submit="onSubmit"
         :validation-schema="schema"
-        v-for="data in mahasiswaData.dataId"
-        :key="data.nim"
+        v-for="data in dataMahasiswa.dataId"
         :initial-values="data"
         v-slot="{ errors, isSubmitting }"
       >
-      <div class="form-row" v-for="mah in mahasiswaData.dataId" :key="mah.nim" :initial-values="mah">
+      <div class="form-row" :key="data.nim">
         <div class="form-group col">
           <label>Kode Prodi</label>
           <Field
@@ -141,15 +118,15 @@ async function onSubmit(values) {
       </div>
     </Form>
   </template>
-  <template v-if="mahasiswaData?.loading">
+  <template v-if="dataMahasiswa.loading">
     <div class="text-center m-5">
       <span class="spinner-border spinner-border-lg align-center"></span>
     </div>
   </template>
-  <template v-if="mahasiswaData?.error">
+  <template v-if="dataMahasiswa.error">
     <div class="text-center m-5">
       <div class="text-danger">
-        Error loading Kelas: {{ mahasiswaData.error }}
+        Error loading mahasiswa: {{ dataMahasiswa.error }}
       </div>
     </div>
   </template>

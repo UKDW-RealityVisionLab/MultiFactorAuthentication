@@ -1,61 +1,50 @@
 <script setup>
+import { ref } from 'vue';
+import { useApp } from '../../stores/app.store.js';
+import path from '../../router/kelas.routes';
 import { Form, Field } from "vee-validate";
 import * as Yup from "yup";
-import { useRoute } from "vue-router";
-import { ref } from "vue";
-import axios from "axios";
-
 import { useAlertStore } from "@/stores";
-import { router } from "@/router";
+import { useRouter } from 'vue-router';
 
-const alertStore = useAlertStore();
-const route = useRoute();
-const baseUrl = "http://localhost:3000/kelas";
-const kelasss = ref({
+const router = useRouter();
+
+const dataKelas = ref({
+  data: [],
   loading: false,
   error: null,
 });
 
-const schema = Yup.object().shape({
-  kode_kelas: Yup.number().required("Kode Kelas is required"),
-  kode_matakuliah: Yup.number().required("Kode Matakuliah is required"),
-  group_kelas: Yup.string(),
-  kode_semester: Yup.number(),
-  kode_dosen: Yup.number(),
-});
+async function onSubmit(values) {
+  const alertStore = useAlertStore();
+  const app = useApp();
+  dataKelas.value.loading = true;
 
-const addKelas = async (data) => {
-  kelasss.value.loading = true;
   try {
-    const response = await axios.post(baseUrl, data);
-    alertStore.success(response.data.message);
+    const newKelas = {
+      kode_kelas: values.kode_kelas,
+      kode_matakuliah: values.kode_matakuliah,
+      group_kelas: values.group_kelas,
+      kode_semester: values.kode_semester,
+      kode_dosen: values.kode_dosen
+    };
+
+    await app.addData(newKelas, path.path);
+    alertStore.success("Kelas added successfully");
+    await router.push(path.path);
+
   } catch (error) {
-    kelasss.value.error = error.message;
+    dataKelas.value.error = "Failed to add kelas. Please try again.";
+    alertStore.error("Failed to add kelas");
   } finally {
-    kelasss.value.loading = false;
+    dataKelas.value.loading = false;
   }
 };
-
-async function onSubmit(values) {
-  try {
-    let message;
-    try {
-      await addKelas(values);
-      message = "Kelas added";
-      await router.push("/kelas");
-    } catch (error) {
-      alertStore.error("Failed to add Kelas");
-    }
-    alertStore.success(message);
-  } catch (error) {
-    alertStore.error(error);
-  }
-}
 </script>
 
 <template>
   <h1>Add Kelas</h1>
-  <template v-if="!(kelasss?.loading || kelasss?.error)">
+  <template v-if="!(dataKelas?.loading || dataKelas?.error)">
     <Form
       @submit="onSubmit"
       :validation-schema="schema"
@@ -126,15 +115,15 @@ async function onSubmit(values) {
       </div>
     </Form>
   </template>
-  <template v-if="kelasss?.loading">
+  <template v-if="dataKelas?.loading">
     <div class="text-center m-5">
       <span class="spinner-border spinner-border-lg align-center"></span>
     </div>
   </template>
-  <template v-if="kelasss?.error">
+  <template v-if="dataKelas?.error">
     <div class="text-center m-5">
       <div class="text-danger">
-        Error loading Kelas: {{ kelasss.error }}
+        Error loading Kelas: {{ dataKelas.error }}
       </div>
     </div>
   </template>

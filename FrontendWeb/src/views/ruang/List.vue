@@ -1,8 +1,8 @@
 <script setup>
 import { ref, onMounted } from 'vue';
-import axios from 'axios';
+import { useApp } from '../../stores/app.store.js';
 
-const baseUrl = "http://localhost:3000/ruang";
+import path from '../../router/ruang.router';
 const ruang = ref({
   data: [],
   loading: false,
@@ -12,8 +12,10 @@ const ruang = ref({
 const fetchDataRuang = async () => {
   ruang.value.loading = true;
   try {
-    const response = await axios.get(baseUrl);
-    ruang.value.data = response.data;
+    const app = useApp();
+    const response = await app.getData(path.path);
+    ruang.value.data = response;
+    console.log("Data yang didapat:", ruang.value.data); 
   } catch (error) {
     ruang.value.error = error.message;
   } finally {
@@ -22,12 +24,15 @@ const fetchDataRuang = async () => {
 };
 
 const deleteRuang = async (kodeRuang) => {
+  ruang.value.loading = true;
   try {
-    await axios.delete(`${baseUrl}/${kodeRuang}`);
-    await fetchDataRuang();
+    const app = useApp();
+    await app.deleteData(path.path, kodeRuang);
+    await fetchDataRuang();  
   } catch (error) {
-    console.error("Error deleting :", error);
-    alertStore.error("Failed to delete ");
+    console.error("Error deleting data semester:", error); 
+  } finally {
+    ruang.value.loading = false;  
   }
 };
 
@@ -43,7 +48,7 @@ onMounted(() => {
   <router-link to="/ruang/add" class="btn btn-sm btn-success mb-2">Add ruang</router-link>
   <table class="table table-striped">
     <thead>
-      <tr>
+      <tr> 
         <th style="width: 30%">Kode ruang</th>
         <th style="width: 30%">Nama ruang</th>
         <th style="width: 25%">Latitude</th>
