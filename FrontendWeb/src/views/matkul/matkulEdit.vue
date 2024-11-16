@@ -11,7 +11,7 @@ const alertStore = useAlertStore();
 const router = useRouter();
 const route = useRoute();
 const kodeMatakuliah = route.params.kode_matakuliah;
-
+let praktik=  ref(true);
 const dataMatkul = ref({
   dataId: [],
   loading: false,
@@ -39,18 +39,30 @@ const fetchDataMatakuliah = async () => {
     const response = await app.getDataById(path.path, kodeMatakuliah);
     dataMatkul.value.dataId = response; 
     console.log("Data yang didapat:", dataMatkul.value.dataId); 
+    praktik.value = dataMatkul.value.dataId[0].is_praktikum;
+    if(praktik.value=="Yes"){
+      praktik.value=true
+    }
+
+    console.log("praktik:", praktik)
+    
   } catch (error) {
     dataMatkul.value.error = error.message;
   } finally {
     dataMatkul.value.loading = false;
   }
+  // return praktik
 };
+
 
 onMounted(() => {
   if (kodeMatakuliah) {
-    fetchDataMatakuliah();
+    fetchDataMatakuliah().then(() => {
+      console.log("Final value of praktik:", praktik.value);
+    });
   }
 });
+
 
 async function onSubmit(values) {
     const alertStore = useAlertStore();
@@ -61,7 +73,7 @@ async function onSubmit(values) {
           nama_matakuliah: values.nama_matakuliah,
           sks: values.sks,
           harga: values.harga,
-          is_praktikum: values.is_praktikum || false,
+          is_praktikum: praktik.value ? "Yes" : "No",
           minimal_sks: values.minimal_sks,
           tanggal_input: values.tanggal_input,
         };
@@ -104,8 +116,7 @@ async function onSubmit(values) {
       <div class="form-row">
         <div class="form-group col">
           <label> Praktikum </label>
-          <Field name="is_praktikum" type="text" class="form-control"
-            :class="{ 'is-invalid': errors.is_praktikum }" />
+          <input name="is_praktikum"  type="checkbox" class="form-check-input" v-model="praktik"   />
           <div class="invalid-feedback">{{ errors.is_praktikum }}</div>
         </div>
         <div class="form-group col">
