@@ -250,8 +250,8 @@ GET http://localhost:3000/semester/{kode_semester}
 ```
 NIDN tidak dapat di edit
 ### 8. Manajemen Mahasiswa
-- GET http://localhost:3000/users
-- POST http://localhost:3000/users
+- GET http://localhost:3000/mahasiswa
+- POST http://localhost:3000/mahasiswa
 Request Body
 ```
 {
@@ -261,7 +261,7 @@ Request Body
 "nama": "Aryo"
 }
 ```
-- PATCH http://localhost:3000/users/{nim}
+- PATCH http://localhost:3000/mahasiswa/{nim}
 **Request Body**
 ```
 {
@@ -270,9 +270,9 @@ Request Body
 "nama": "Aryo"
 }
 ```
-- DELETE http://localhost:3000/users/{nim}
+- DELETE http://localhost:3000/mahasiswa/{nim}
 - get by nim 
-GET http://localhost:3000/users/{nim}
+GET http://localhost:3000/mahasiswa/{nim}
 
 ### 9. Manajemen daftar presensi
 - GET localhost:3000/daftarpresensi/{kode_jadwal}
