@@ -2,6 +2,7 @@ import { defineStore } from 'pinia';
 import { fetchWrapper } from '@/helpers';
 import { router } from '@/router';
 import { useAlertStore } from '@/stores';
+import axios from 'axios';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -73,11 +74,12 @@ export const useApp = defineStore({
         
         async deleteData(endpoint, id) {
             try {
-              return await fetchWrapper.delete(`${baseUrl}${endpoint}/${id}`);
+                console.log(`Success to delete ${id}`)
+                return await fetchWrapper.delete(`${baseUrl}${endpoint}/${id}`);
             } catch (error) {
-              const alertStore = useAlertStore();
-              alertStore.error(error.message || 'Failed to delete data');
-              throw error; 
+                const alertStore = useAlertStore();
+                alertStore.error(error.message || 'Failed to delete data');
+                throw error; 
             }
           },
     }

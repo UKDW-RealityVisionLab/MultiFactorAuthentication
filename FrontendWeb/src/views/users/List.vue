@@ -6,35 +6,36 @@ import { useUsersStore } from '@/stores';
 const usersStore = useUsersStore();
 const { users } = storeToRefs(usersStore);
 
+console.log("user get from local:",users);
 usersStore.getAll();
 </script>
 
 <template>
-    <h1>Users</h1>
-    <router-link to="/users/add" class="btn btn-sm btn-success mb-2">Add User</router-link>
+    <h1>User</h1>
+    <!-- <router-link to="/users/add" class="btn btn-sm btn-success mb-2">Add User</router-link> -->
     <table class="table table-striped">
         <thead>
             <tr>
                 <th style="width: 30%">First Name</th>
                 <th style="width: 20%">Last Name</th>
                 <th style="width: 20%">Username</th>
-                <th style="width: 20%">Role</th>
+                <!-- <th style="width: 20%">Role</th> -->
                 <th style="width: 10%"></th>
             </tr>
         </thead>
         <tbody>
             <template v-if="users.length">
-                <tr v-for="user in users" :key="user.id">
+                <tr v-for="user in users" :key="user.nidn">
                     <td>{{ user.firstName }}</td>
                     <td>{{ user.lastName }}</td>
                     <td>{{ user.username }}</td>
-                    <td>{{ user.role }}</td>
+                    <!-- <td>{{ user.role }}</td> -->
                     <td style="white-space: nowrap">
-                        <router-link :to="`/users/edit/${user.id}`" class="btn btn-sm btn-primary mr-1">Edit</router-link>
+                        <!-- <router-link :to="`/users/edit/${user.id}`" class="btn btn-sm btn-primary mr-1">Edit</router-link>
                         <button @click="usersStore.delete(user.id)" class="btn btn-sm btn-danger btn-delete-user" :disabled="user.isDeleting">
                             <span v-if="user.isDeleting" class="spinner-border spinner-border-sm"></span>
                             <span v-else>Delete</span>
-                        </button>
+                        </button> -->
                     </td>
                 </tr>
             </template>

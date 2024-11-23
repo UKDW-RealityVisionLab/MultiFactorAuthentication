@@ -13,15 +13,31 @@ export const useUsersStore = defineStore({
     }),
     actions: {
         async register(user) {
-            await fetchWrapper.post(`${baseUrl}/register`, user);
+            /*
+            * Kode di bawah ini di-comment karena /register di backend belom dibuat,
+            * jadi kode di bawah ini hanya mencoba mencoba mengirim data user ke API register.
+            * kalo misal udah dibuat, di-uncomment aja
+            */
+            // await fetchWrapper.post(`${baseUrl}/register`, user);
+            console.log("hello world");
+            let storedArray = JSON.parse(localStorage.getItem('mfa-feapps')) || []; // Default to empty array if null
+
+            // Step 2: Append a new value to the array
+            storedArray.push(user);  // You can replace 'newItem' with any value you want to add
+
+            // Step 3: Store the updated array back to localStorage
+            localStorage.setItem('mfa-feapps', JSON.stringify(storedArray));
         },
         async getAll() {
             this.users = { loading: true };
-            try {
-                this.users = await fetchWrapper.get(baseUrl);    
-            } catch (error) {
-                this.users = { error };
-            }
+            // try {
+            //     this.users = await fetchWrapper.get(baseUrl);    
+            // } catch (error) {
+            //     this.users = { error };
+            // }
+            const usersLocal = JSON.parse(localStorage.getItem("mfa-feapps"));
+            console.log("get all return user:",usersLocal);
+            this.users = usersLocal;
         },
         async getById(id) {
             this.user = { loading: true };

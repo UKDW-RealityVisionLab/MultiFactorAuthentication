@@ -1,19 +1,22 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useApp } from '../../stores/app.store.js';
-
+import { router } from "@/router"
+import { useRouter, useRoute } from "vue-router"; 
 import path from '../../router/daftarPresensi.router';
+const route = useRoute();
+const kodeJadwal= route.params.kode_jadwal
+
 const dataApi = ref({
   data: [],
   loading: false,
   error: null,
 });
-// const kode_jadwal= route.params.kode_jadwal
 const fetchData = async () => {
   dataApi.value.loading = true;
   try {
     const app = useApp();
-    const response = await app.getData(path.path);
+    const response = await app.getDataById(path.path, kodeJadwal);
     dataApi.value.data = response;
     console.log("Data yang didapat:", dataApi.value.data); 
   } catch (error) {
