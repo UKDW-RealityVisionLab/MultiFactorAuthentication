@@ -16,8 +16,15 @@ export const useAuthStore = defineStore({
     actions: {
         async login(username, password) {
             try {
-                const user = await fetchWrapper.post(`${baseUrl}/authenticate`, { username, password });    
-
+                /*
+                * Kode di bawah ini di-comment karena /register di backend belom dibuat,
+                * jadi kode di bawah ini hanya mencoba mencoba mengirim data user ke API register.
+                * kalo misal udah dibuat, di-uncomment aja
+                */
+                // const user = await fetchWrapper.post(`${baseUrl}/authenticate`, { username, password });    
+                const users = JSON.parse(localStorage.getItem("mfa-feapps"));
+                console.log(users);
+                const [user] = users.filter(user => user.username === username && user.password === password);
                 // update pinia state
                 this.user = user;
 
@@ -38,3 +45,4 @@ export const useAuthStore = defineStore({
         }
     }
 });
+

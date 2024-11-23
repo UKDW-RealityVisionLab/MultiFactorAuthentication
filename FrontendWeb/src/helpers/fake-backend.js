@@ -1,3 +1,5 @@
+import axios from "axios";
+
 export { fakeBackend };
 
 // array in local storage for registered users
@@ -10,7 +12,6 @@ function fakeBackend() {
         return new Promise((resolve, reject) => {
             // wrap in timeout to simulate server api call
             setTimeout(handleRoute, 500);
-
             function handleRoute() {
                 switch (true) {
                     case url.endsWith('/users/authenticate') && opts.method === 'POST':
@@ -27,7 +28,7 @@ function fakeBackend() {
                         return deleteUser();
                     default:
                         // pass through any requests not handled above
-                        return realFetch(url, opts)
+                        return axios.get(url, opts)
                             .then(response => resolve(response))
                             .catch(error => reject(error));
                 }
