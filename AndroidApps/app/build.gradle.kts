@@ -64,6 +64,7 @@ android {
 }
 
 dependencies {
+    implementation ("com.tbuonomo:dotsindicator:4.3")
     implementation ("com.journeyapps:zxing-android-embedded:4.3.0")
 
     implementation("androidx.core:core-ktx:1.10.1")
