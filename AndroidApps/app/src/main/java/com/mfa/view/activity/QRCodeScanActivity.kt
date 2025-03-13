@@ -20,6 +20,7 @@ import androidx.appcompat.widget.Toolbar
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
+import androidx.lifecycle.lifecycleScope
 import com.google.zxing.ResultPoint
 import com.journeyapps.barcodescanner.BarcodeCallback
 import com.journeyapps.barcodescanner.BarcodeResult
@@ -28,7 +29,10 @@ import com.mfa.R
 import com.mfa.api.request.KodeJadwalRequest
 import com.mfa.databinding.ActivityQrCodeScanBinding
 import com.mfa.view.activity.LocationActivity.Companion.GETJADWAL
+import com.mfa.view.custom.LoadingDialogFragment
 import com.mfa.view_model.QRCodeViewModel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class QRCodeScanActivity : AppCompatActivity() {
     private lateinit var scanResultTextView: TextView
@@ -84,26 +88,40 @@ class QRCodeScanActivity : AppCompatActivity() {
 
         // Observe the ViewModel for API response
         qrCodeViewModel.kodeJadwalResponse.observe(this, Observer { result ->
+            val loadingDialog = LoadingDialogFragment()
+            loadingDialog.show(supportFragmentManager, "loadingDialog") // Tampilkan loading
+
             result.fold(onSuccess = { matched ->
-                val message = "verify qrcode berhasil"
-//                Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
-                showCustomDialog("Hasil scan qr code", "Selamat qr code yang anda scan  berhasil dan terbukti cocok. Satu langkah lagi untuk menuju keberhasilan presensi"
-                , "siap lanjut",
-                    {
-                        val intent = Intent(this, FaceVerificationActivity::class.java)
+                lifecycleScope.launch {
+                    delay(3000) //  Tunggu 3 detik
+                    loadingDialog.dismiss() // Sembunyikan loading setelah selesai
+
+                    showCustomDialog(
+                        "Hasil scan QR Code",
+                        "Selamat, QR code yang Anda scan berhasil dan terbukti cocok. Satu langkah lagi untuk menuju keberhasilan presensi.",
+                        "Siap, Lanjut"
+                    ) {
+                        val intent = Intent(this@QRCodeScanActivity, FaceProcessorActivity::class.java)
                         startActivity(intent)
                     }
-                )
-
+                }
             }, onFailure = {
-                Toast.makeText(this, "Error: ${it.message}", Toast.LENGTH_SHORT).show()
-                findViewById<RelativeLayout>(R.id.layout_eror).visibility = View.VISIBLE
-                findViewById<DecoratedBarcodeView>(R.id.barcode_scanner).visibility=View.INVISIBLE
+                loadingDialog.dismiss()
+
+                showCustomDialog(
+                    title = "Hasil scan QR Code",
+                    message = "Hasil QR code yang Anda scan tidak cocok dengan yang dibuat dosen di kelas Anda saat ini atau telah expired",
+                    buttonText = "Coba Lagi",
+                    action = {
+                        onResume()
+                    }
+                )
             })
         })
     }
 
-    private fun showCustomDialog(title: String, message: String, buttonText: String, action: () -> Unit) {
+
+        private fun showCustomDialog(title: String, message: String, buttonText: String, action: () -> Unit) {
         val dialog = Dialog(this)
         val dialogView: View = LayoutInflater.from(this).inflate(R.layout.custom_alert_dialog, null)
 

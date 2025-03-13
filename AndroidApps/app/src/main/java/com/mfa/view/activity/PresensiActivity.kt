@@ -44,13 +44,10 @@ class PresensiActivity : AppCompatActivity() {
 
     private lateinit var profileViewModel: ProfileViewModel
 
-
-
     companion object {
         const val ISVALID = "isValid"
         const val GETJADWAL = "jadwal"
         const val RUANG="ruang"
-        const val NAMAPERTEMUAN="matkul"
     }
 
 
@@ -59,8 +56,6 @@ class PresensiActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityPresensiBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
-
 
 
         viewModel = ViewModelProvider(

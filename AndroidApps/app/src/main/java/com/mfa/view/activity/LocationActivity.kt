@@ -39,8 +39,10 @@ import com.mfa.utils.PreferenceUtils
 import com.mfa.view.activity.PresensiActivity.Companion.GETJADWAL
 import com.mfa.view.activity.PresensiActivity.Companion.RUANG
 import com.mfa.view.custom.CustomAlertDialog
+import com.mfa.view.custom.LoadingDialogFragment
 import com.mfa.view_model.LocationViewModel
 import com.mfa.view_model.ViewModelFactory
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class LocationActivity : AppCompatActivity() {
@@ -73,6 +75,9 @@ class LocationActivity : AppCompatActivity() {
 
         val toolbar: Toolbar = binding.topAppBar
         setSupportActionBar(toolbar)
+        toolbar.setNavigationOnClickListener {
+            onBackPressed() // Kembali ke halaman sebelumnya
+        }
 //        val matkul = intent.getStringExtra(PertemuanActivity.NAMAPERTEMUAN)
         val title = intent.getStringExtra(GETJADWAL).toString()
         supportActionBar?.title = "$title"
@@ -165,8 +170,12 @@ class LocationActivity : AppCompatActivity() {
                         userLongitude = location.longitude
                         Log.d("latitude", location.latitude.toString())
                         Log.d("longitude", location.longitude.toString())
+                        val loadingDialog = LoadingDialogFragment()
+                        loadingDialog.show(supportFragmentManager, "loadingDialog")
                         lifecycleScope.launch {
+                            delay(3000)
                             validasiLocation()
+                            loadingDialog.dismiss()
                         }
                     } else {
                         Toast.makeText(this, "Lokasi tidak tersedia", Toast.LENGTH_SHORT).show()
