@@ -12,6 +12,9 @@ import com.mfa.api.response.PertemuanResponseItem
 import com.mfa.databinding.ItemPertemuanBinding
 import com.mfa.view.activity.PertemuanActivity
 import com.mfa.view.activity.PresensiActivity
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class PertemuanAdapter :
     ListAdapter<PertemuanResponseItem, PertemuanAdapter.PertemuanViewHolder>(
@@ -42,9 +45,19 @@ class PertemuanAdapter :
 
     inner class PertemuanViewHolder(val binding: ItemPertemuanBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(pertemuan: PertemuanResponseItem) {
-            binding.tanggal.text = pertemuan.tanggal
+            val inputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH) // Sesuaikan dengan format data
+            val outputFormat = SimpleDateFormat("dd MMM", Locale.ENGLISH)
+
+            try {
+                val date = inputFormat.parse(pertemuan.tanggal) // Konversi String ke Date
+                val current = outputFormat.format(date!!) // Format ulang Date ke format yang diinginkan
+                binding.tanggal.text = current
+            } catch (e: Exception) {
+                e.printStackTrace()
+                binding.tanggal.text = pertemuan.tanggal // Jika error, tampilkan data asli
+            }
+            binding.ruanganMatkul.text= pertemuan.ruang
             binding.namaMatkul.text = pertemuan.jadwal
-            // binding.ruangKelas.text = pertemuan.ruang // Uncomment this line if you want to display ruang
             binding.jadwalMatkul.text = "${pertemuan.sesiStart} - ${pertemuan.sesiEnd}"
         }
     }

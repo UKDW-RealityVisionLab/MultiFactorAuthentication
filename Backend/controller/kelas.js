@@ -10,14 +10,27 @@ const getKelas = async (req, res) => {
     user_dosen.nama,
     kelas.kode_matakuliah,
     kelas.kode_dosen,
-	mata_kuliah.nama_matakuliah
+    mata_kuliah.nama_matakuliah,
+    MIN(jadwal.tanggal) AS tanggal,  -- Ambil tanggal terawal
+    MIN(kelas_sesi.sesi_start) AS sesi_start,
+    MAX(kelas_sesi.sesi_end) AS sesi_end
 FROM 
     kelas 
-INNER JOIN 
-    semester ON kelas.kode_semester = semester.kode_semester 
-INNER JOIN 
-    user_dosen ON kelas.kode_dosen = user_dosen.nidn
-INNER join mata_kuliah ON kelas.kode_matakuliah= mata_kuliah.kode_matakuliah;
+INNER JOIN semester ON kelas.kode_semester = semester.kode_semester 
+INNER JOIN user_dosen ON kelas.kode_dosen = user_dosen.nidn
+INNER JOIN mata_kuliah ON kelas.kode_matakuliah = mata_kuliah.kode_matakuliah
+INNER JOIN jadwal ON kelas.kode_kelas = jadwal.kode_kelas 
+INNER JOIN kelas_sesi ON jadwal.kode_sesi = kelas_sesi.kode_sesi
+GROUP BY 
+    kelas.group_kelas, 
+    kelas.kode_kelas,
+    semester.kode_semester,
+    user_dosen.nidn,
+    user_dosen.nama,
+    kelas.kode_matakuliah,
+    kelas.kode_dosen,
+    mata_kuliah.nama_matakuliah;
+
 `;
     const result = await new Promise((resolve, reject) => {
   
@@ -33,7 +46,10 @@ INNER join mata_kuliah ON kelas.kode_matakuliah= mata_kuliah.kode_matakuliah;
       grup: result.group_kelas,
       matakuliah:result.nama_matakuliah,
       kodeMatakuliah: result.kode_matakuliah,
-      kodeDosen: result.kode_dosen
+      kodeDosen: result.kode_dosen,
+      tanggal:result.tanggal,
+      sesiStart:result.sesi_start,
+      sesiEnd:result.sesi_end
     })));
     
   } catch (error) {

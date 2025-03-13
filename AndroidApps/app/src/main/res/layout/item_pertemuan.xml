@@ -1,59 +1,92 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.cardview.widget.CardView
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/container_rv"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="10dp"
-    app:cardCornerRadius="8dp"
-    app:cardElevation="10dp"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    android:layout_margin="8dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="6dp"
+    android:background="@drawable/bg_card_border">  <!-- Tambahkan border hijau -->
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <!-- LinearLayout utama -->
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="82dp">
+        android:layout_height="120dp"
+        android:background="@color/white"
+        android:padding="5dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
 
-        <TextView
-            android:id="@+id/nama_matkul"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="16dp"
-            android:text="riset operasi A"
-            android:textColor="@color/black"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="1.0"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <TextView
-            android:id="@+id/jadwal_matkul"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginBottom="16dp"
-            android:text="Senin 14:30 - 17:20"
-            android:textAlignment="textEnd"
-            android:textColor="@color/black"
-            android:textSize="16sp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent" />
-
+        <!-- Bagian kiri: Kotak hari -->
         <TextView
             android:id="@+id/tanggal"
-            android:layout_width="wrap_content"
+            android:layout_width="85dp"
+            android:layout_height="60dp"
+            android:background="@drawable/day_item_list"
+            android:gravity="center"
+            android:text="25 Mar"
+            android:textColor="@color/tgl_card"
+            android:textStyle="bold"
+            android:textSize="24sp" />
+
+        <!-- Bagian tengah: Informasi mata kuliah -->
+        <LinearLayout
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="8dp"
-            android:text="@string/tanggal_pertemuan"
-            android:textColor="@color/black"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/nama_matkul" />
-    </androidx.constraintlayout.widget.ConstraintLayout>
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:paddingStart="12dp">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/nama_matkul"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="RPLBO "
+                    android:textColor="@color/black"
+                    android:textSize="16sp"
+                    android:textStyle="bold"/>
+
+<!--                <TextView-->
+<!--                    android:id="@+id/grup_matkul"-->
+<!--                    android:layout_width="wrap_content"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:text="Grup A"-->
+<!--                    android:layout_marginStart="4dp"-->
+<!--                    android:textColor="@color/black"-->
+<!--                    android:textSize="16sp"-->
+<!--                    android:textStyle="bold"/>-->
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/jadwal_matkul"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="11:30 - 14:20"
+                android:textColor="@color/gray_dark"
+                android:textSize="14sp" />
+
+            <TextView
+                android:id="@+id/ruangan_matkul"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Lab H"
+                android:textColor="@color/gray_dark"
+                android:textSize="14sp" />
+        </LinearLayout>
+
+        <!-- Bagian kanan: Ikon navigasi -->
+        <ImageView
+            android:id="@+id/arrow_icon"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/arrow_right"
+            android:layout_gravity="center"/>
+    </LinearLayout>
 </androidx.cardview.widget.CardView>

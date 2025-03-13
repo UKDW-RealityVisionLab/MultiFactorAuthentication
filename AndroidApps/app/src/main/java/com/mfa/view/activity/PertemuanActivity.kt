@@ -8,6 +8,7 @@ import android.view.View
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -47,6 +48,16 @@ class PertemuanActivity : AppCompatActivity() {
         binding = ActivityPertemuanBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        val toolbar: Toolbar = binding.topAppBar
+        setSupportActionBar(toolbar)
+        val matkul = intent.getStringExtra(NAMAPERTEMUAN)
+
+        supportActionBar?.title = "$matkul"
+        toolbar.setNavigationOnClickListener {
+            onBackPressed() // Kembali ke halaman sebelumnya
+        }
+
+
         viewModel = ViewModelProvider(
             this,
             ViewModelFactory(Injection.provideRepository(this))
@@ -77,10 +88,9 @@ class PertemuanActivity : AppCompatActivity() {
         }
 
         val kodeKelas = intent.getIntExtra(KODEKELAS, 0)
-        val matkul = intent.getStringExtra(NAMAPERTEMUAN)
+
         Log.d("pertemuan menerima kode ", kodeKelas.toString())
 
-        supportActionBar?.title = "Pertemuan $matkul"
 
         pertemuanViewModel.getPertemuan(kodeKelas)
         pertemuanViewModel.getPertemuanData.observe(this) { pertemuans ->
