@@ -199,9 +199,6 @@ class FaceProcessorActivity : AppCompatActivity(), CameraManager.OnTakeImageCall
     }
 
 
-
-
-
     private fun antiSpoofDetection(faceBitmap: Bitmap): Boolean {
         //preprocessing part
         val laplaceScore: Int = fas.laplacian(faceBitmap)
@@ -275,19 +272,19 @@ class FaceProcessorActivity : AppCompatActivity(), CameraManager.OnTakeImageCall
     }
 
 
-    private fun showVerificationSuccessDialog() {
-        AlertDialog.Builder(this)
-            .setTitle("Verification Successful")
-            .setMessage("Face has been verified successfully!")
-            .setPositiveButton("OK") { dialog, _ ->
-                dialog.dismiss()
-                val intent = Intent(this, PresensiActivity::class.java)
-                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
-                startActivity(intent)
-                finish()
-            }
-            .show()
-    }
+//    private fun showVerificationSuccessDialog() {
+//        AlertDialog.Builder(this)
+//            .setTitle("Verification Successful")
+//            .setMessage("Face has been verified successfully!")
+//            .setPositiveButton("OK") { dialog, _ ->
+//                dialog.dismiss()
+//                val intent = Intent(this, PresensiActivity::class.java)
+//                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+//                startActivity(intent)
+//                finish()
+//            }
+//            .show()
+//    }
 
     private fun reqFaceApi(){
         val dataEmail = EmailRequest(Email.email)

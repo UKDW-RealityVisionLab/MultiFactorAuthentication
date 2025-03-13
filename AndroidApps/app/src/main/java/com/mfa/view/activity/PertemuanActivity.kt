@@ -41,7 +41,9 @@ class PertemuanActivity : AppCompatActivity() {
     companion object {
         const val KODEKELAS = "kode_kelas"
         const val NAMAPERTEMUAN = "pertemuan"
+        const val DOSEN="dosen"
     }
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -56,6 +58,7 @@ class PertemuanActivity : AppCompatActivity() {
         toolbar.setNavigationOnClickListener {
             onBackPressed() // Kembali ke halaman sebelumnya
         }
+//        adapter=PertemuanAdapter()
 
 
         viewModel = ViewModelProvider(
@@ -74,6 +77,10 @@ class PertemuanActivity : AppCompatActivity() {
         ).get(ProfileViewModel::class.java)
 
         adapter = PertemuanAdapter()
+        val dosen=intent.getStringExtra(DOSEN).toString()
+        adapter.dosen=dosen
+
+        Log.d("dosen", dosen)
         setupRecyclerView()
 
         val dataEmail = EmailRequest(Email.email)
@@ -119,7 +126,7 @@ class PertemuanActivity : AppCompatActivity() {
 
     private fun setPertemuan(data: List<PertemuanResponseItem>?) {
         if (data != null) {
-            adapter.submitList(data)
+            adapter.submitSortedList(data)
             val totalPertemuan = adapter.itemCount
             binding.totalPertemuan.text = "Total Pertemuan: $totalPertemuan"
             Log.d("data pertemuan:", data.toString())

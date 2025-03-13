@@ -48,6 +48,9 @@ class PresensiActivity : AppCompatActivity() {
         const val ISVALID = "isValid"
         const val GETJADWAL = "jadwal"
         const val RUANG="ruang"
+        const val WAKTU="waktu"
+        const val TANGGAL="tanggal"
+        const val DOSEN="dosen"
     }
 
 
@@ -71,6 +74,16 @@ class PresensiActivity : AppCompatActivity() {
         adapter = PertemuanAdapter()
 
         val idJadwal = intent.getStringExtra(GETJADWAL).toString()
+        val waktu = intent.getStringExtra(WAKTU).toString()
+        val dosen= intent.getStringExtra(DOSEN).toString()
+        val tanggal=intent.getStringExtra(TANGGAL).toString()
+        val ruang=intent.getStringExtra(RUANG).toString()
+
+        binding.waktu.text="Waktu      : $waktu"
+        binding.tgl.text="Tanggal   : $tanggal"
+        binding.ruang.text="Ruang      : $ruang"
+        binding.jadwal.text=idJadwal
+        binding.dosen.text="Dosen      : $dosen"
 
         val toolbar: Toolbar = binding.topAppBar
         setSupportActionBar(toolbar)

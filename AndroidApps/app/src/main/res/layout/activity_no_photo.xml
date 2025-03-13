@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#009688"
+    android:gravity="center"
+    android:padding="24dp"
+    tools:context=".view.activity.NoPhoto">
+
+    <!-- Judul -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Lengkapi profilmu"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:textColor="@android:color/white"
+        android:gravity="center"
+        android:layout_gravity="center_horizontal"
+        android:paddingBottom="16dp" />
+
+    <!-- Gambar Wajah -->
+    <ImageView
+        android:layout_width="300dp"
+        android:layout_height="200dp"
+        android:src="@drawable/face"
+        android:scaleType="fitCenter"
+        android:background="@android:color/white"
+        android:elevation="4dp"
+        android:layout_marginBottom="16dp"
+        android:layout_gravity="center_horizontal"/>
+
+    <!-- Deskripsi -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Daftarkan wajahmu ke dalam aplikasi terlebih dahulu agar proses presensimu berjalan dengan lancar"
+        android:textSize="14sp"
+        android:textColor="@android:color/black"
+        android:gravity="center"
+        android:layout_gravity="center_horizontal"
+        android:padding="16dp"
+        android:layout_marginBottom="16dp" />
+
+    <!-- Tombol Lanjut -->
+    <Button
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:text="Lanjut"
+        android:background="@drawable/bg_button"
+        android:textColor="@android:color/black"
+        android:padding="10dp"
+        android:elevation="4dp"
+        android:layout_gravity="center_horizontal"/>
+</LinearLayout>

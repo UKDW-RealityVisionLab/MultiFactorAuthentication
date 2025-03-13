@@ -36,8 +36,6 @@ import com.mfa.databinding.ActivityLocationBinding
 import com.mfa.di.Injection
 import com.mfa.`object`.IdJadwal.idJadwal
 import com.mfa.utils.PreferenceUtils
-import com.mfa.view.activity.PresensiActivity.Companion.GETJADWAL
-import com.mfa.view.activity.PresensiActivity.Companion.RUANG
 import com.mfa.view.custom.CustomAlertDialog
 import com.mfa.view.custom.LoadingDialogFragment
 import com.mfa.view_model.LocationViewModel
@@ -212,7 +210,7 @@ class LocationActivity : AppCompatActivity() {
         val idJadwal = intent.getStringExtra(GETJADWAL).toString()
         locationViewModel.getKelasByKodeRuang(idJadwal)
         Log.d("kode jadwal pertemuan activity :", idJadwal)
-        val ruang = intent.getStringExtra(RUANG).toString()
+//        val ruang = intent.getStringExtra(RUANG).toString()
         locationViewModel.getLokasiData.observe(this) { locationData ->
             when (locationData) {
                 is Helper.Success -> {

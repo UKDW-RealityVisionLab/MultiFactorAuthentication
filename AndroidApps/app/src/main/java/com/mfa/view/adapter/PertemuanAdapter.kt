@@ -23,6 +23,7 @@ class PertemuanAdapter :
     ) {
 
     var isvalid : Boolean? = null
+    var dosen: String? = null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PertemuanViewHolder {
         val binding = ItemPertemuanBinding.inflate(LayoutInflater.from(parent.context), parent, false)
@@ -38,12 +39,31 @@ class PertemuanAdapter :
                 Log.d("PertemuanAdapter", "Sending jadwal: ${pertemuan.jadwal}, ruang: ${pertemuan.jadwal}")
                 sendData.putExtra(PresensiActivity.GETJADWAL, "${pertemuan.jadwal}  grup ${pertemuan.grup}")
                 sendData.putExtra(PresensiActivity.RUANG, pertemuan.ruang)
+                sendData.putExtra(PresensiActivity.WAKTU,"${pertemuan.sesiStart} - ${pertemuan.sesiEnd}")
+                sendData.putExtra(PresensiActivity.TANGGAL,pertemuan.tanggal)
+                sendData.putExtra(PresensiActivity.DOSEN, dosen.toString())
 //                sendData.putExtra(PresensiActivity.NAMAPERTEMUAN, "${pertemuan.mataKuliah}")
                 sendData.putExtra(PresensiActivity.ISVALID,isvalid)
                 holder.itemView.context.startActivity(sendData)
             }
         }
     }
+
+    fun submitSortedList(list: List<PertemuanResponseItem>) {
+        val inputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH) // Format tanggal dari API
+
+        val sortedList = list.sortedByDescending { item ->
+            try {
+                inputFormat.parse(item.tanggal)?.time ?: Long.MAX_VALUE // Urut berdasarkan timestamp
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Long.MAX_VALUE // Jika terjadi error, masukkan di urutan terakhir
+            }
+        }
+
+        submitList(sortedList) // Set daftar yang sudah diurutkan ke adapter
+    }
+
 
     inner class PertemuanViewHolder(val binding: ItemPertemuanBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(pertemuan: PertemuanResponseItem) {

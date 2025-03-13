@@ -105,7 +105,7 @@ class CameraManager(
                     val inputImage = InputImage.fromBitmap(sourceImageBitmap, imageRotation)
                     imageAnalyzer.detectInImage(inputImage).addOnSuccessListener {
                         if (it.size > 0) {
-                            val face: Face = it.get(0) //Get first face from detected faces
+                            val face: Face = it[0] //Get first face from detected faces
                             //Adjust orientation of Face
                             val frameBitmap = BitmapUtils.rotateBitmap(sourceImageBitmap, imageRotation, false, false)
                             //Get bounding box of face

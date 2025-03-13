@@ -1,15 +1,10 @@
 package com.mfa.view.activity
 
 import android.annotation.SuppressLint
-import android.content.Intent
-import android.content.IntentSender
 import android.os.Bundle
 import android.util.Log
-import android.view.Menu
-import android.view.MenuItem
 import android.widget.ImageButton
 import android.widget.Toast
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
@@ -17,10 +12,6 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.firebase.ui.auth.AuthUI
-import com.google.android.gms.common.api.ResolvableApiException
-import com.google.android.gms.location.LocationRequest
-import com.google.android.gms.location.LocationServices
-import com.google.android.gms.location.LocationSettingsRequest
 import com.google.android.gms.tasks.Task
 import com.mfa.Helper
 import com.mfa.view.adapter.JadwalAdapter
@@ -143,7 +134,7 @@ class HomeActivity : AppCompatActivity() {
 
     private fun setJadwal(data: List<HomeResponseItem?>?) {
         if (data != null) {
-            adapter.submitList(data)
+            adapter.submitSortedList(data)
             Log.d("data Home:", "$data")
         } else {
             // Handle null data if needed
