@@ -1,10 +1,14 @@
 package com.mfa.view.activity
 
 import android.Manifest
+import android.app.Dialog
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.util.Log
+import android.view.LayoutInflater
 import android.view.View
 import android.widget.Button
 import android.widget.RelativeLayout
@@ -12,6 +16,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
@@ -21,6 +26,8 @@ import com.journeyapps.barcodescanner.BarcodeResult
 import com.journeyapps.barcodescanner.DecoratedBarcodeView
 import com.mfa.R
 import com.mfa.api.request.KodeJadwalRequest
+import com.mfa.databinding.ActivityQrCodeScanBinding
+import com.mfa.view.activity.LocationActivity.Companion.GETJADWAL
 import com.mfa.view_model.QRCodeViewModel
 
 class QRCodeScanActivity : AppCompatActivity() {
@@ -28,8 +35,10 @@ class QRCodeScanActivity : AppCompatActivity() {
     private lateinit var scanAgainButton: Button
     private lateinit var barcodeView: DecoratedBarcodeView
     private val qrCodeViewModel: QRCodeViewModel by viewModels()
+    private lateinit var binding:ActivityQrCodeScanBinding
 
     private val CAMERA_PERMISSION_REQUEST_CODE = 100
+
 
     private val barcodeCallback = object : BarcodeCallback {
         override fun barcodeResult(result: BarcodeResult?) {
@@ -49,14 +58,19 @@ class QRCodeScanActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_qr_code_scan)
+//        setContentView(R.layout.activity_qr_code_scan)
+        binding= ActivityQrCodeScanBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         // Initialize views
         barcodeView = findViewById(R.id.barcode_scanner)
         scanResultTextView = findViewById(R.id.scan_result)
         scanAgainButton = findViewById(R.id.scan_again_button)
 
-        supportActionBar?.title = "Scan QR Code"
+        val toolbar: Toolbar = binding.topAppBar
+        setSupportActionBar(toolbar)
+
+        supportActionBar?.title = "Scan qr code"
 
         // Check camera permission
         checkCameraPermission()
@@ -72,15 +86,44 @@ class QRCodeScanActivity : AppCompatActivity() {
         qrCodeViewModel.kodeJadwalResponse.observe(this, Observer { result ->
             result.fold(onSuccess = { matched ->
                 val message = "verify qrcode berhasil"
-                Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
-                val intent = Intent(this, FaceVerificationActivity::class.java)
-                startActivity(intent)
+//                Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+                showCustomDialog("Hasil scan qr code", "Selamat qr code yang anda scan  berhasil dan terbukti cocok. Satu langkah lagi untuk menuju keberhasilan presensi"
+                , "siap lanjut",
+                    {
+                        val intent = Intent(this, FaceVerificationActivity::class.java)
+                        startActivity(intent)
+                    }
+                )
+
             }, onFailure = {
                 Toast.makeText(this, "Error: ${it.message}", Toast.LENGTH_SHORT).show()
                 findViewById<RelativeLayout>(R.id.layout_eror).visibility = View.VISIBLE
                 findViewById<DecoratedBarcodeView>(R.id.barcode_scanner).visibility=View.INVISIBLE
             })
         })
+    }
+
+    private fun showCustomDialog(title: String, message: String, buttonText: String, action: () -> Unit) {
+        val dialog = Dialog(this)
+        val dialogView: View = LayoutInflater.from(this).inflate(R.layout.custom_alert_dialog, null)
+
+        dialog.setContentView(dialogView)
+        dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT)) // Hapus background default
+
+        val tvTitle = dialogView.findViewById<TextView>(R.id.tvTitle)
+        val tvMessage = dialogView.findViewById<TextView>(R.id.tvMessage)
+        val btnConfirm = dialogView.findViewById<Button>(R.id.btnConfirm)
+
+        tvTitle.text = title
+        tvMessage.text = message
+        btnConfirm.text = buttonText
+
+        btnConfirm.setOnClickListener {
+            action() // Eksekusi aksi yang dikirim dari parameter
+            dialog.dismiss() // Tutup dialog setelah aksi
+        }
+
+        dialog.show()
     }
 
     private fun checkCameraPermission() {

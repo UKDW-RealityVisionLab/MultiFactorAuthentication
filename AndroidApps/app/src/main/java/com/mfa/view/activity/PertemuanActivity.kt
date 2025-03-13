@@ -35,7 +35,7 @@ class PertemuanActivity : AppCompatActivity() {
 
     private lateinit var adapter: PertemuanAdapter
     private lateinit var profileViewModel: ProfileViewModel
-    private val REQUEST_CHECK_SETTINGS = 1001
+
 
 
     companion object {
@@ -105,68 +105,9 @@ class PertemuanActivity : AppCompatActivity() {
                 }
             }
         }
-        requestPermissionLauncher.launch(android.Manifest.permission.ACCESS_FINE_LOCATION)
-    }
-
-    private val requestPermissionLauncher =
-        registerForActivityResult(
-            ActivityResultContracts.RequestPermission()
-        ) { isGranted: Boolean ->
-            if (isGranted) {
-                Log.d("PERMISSION", "Location permission granted.")
-                turnOnGPS()
-            } else {
-                Log.d("PERMISSION", "Location permission denied.")
-                Toast.makeText(this, "Permission denied", Toast.LENGTH_SHORT).show()
-            }
-        }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        when (requestCode) {
-            REQUEST_CHECK_SETTINGS -> {
-                when (resultCode) {
-                    RESULT_OK -> {
-                        Log.d("GPS_STATUS", "User enabled GPS.")
-                        Toast.makeText(this, "GPS on", Toast.LENGTH_SHORT).show()
-                    }
-                    RESULT_CANCELED -> {
-                        Log.d("GPS_STATUS", "User refused to enable GPS.")
-                        Toast.makeText(this, "GPS not enabled", Toast.LENGTH_SHORT).show()
-                    }
-                }
-            }
-        }
     }
 
 
-    private fun turnOnGPS() {
-        val locationRequest = LocationRequest.create().apply {
-            priority = LocationRequest.PRIORITY_HIGH_ACCURACY
-        }
-        val builder = LocationSettingsRequest.Builder()
-            .addLocationRequest(locationRequest)
-
-        val settingsClient = LocationServices.getSettingsClient(this)
-        val task = settingsClient.checkLocationSettings(builder.build())
-
-        task.addOnSuccessListener {
-            Log.d("GPS_STATUS", "GPS has been turned on.")
-            Toast.makeText(this, "GPS on", Toast.LENGTH_SHORT).show()
-        }
-
-        task.addOnFailureListener { exception ->
-            Log.d("GPS_STATUS", "Failed to turn on GPS.")
-            if (exception is ResolvableApiException) {
-                try {
-                    exception.startResolutionForResult(this, REQUEST_CHECK_SETTINGS)
-                } catch (sendEx: IntentSender.SendIntentException) {
-                    Log.d("GPS_STATUS", "Failed to resolve GPS settings: ${sendEx.message}")
-                }
-            }
-        }
-
-    }
 
     private fun setupRecyclerView() {
         val layoutManager = LinearLayoutManager(this)
