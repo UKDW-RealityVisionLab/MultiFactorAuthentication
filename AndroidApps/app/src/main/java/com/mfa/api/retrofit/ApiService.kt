@@ -4,6 +4,7 @@ import com.mfa.api.request.EmailRequest
 import com.mfa.api.request.KodeJadwalRequest
 import com.mfa.api.request.StatusReq
 import com.mfa.api.request.UpdateStatusReq
+import com.mfa.api.response.HadirResponse
 import com.mfa.api.response.HomeResponseItem
 import com.mfa.api.response.KodeJadwalResponse
 import com.mfa.api.response.PertemuanRequest
@@ -18,6 +19,7 @@ import retrofit2.http.Body
 import retrofit2.http.Field
 import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.Path
 
 interface ApiService {
     @GET("kelas")
@@ -40,4 +42,10 @@ interface ApiService {
 
     @POST("face/faceVerify")
     suspend fun updateStatusKehadiran(@Body req: UpdateStatusReq):Boolean
+
+    @GET("daftarpresensi/total-hadir/{kodeKelas}/{nim}")
+    suspend fun countHadir(
+        @Path("kodeKelas") kodeKelas: String,
+        @Path("nim") nim: String
+    ): HadirResponse
 }

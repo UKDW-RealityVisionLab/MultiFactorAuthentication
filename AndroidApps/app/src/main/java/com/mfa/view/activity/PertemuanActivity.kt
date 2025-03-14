@@ -44,7 +44,6 @@ class PertemuanActivity : AppCompatActivity() {
         const val DOSEN="dosen"
     }
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityPertemuanBinding.inflate(layoutInflater)
@@ -110,7 +109,47 @@ class PertemuanActivity : AppCompatActivity() {
 
                     Helper.Loading -> binding.progressBar.visibility=View.INVISIBLE
                 }
+                profileViewModel.getData.observe(this) {
+//                    val name = it.nama
+//                    val nim = it.nim
+                    val email = it.email
+                    Log.d("", "$email $dataEmail")
+                    pertemuanViewModel.getHadirFun(kodeKelas.toString(),it.nim.toString())
+
+                    pertemuanViewModel.getHadir.observe(this) { helperResponse ->
+                        when (helperResponse) {
+                            is Helper.Success -> {
+                                val hadirResponse = helperResponse.data  // This is your HadirResponse
+                                val jumlahHadir = hadirResponse.hadir
+                                binding.hadirPertemuan.text = "Hadir: $jumlahHadir"
+                                val pertemuan=binding.totalPertemuan.text.toString()
+                                val totalPertemuan= pertemuan.substring(pertemuan.length-1).toInt()
+                                Log.d("total pertemuan:","$totalPertemuan")
+                                val hadirText=binding.hadirPertemuan.text.toString()
+                                val hadir= hadirText.substring(hadirText.length-1).toInt()
+
+                                val alpha=totalPertemuan-hadir
+                                binding.alphaPertemuan.text="Alpha: ${alpha}"
+
+                                Log.d("hadir:", "$jumlahHadir")
+
+                            }
+                            is Helper.Loading -> {
+                                // Handle loading state
+                            }
+                            is Helper.Error -> {
+                                // Handle error state
+                                Log.e("HadirError", "error")
+                            }
+                        }
+                    }
+
+
+                }
             }
+
+
+
         }
     }
 

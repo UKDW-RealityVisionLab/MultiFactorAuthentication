@@ -7,6 +7,7 @@ import com.mfa.Helper
 import com.mfa.api.request.EmailRequest
 import com.mfa.api.request.StatusReq
 import com.mfa.api.request.UpdateStatusReq
+import com.mfa.api.response.HadirResponse
 import com.mfa.api.response.PertemuanRequest
 import com.mfa.api.response.ProfileResponse
 import com.mfa.api.response.RuangRequest
@@ -36,6 +37,15 @@ class MfaRepository private constructor(
             emit(Helper.Success(response))
         } catch (e: Exception) {
             Log.d("MfaRepository", "$kodeKelas masih eror", e)
+        }
+    }
+
+    fun countHadir(kodeKelas: String,nim :String)= liveData(Dispatchers.IO){
+        try {
+            val response= apiService.countHadir(kodeKelas,nim)
+            emit(Helper.Success(response))
+        }catch (e:Exception){
+            Log.d("MFA REPO", "count hadir salah")
         }
     }
 
