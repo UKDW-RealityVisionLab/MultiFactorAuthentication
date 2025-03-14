@@ -22,8 +22,9 @@
         <!-- Bagian kiri: Kotak hari -->
         <TextView
             android:id="@+id/tanggal"
-            android:layout_width="85dp"
+            android:layout_width="100dp"
             android:layout_height="60dp"
+            android:padding="5dp"
             android:background="@drawable/day_item_list"
             android:gravity="center"
             android:text="25 Mar"
