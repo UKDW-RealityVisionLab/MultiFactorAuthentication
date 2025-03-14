@@ -21,8 +21,9 @@
 
     <ImageView
         android:id="@+id/ivStepIcon"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
+        android:scaleType="fitCenter"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
         android:layout_marginStart="8dp"
         android:contentDescription="Step icon"
         android:src="@drawable/logo_png"

@@ -1,6 +1,8 @@
 package com.mfa.view.activity
 
 import android.annotation.SuppressLint
+import android.content.Intent
+import android.media.FaceDetector.Face
 import android.os.Bundle
 import android.util.Log
 import android.widget.ImageButton
@@ -56,7 +58,10 @@ class HomeActivity : AppCompatActivity() {
 
         // Tombol Ubah Wajah
         findViewById<ImageButton>(R.id.btn_change_face).setOnClickListener {
-            Toast.makeText(this, "Ubah Wajah diklik", Toast.LENGTH_SHORT).show()
+            // In MainActivity
+            val intent = Intent(this, Simpanwajah::class.java)
+//            intent.putExtra(FaceProcessorActivity.CALLER, "ubah wajah")
+            startActivity(intent)
         }
 
         // Tombol Logout

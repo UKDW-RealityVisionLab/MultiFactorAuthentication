@@ -24,6 +24,9 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
         <activity
+            android:name=".view.activity.Simpanwajah"
+            android:exported="false" />
+        <activity
             android:name=".view.activity.NoPhoto"
             android:exported="false" />
         <activity

@@ -5,6 +5,8 @@ import android.app.Activity
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.RectF
+import android.os.Handler
+import android.os.Looper
 import androidx.camera.core.*
 import androidx.camera.core.ImageCapture.OnImageCapturedCallback
 import androidx.camera.lifecycle.ProcessCameraProvider
@@ -15,6 +17,7 @@ import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.face.Face
 import com.mfa.facedetector.MlKitAnalyzer
 import com.mfa.utils.BitmapUtils
+import java.lang.Exception
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
@@ -100,28 +103,48 @@ class CameraManager(
                 @SuppressLint("UnsafeOptInUsageError")
                 val image = imageProxy.image
                 if (image != null) {
-                    val sourceImageBitmap: Bitmap = BitmapUtils.convertJPEGImageProxyJPEGToBitmap(imageProxy)
-                    val imageRotation = imageProxy.imageInfo.rotationDegrees
-                    val inputImage = InputImage.fromBitmap(sourceImageBitmap, imageRotation)
-                    imageAnalyzer.detectInImage(inputImage).addOnSuccessListener {
-                        if (it.size > 0) {
-                            val face: Face = it[0] //Get first face from detected faces
-                            //Adjust orientation of Face
-                            val frameBitmap = BitmapUtils.rotateBitmap(sourceImageBitmap, imageRotation, false, false)
-                            //Get bounding box of face
-                            val boundingBox = RectF(face.boundingBox)
-                            //Crop out bounding box from whole Bitmap(image)
-                            var cropped_face = BitmapUtils.getCropBitmapByCPU(frameBitmap, boundingBox)
-                            if (flipX)
-                                cropped_face = BitmapUtils.rotateBitmap(cropped_face, 0, flipX, false)
-                            callback.onTakeImageSuccess(cropped_face)
+                    try {
+                        // Process the image immediately
+                        val sourceImageBitmap: Bitmap = BitmapUtils.convertJPEGImageProxyJPEGToBitmap(imageProxy)
+                        val imageRotation = imageProxy.imageInfo.rotationDegrees
+                        val inputImage = InputImage.fromBitmap(sourceImageBitmap, imageRotation)
+
+                        imageAnalyzer.detectInImage(inputImage).addOnSuccessListener { faces ->
+                            if (faces.isNotEmpty()) {
+                                val face: Face = faces[0]
+                                val frameBitmap = BitmapUtils.rotateBitmap(sourceImageBitmap, imageRotation, flipX, false)
+                                val boundingBox = RectF(face.boundingBox)
+                                var croppedFace = BitmapUtils.getCropBitmapByCPU(frameBitmap, boundingBox)
+
+                                if (flipX) {
+                                    croppedFace = BitmapUtils.rotateBitmap(croppedFace, 0, flipX, false)
+                                }
+
+                                // Return the result to the main thread for UI updates
+                                Handler(Looper.getMainLooper()).post {
+                                    callback.onTakeImageSuccess(croppedFace)
+                                }
+                            }
+                        }.addOnFailureListener { exception ->
+                            Handler(Looper.getMainLooper()).post {
+                                callback.onTakeImageError(exception)
+                            }
                         }
+                    } finally {
+                        // Close the ImageProxy after processing is complete
+                        imageProxy.close()
                     }
+                } else {
+                    imageProxy.close() // Close the ImageProxy if the image is null
                 }
             }
 
+
+
             override fun onError(exception: ImageCaptureException) {
-                callback.onTakeImageError(exception)
+                Handler(Looper.getMainLooper()).post {
+                    callback.onTakeImageError(exception)
+                }
             }
         })
     }
@@ -148,7 +171,7 @@ class CameraManager(
 
     interface OnTakeImageCallback {
         fun onTakeImageSuccess(image : Bitmap)
-        fun onTakeImageError(exception: ImageCaptureException)
+        fun onTakeImageError(exception: Exception)
     }
 
     companion object {

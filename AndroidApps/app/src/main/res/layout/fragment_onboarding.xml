@@ -17,8 +17,8 @@
 
             <ImageView
                 android:id="@+id/ivIllustration"
-                android:layout_width="300dp"
-                android:layout_height="300dp"
+                android:layout_width="250dp"
+                android:layout_height="250dp"
                 android:layout_marginTop="32dp"
                 android:src="@drawable/logo_png"
                 android:contentDescription="Illustration"

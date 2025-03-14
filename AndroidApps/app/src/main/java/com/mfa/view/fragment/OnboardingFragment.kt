@@ -53,7 +53,7 @@ class OnboardingFragment : Fragment() {
         // You will set the drawable resources later
         when (pageNumber) {
             1 -> ivIllustration.setImageResource(R.drawable.human_greeting)
-            2 -> ivIllustration.setImageResource(R.drawable.look_down)
+            2 -> ivIllustration.visibility=View.GONE
             3 -> ivIllustration.setImageResource(R.drawable.logo_png)
         }
 

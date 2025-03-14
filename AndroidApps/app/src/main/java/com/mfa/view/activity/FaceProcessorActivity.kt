@@ -18,7 +18,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.camera.core.ImageCaptureException
+import androidx.appcompat.widget.Toolbar
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
@@ -43,6 +43,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.lang.Exception
 import kotlin.math.sqrt
 
 class FaceProcessorActivity : AppCompatActivity(), CameraManager.OnTakeImageCallback {
@@ -61,6 +62,8 @@ class FaceProcessorActivity : AppCompatActivity(), CameraManager.OnTakeImageCall
         super.onCreate(savedInstanceState)
         binding = ActivityCaptureFaceBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        val toolbar: Toolbar = binding.topAppBar
+        setSupportActionBar(toolbar)
 
         faceRecognizer = FaceRecognizer(assets)
         fas = FaceAntiSpoofing(assets)
@@ -85,7 +88,6 @@ class FaceProcessorActivity : AppCompatActivity(), CameraManager.OnTakeImageCall
                 val embeddings = result.data?.getStringArrayListExtra(FaceProcessorActivity.EXTRA_FACE_EMBEDDING)
                 embeddings?.let { data ->
                     Log.d(TAG, "Data yang diterima dari intent: $embeddings")
-
                     handleEmbeddings(data)
                 }
             } else {
@@ -219,7 +221,7 @@ class FaceProcessorActivity : AppCompatActivity(), CameraManager.OnTakeImageCall
     }
 
 
-    override fun onTakeImageError(exception: ImageCaptureException) {
+    override fun onTakeImageError(exception: Exception) {
         Toast.makeText(this, "onTakeImageError : " + exception.message, Toast.LENGTH_SHORT).show()
     }
 
@@ -320,5 +322,6 @@ class FaceProcessorActivity : AppCompatActivity(), CameraManager.OnTakeImageCall
 
     companion object {
         val EXTRA_FACE_EMBEDDING = "EXTRA_FACE_EMBEDDING"
+//        val CALLER="caller"
     }
 }

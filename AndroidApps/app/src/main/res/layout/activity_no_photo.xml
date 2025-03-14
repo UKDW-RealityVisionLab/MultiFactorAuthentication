@@ -47,6 +47,7 @@
 
     <!-- Tombol Lanjut -->
     <Button
+        android:id="@+id/btnPhoto"
         android:layout_width="200dp"
         android:layout_height="wrap_content"
         android:text="Lanjut"
