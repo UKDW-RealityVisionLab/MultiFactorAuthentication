@@ -6,17 +6,33 @@
     android:layout_height="match_parent"
     tools:context=".view.activity.FaceProcessorActivity">
 
+    <!-- Top App Bar -->
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/topAppBar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/green_primary"
+        android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
+        app:title="Verifikasi wajah"
+        app:titleTextColor="@android:color/white"
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
+
+    <!-- Camera Preview -->
     <androidx.camera.view.PreviewView
         android:id="@+id/viewCameraPreview"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_marginTop="?attr/actionBarSize"
         app:scaleType="fillCenter"/>
 
+    <!-- Overlay for Graphics -->
     <com.mfa.camerax.GraphicOverlay
         android:id="@+id/viewGraphicOverlay"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent"
+        android:layout_marginTop="?attr/actionBarSize"/>
 
+    <!-- Floating Action Buttons -->
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -50,7 +66,6 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:visibility="invisible"
-        android:indeterminate="true"
-        />
+        android:indeterminate="true"/>
 
 </FrameLayout>

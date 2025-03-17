@@ -24,6 +24,27 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
         <activity
+            android:name=".view.activity.Simpanwajah"
+            android:exported="false" />
+        <activity
+            android:name=".view.activity.NoPhoto"
+            android:exported="false" />
+        <activity
+            android:name=".view.activity.LocationActivity"
+            android:exported="false" />
+        <activity
+            android:name=".view.custom.CustomAlertDialog"
+            android:exported="false" />
+        <activity
+            android:name=".view.activity.OnboardingActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
             android:name=".view.activity.UserProfileActivity"
             android:exported="false" />
         <activity android:name=".view.activity.QRCodeScanActivity" />
@@ -40,12 +61,7 @@
             android:exported="false" />
         <activity
             android:name=".view.activity.SplashScreenActivity"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
+            android:exported="false" />
 
         <meta-data
             android:name="com.google.android.gms.version"

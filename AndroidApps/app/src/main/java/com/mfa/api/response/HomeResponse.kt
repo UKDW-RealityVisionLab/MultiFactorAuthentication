@@ -13,6 +13,15 @@ data class HomeResponseItem(
 	@field:SerializedName("kodeMatakuliah")
 	val kodeMatakuliah: String? = null,
 
+	@field:SerializedName("tanggal")
+	val tanggal: String? = null,
+
+	@field:SerializedName("sesiStart")
+	val sesiStart: String? = null,
+
+	@field:SerializedName("sesiEnd")
+	val sesiEnd :String? = null,
+
 	@field:SerializedName("dosen")
 	val dosen: String? = null,
 

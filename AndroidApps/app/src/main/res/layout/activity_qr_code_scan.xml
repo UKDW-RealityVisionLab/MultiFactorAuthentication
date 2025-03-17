@@ -1,71 +1,96 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:id="@+id/scan_state"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="@android:color/transparent">
 
+    <!-- Top App Bar -->
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/topAppBar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/green_primary"
+        android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
+        app:title="RPLBO Grup A"
+        app:titleTextColor="@android:color/white"
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- Barcode Scanner -->
     <com.journeyapps.barcodescanner.DecoratedBarcodeView
         android:id="@+id/barcode_scanner"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_centerInParent="true">
+        android:layout_height="0dp"
+        app:layout_constraintTop_toBottomOf="@id/topAppBar"
+        app:layout_constraintBottom_toBottomOf="parent">
 
         <com.journeyapps.barcodescanner.ViewfinderView
             android:id="@+id/zxing_viewfinder_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
-
     </com.journeyapps.barcodescanner.DecoratedBarcodeView>
 
     <!-- Custom Scanner Overlay -->
     <View
         android:layout_width="250dp"
         android:layout_height="250dp"
-        android:layout_centerInParent="true"
-        android:background="@drawable/scanner_border" />
+        android:background="@drawable/scanner_border"
+        app:layout_constraintTop_toTopOf="@id/barcode_scanner"
+        app:layout_constraintBottom_toBottomOf="@id/barcode_scanner"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
-<!--    layout for error state-->
-    <RelativeLayout
+    <!-- Layout for Error State -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/layout_eror"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/layout_eror"
-        android:visibility="invisible">
-        <!-- ImageView for error or other icons -->
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@id/topAppBar">
+
+        <!-- Error Image -->
         <ImageView
             android:id="@+id/error_image"
             android:layout_width="200dp"
             android:layout_height="200dp"
-            android:layout_centerHorizontal="true"
-            android:layout_marginTop="100dp"
-            android:src="@drawable/wrong" />
+            android:layout_marginTop="24dp"
+            android:src="@drawable/wrong"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
 
-        <!-- Scanned Result Display -->
+        <!-- Error Message -->
         <TextView
             android:id="@+id/scan_result"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@id/error_image"
             android:layout_marginTop="16dp"
             android:gravity="center"
             android:padding="16dp"
             android:text="Terjadi kesalahan"
             android:textColor="@android:color/black"
             android:textSize="18sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            app:layout_constraintTop_toBottomOf="@id/error_image"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
 
         <!-- Scan Again Button -->
         <Button
             android:id="@+id/scan_again_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@id/scan_result"
-            android:layout_centerHorizontal="true"
             android:layout_marginTop="24dp"
             android:text="Scan Again"
             android:textSize="16sp"
             android:textColor="@android:color/white"
             android:backgroundTint="#3c39d5"
-            android:padding="12dp" />
-    </RelativeLayout>
-</RelativeLayout>
+            android:padding="12dp"
+            app:layout_constraintTop_toBottomOf="@id/scan_result"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

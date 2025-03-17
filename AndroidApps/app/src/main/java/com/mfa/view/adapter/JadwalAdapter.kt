@@ -12,6 +12,8 @@ import com.mfa.api.response.HomeResponseItem
 import com.mfa.databinding.ItemJadwalBinding
 import com.mfa.view.activity.HomeActivity
 import com.mfa.view.activity.PertemuanActivity
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 class JadwalAdapter :
     ListAdapter<HomeResponseItem, JadwalAdapter.MyViewHolder>(
@@ -42,10 +44,34 @@ class JadwalAdapter :
             holder.setOnItemClickListener {
                 val sendData = Intent(holder.itemView.context, PertemuanActivity::class.java)
                 sendData.putExtra(PertemuanActivity.KODEKELAS, pertemuan.kodeKelas)
-                sendData.putExtra(PertemuanActivity.NAMAPERTEMUAN,pertemuan.matakuliah)
+                sendData.putExtra(PertemuanActivity.DOSEN,pertemuan.dosen)
+                sendData.putExtra(PertemuanActivity.NAMAPERTEMUAN,"${pertemuan.matakuliah} grup ${pertemuan.grup}")
                 holder.itemView.context.startActivity(sendData)
             }
         }
+    }
+
+    fun submitSortedList(list: List<HomeResponseItem?>?) {
+        val daysOrder = mapOf(
+            "Mon" to 1, "Tue" to 2, "Wed" to 3, "Thu" to 4,
+            "Fri" to 5, "Sat" to 6, "Sun" to 7
+        )
+
+        val sortedList = list?.sortedBy { item ->
+            try {
+                val inputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH)
+                val outputFormat = SimpleDateFormat("EEE", Locale.ENGLISH)
+
+                val date = inputFormat.parse(item?.tanggal)
+                val dayAbbreviation = outputFormat.format(date!!) // Misalnya "Mon", "Tue"
+                daysOrder[dayAbbreviation] ?: Int.MAX_VALUE // Jika hari tidak ditemukan, beri nilai besar
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Int.MAX_VALUE // Jika terjadi error, masukkan di urutan terakhir
+            }
+        }
+
+        submitList(sortedList) // Set daftar yang sudah diurutkan ke adapter
     }
 
 
@@ -69,11 +95,24 @@ class JadwalAdapter :
             }
         }
 
+
         fun bind(review: HomeResponseItem) {
             binding.namaMatkul.text = "${review.matakuliah}"
-            binding.grupMatkul.text = review.grup
+            binding.grupMatkul.text = "grup ${review.grup}"
             binding.ruanganMatkul.text = review.dosen
-            binding.jadwalMatkul.text = ""
+            binding.jadwalMatkul.text = "${review.sesiStart} - ${review.sesiEnd}"
+
+            val inputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH) // Sesuaikan dengan format data
+            val outputFormat = SimpleDateFormat("EEE", Locale.ENGLISH)
+
+            try {
+                val date = inputFormat.parse(review.tanggal) // Konversi String ke Date
+                val current = outputFormat.format(date!!) // Format ulang Date ke format yang diinginkan
+                binding.hariMatkul.text = current
+            } catch (e: Exception) {
+                e.printStackTrace()
+                binding.hariMatkul.text = review.tanggal // Jika error, tampilkan data asli
+            }
         }
 
         fun setOnItemClickListener(listener: (Int) -> Unit) {

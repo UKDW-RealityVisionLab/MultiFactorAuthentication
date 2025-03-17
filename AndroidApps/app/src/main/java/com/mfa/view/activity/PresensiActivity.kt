@@ -10,12 +10,15 @@ import android.view.View
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.widget.Toolbar
 import androidx.core.content.ContextCompat
+import androidx.core.content.ContextCompat.startActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.mfa.Helper
+import com.mfa.R
 import com.mfa.api.request.EmailRequest
 import com.mfa.api.request.StatusReq
 import com.mfa.databinding.ActivityPresensiBinding
@@ -23,6 +26,9 @@ import com.mfa.di.Injection
 import com.mfa.`object`.Email
 import com.mfa.`object`.IdJadwal
 import com.mfa.`object`.StatusMhs
+import com.mfa.view.activity.PertemuanActivity.Companion
+import com.mfa.view.activity.PertemuanActivity.Companion.NAMAPERTEMUAN
+import com.mfa.view.activity.PresensiActivity.Companion.GETJADWAL
 import com.mfa.view.adapter.PertemuanAdapter
 import com.mfa.view_model.JadwalViewModel
 import com.mfa.view_model.LocationViewModel
@@ -33,19 +39,21 @@ import kotlinx.coroutines.launch
 class PresensiActivity : AppCompatActivity() {
     private lateinit var binding: ActivityPresensiBinding
     private lateinit var viewModel: JadwalViewModel
-    private lateinit var locationViewModel: LocationViewModel
-    private lateinit var adapter: PertemuanAdapter
-    private lateinit var fusedLocationClient: FusedLocationProviderClient
-    private lateinit var profileViewModel: ProfileViewModel
 
-    private var userLatitude: Double? = null
-    private var userLongitude: Double? = null
+    private lateinit var adapter: PertemuanAdapter
+
+    private lateinit var profileViewModel: ProfileViewModel
 
     companion object {
         const val ISVALID = "isValid"
         const val GETJADWAL = "jadwal"
         const val RUANG="ruang"
+        const val WAKTU="waktu"
+        const val TANGGAL="tanggal"
+        const val DOSEN="dosen"
     }
+
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -53,16 +61,11 @@ class PresensiActivity : AppCompatActivity() {
         setContentView(binding.root)
 
 
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
-
         viewModel = ViewModelProvider(
             this,
             ViewModelFactory(Injection.provideRepository(this))
         ).get(JadwalViewModel::class.java)
-        locationViewModel = ViewModelProvider(
-            this,
-            ViewModelFactory(Injection.provideRepository(this))
-        ).get(LocationViewModel::class.java)
+
         profileViewModel = ViewModelProvider(
             this,
             ViewModelFactory(Injection.provideRepository(this))
@@ -71,21 +74,41 @@ class PresensiActivity : AppCompatActivity() {
         adapter = PertemuanAdapter()
 
         val idJadwal = intent.getStringExtra(GETJADWAL).toString()
-        supportActionBar?.title="Presensi $idJadwal"
-        Log.d("id jadwal untuk getjadwal", idJadwal)
+        val waktu = intent.getStringExtra(WAKTU).toString()
+        val dosen= intent.getStringExtra(DOSEN).toString()
+        val tanggal=intent.getStringExtra(TANGGAL).toString()
+        val ruang=intent.getStringExtra(RUANG).toString()
 
-        getMyLocation()
+        binding.waktu.text="Waktu      : $waktu"
+        binding.tgl.text="Tanggal   : $tanggal"
+        binding.ruang.text="Ruang      : $ruang"
+        binding.jadwal.text=idJadwal
+        binding.dosen.text="Dosen      : $dosen"
+
+        val toolbar: Toolbar = binding.topAppBar
+        setSupportActionBar(toolbar)
+//        val matkul = intent.getStringExtra(PertemuanActivity.NAMAPERTEMUAN)
+
+        supportActionBar?.title = "$idJadwal"
+        toolbar.setNavigationOnClickListener {
+            onBackPressed() // Kembali ke halaman sebelumnya
+        }
+//        supportActionBar?.title="Presensi $idJadwal"
+//        Log.d("id jadwal untuk getjadwal", idJadwal)
+
+//        getMyLocation()
 
         // Setup onClickListener for "Scan QR" button
-        binding.btnScanQr.setOnClickListener {
-            if (adapter.isvalid == true) {
+        binding.btnPresensi.setOnClickListener {
+//            if (adapter.isvalid == true) {
                 // User is inside the classroom, allow QR code scanning
-                val intent = Intent(this, QRCodeScanActivity::class.java)
-                intent.putExtra("kodeJadwal","$idJadwal")
+                val intent = Intent(this, LocationActivity::class.java)
+                val jadwal= idJadwal.substringBefore("grup").trim()
+                intent.putExtra(LocationActivity.GETJADWAL,"$jadwal")
                 startActivity(intent)
-            } else {
-                alertDialog(title="Pemberitahuan", text = "Anda berada di luar kelas\nsilahkan masuk kelas untuk presensi")
-            }
+//            } else {
+//                alertDialog(title="Pemberitahuan", text = "Anda berada di luar kelas\nsilahkan masuk kelas untuk presensi")
+//            }
         }
 
     }
@@ -118,7 +141,8 @@ class PresensiActivity : AppCompatActivity() {
     }
 
     private fun checkStatus() {
-        val idJadwal = intent.getStringExtra(GETJADWAL).toString()
+        var idJadwal = intent.getStringExtra(GETJADWAL).toString()
+        idJadwal= idJadwal.substringBefore("grup").trim()
         IdJadwal.idJadwal = idJadwal
         val dataEmail = EmailRequest(Email.email)
         profileViewModel.getProfile(dataEmail)
@@ -132,8 +156,9 @@ class PresensiActivity : AppCompatActivity() {
                     StatusMhs.statusMhs = true
                     Log.d("status", " $data ${StatusMhs.statusMhs} ${it.email}")
                     if (StatusMhs.statusMhs == true) {
-                        binding.status.text = "Status: Hadir"
-                        binding.btnScanQr.visibility = View.GONE
+                        binding.status.text = "Hadir"
+                        binding.status.setTextColor(ContextCompat.getColor(this, R.color.white))
+                        binding.btnPresensi.visibility = View.GONE
                         binding.btnBackHome.visibility = View.VISIBLE
                         binding.btnBackHome.setOnClickListener {
                             intent.flags =
@@ -144,135 +169,12 @@ class PresensiActivity : AppCompatActivity() {
                 } else if (status == false) {
                     StatusMhs.statusMhs = false
                     if (StatusMhs.statusMhs == false) {
-                        binding.status.text = "Status: Alpha"
+                        binding.status.text = "Alpha"
                     }
                 }
-
-            }
-        }
-
-    }
-
-    private fun getMyLocation() {
-        if (ContextCompat.checkSelfPermission(
-                this.applicationContext,
-                android.Manifest.permission.ACCESS_FINE_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED
-        ) {
-            fusedLocationClient.lastLocation
-                .addOnSuccessListener { location ->
-                    if (location != null) {
-                        userLatitude = location.latitude
-                        userLongitude = location.longitude
-                        Log.d("latitude", location.latitude.toString())
-                        Log.d("longitude", location.longitude.toString())
-                        lifecycleScope.launch {
-                            validasiLocation()
-                        }
-                    } else {
-                        Toast.makeText(this, "Lokasi tidak tersedia", Toast.LENGTH_SHORT).show()
-                    }
-                }
-                .addOnFailureListener { e ->
-                    Toast.makeText(
-                        this,
-                        "Gagal mendapatkan lokasi: ${e.message}",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
-        } else {
-            requestPermissionLauncher.launch(android.Manifest.permission.ACCESS_FINE_LOCATION)
-        }
-    }
-
-    private val requestPermissionLauncher =
-        registerForActivityResult(
-            ActivityResultContracts.RequestPermission()
-        ) { isGranted: Boolean ->
-            if (isGranted) {
-                getMyLocation()
-            }
-        }
-
-    private fun validasiLocation() {
-        val idJadwal = intent.getStringExtra(GETJADWAL).toString()
-        locationViewModel.getKelasByKodeRuang(idJadwal)
-        Log.d("kode jadwal pertemuan activity :", idJadwal)
-        val ruang = intent.getStringExtra(RUANG).toString()
-        locationViewModel.getLokasiData.observe(this) { locationData ->
-            when (locationData) {
-                is Helper.Success -> {
-                    val ruangResponseObject = locationData.data
-                    if (ruangResponseObject != null) {
-                        val validLatitude = ruangResponseObject.latitude?.toDouble()
-                        val validLongitude = ruangResponseObject.longitude?.toDouble()
-                        Log.d(
-                            "lokasi valid",
-                            "Latitude: $validLatitude, Longitude: $validLongitude"
-                        )
-
-                        if (userLatitude != null && userLongitude != null && validLatitude != null && validLongitude != null) {
-                            Log.d("lokasimu", "Latitude: $userLatitude, Longitude: $userLongitude")
-                            val radius = 100.0
-                            val isWithin100m = isWithinRadius(
-                                userLatitude!!,
-                                userLongitude!!,
-                                validLatitude,
-                                validLongitude,
-                                radius
-                            )
-                            if (isWithin100m) {
-                                runOnUiThread {
-                                    Toast.makeText(
-                                        this,
-                                        "Lokasi valid",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-                                    binding.position.text = "Anda di dalam ruang $ruang"
-                                    adapter.isvalid = true
-                                }
-                            } else {
-                                runOnUiThread {
-                                    Toast.makeText(
-                                        this,
-                                        "Lokasi tidak valid",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-                                    binding.position.text = "Anda di luar ruang $ruang"
-                                    adapter.isvalid = false
-                                }
-                            }
-                        }
-                    } else {
-                        Log.e("Error", "RUANG KOSONG")
-                    }
-                }
-
-                is Helper.Error -> {
-                    Log.e("Error", "GAGAL MENDAPATKAN LOKASI")
-                }
-
-                Helper.Loading -> binding.progressBar.visibility=View.INVISIBLE
             }
         }
     }
 
-    private fun isWithinRadius(
-        userLatitude: Double,
-        userLongitude: Double,
-        targetLatitude: Double,
-        targetLongitude: Double,
-        radius: Double
-    ): Boolean {
-        val userLocation = Location("").apply {
-            latitude = userLatitude
-            longitude = userLongitude
-        }
-        val targetLocation = Location("").apply {
-            latitude = targetLatitude
-            longitude = targetLongitude
-        }
-        val distance = userLocation.distanceTo(targetLocation)
-        return distance <= radius
-    }
+
 }

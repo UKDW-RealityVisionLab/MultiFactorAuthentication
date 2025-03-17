@@ -8,6 +8,7 @@ import android.view.View
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -34,18 +35,30 @@ class PertemuanActivity : AppCompatActivity() {
 
     private lateinit var adapter: PertemuanAdapter
     private lateinit var profileViewModel: ProfileViewModel
-    private val REQUEST_CHECK_SETTINGS = 1001
+
 
 
     companion object {
         const val KODEKELAS = "kode_kelas"
         const val NAMAPERTEMUAN = "pertemuan"
+        const val DOSEN="dosen"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityPertemuanBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        val toolbar: Toolbar = binding.topAppBar
+        setSupportActionBar(toolbar)
+        val matkul = intent.getStringExtra(NAMAPERTEMUAN)
+
+        supportActionBar?.title = "$matkul"
+        toolbar.setNavigationOnClickListener {
+            onBackPressed() // Kembali ke halaman sebelumnya
+        }
+//        adapter=PertemuanAdapter()
+
 
         viewModel = ViewModelProvider(
             this,
@@ -63,6 +76,10 @@ class PertemuanActivity : AppCompatActivity() {
         ).get(ProfileViewModel::class.java)
 
         adapter = PertemuanAdapter()
+        val dosen=intent.getStringExtra(DOSEN).toString()
+        adapter.dosen=dosen
+
+        Log.d("dosen", dosen)
         setupRecyclerView()
 
         val dataEmail = EmailRequest(Email.email)
@@ -77,10 +94,9 @@ class PertemuanActivity : AppCompatActivity() {
         }
 
         val kodeKelas = intent.getIntExtra(KODEKELAS, 0)
-        val matkul = intent.getStringExtra(NAMAPERTEMUAN)
+
         Log.d("pertemuan menerima kode ", kodeKelas.toString())
 
-        supportActionBar?.title = "Pertemuan $matkul"
 
         pertemuanViewModel.getPertemuan(kodeKelas)
         pertemuanViewModel.getPertemuanData.observe(this) { pertemuans ->
@@ -93,70 +109,51 @@ class PertemuanActivity : AppCompatActivity() {
 
                     Helper.Loading -> binding.progressBar.visibility=View.INVISIBLE
                 }
-            }
-        }
-        requestPermissionLauncher.launch(android.Manifest.permission.ACCESS_FINE_LOCATION)
-    }
+                profileViewModel.getData.observe(this) {
+//                    val name = it.nama
+//                    val nim = it.nim
+                    val email = it.email
+                    Log.d("", "$email $dataEmail")
+                    pertemuanViewModel.getHadirFun(kodeKelas.toString(),it.nim.toString())
 
-    private val requestPermissionLauncher =
-        registerForActivityResult(
-            ActivityResultContracts.RequestPermission()
-        ) { isGranted: Boolean ->
-            if (isGranted) {
-                Log.d("PERMISSION", "Location permission granted.")
-                turnOnGPS()
-            } else {
-                Log.d("PERMISSION", "Location permission denied.")
-                Toast.makeText(this, "Permission denied", Toast.LENGTH_SHORT).show()
-            }
-        }
+                    pertemuanViewModel.getHadir.observe(this) { helperResponse ->
+                        when (helperResponse) {
+                            is Helper.Success -> {
+                                val hadirResponse = helperResponse.data  // This is your HadirResponse
+                                val jumlahHadir = hadirResponse.hadir
+                                binding.hadirPertemuan.text = "Hadir: $jumlahHadir"
+                                val pertemuan=binding.totalPertemuan.text.toString()
+                                val totalPertemuan= pertemuan.substring(pertemuan.length-1).toInt()
+                                Log.d("total pertemuan:","$totalPertemuan")
+                                val hadirText=binding.hadirPertemuan.text.toString()
+                                val hadir= hadirText.substring(hadirText.length-1).toInt()
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        when (requestCode) {
-            REQUEST_CHECK_SETTINGS -> {
-                when (resultCode) {
-                    RESULT_OK -> {
-                        Log.d("GPS_STATUS", "User enabled GPS.")
-                        Toast.makeText(this, "GPS on", Toast.LENGTH_SHORT).show()
+                                val alpha=totalPertemuan-hadir
+                                binding.alphaPertemuan.text="Alpha: ${alpha}"
+
+                                Log.d("hadir:", "$jumlahHadir")
+
+                            }
+                            is Helper.Loading -> {
+                                // Handle loading state
+                            }
+                            is Helper.Error -> {
+                                // Handle error state
+                                Log.e("HadirError", "error")
+                            }
+                        }
                     }
-                    RESULT_CANCELED -> {
-                        Log.d("GPS_STATUS", "User refused to enable GPS.")
-                        Toast.makeText(this, "GPS not enabled", Toast.LENGTH_SHORT).show()
-                    }
+
+
                 }
             }
+
+
+
         }
     }
 
 
-    private fun turnOnGPS() {
-        val locationRequest = LocationRequest.create().apply {
-            priority = LocationRequest.PRIORITY_HIGH_ACCURACY
-        }
-        val builder = LocationSettingsRequest.Builder()
-            .addLocationRequest(locationRequest)
-
-        val settingsClient = LocationServices.getSettingsClient(this)
-        val task = settingsClient.checkLocationSettings(builder.build())
-
-        task.addOnSuccessListener {
-            Log.d("GPS_STATUS", "GPS has been turned on.")
-            Toast.makeText(this, "GPS on", Toast.LENGTH_SHORT).show()
-        }
-
-        task.addOnFailureListener { exception ->
-            Log.d("GPS_STATUS", "Failed to turn on GPS.")
-            if (exception is ResolvableApiException) {
-                try {
-                    exception.startResolutionForResult(this, REQUEST_CHECK_SETTINGS)
-                } catch (sendEx: IntentSender.SendIntentException) {
-                    Log.d("GPS_STATUS", "Failed to resolve GPS settings: ${sendEx.message}")
-                }
-            }
-        }
-
-    }
 
     private fun setupRecyclerView() {
         val layoutManager = LinearLayoutManager(this)
@@ -168,7 +165,7 @@ class PertemuanActivity : AppCompatActivity() {
 
     private fun setPertemuan(data: List<PertemuanResponseItem>?) {
         if (data != null) {
-            adapter.submitList(data)
+            adapter.submitSortedList(data)
             val totalPertemuan = adapter.itemCount
             binding.totalPertemuan.text = "Total Pertemuan: $totalPertemuan"
             Log.d("data pertemuan:", data.toString())

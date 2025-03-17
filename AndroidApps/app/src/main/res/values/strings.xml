@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">ABZENN</string>
+    <string name="app_name">AbzennDW</string>
     <!-- Menu related strings. -->
     <string name="menu_item_settings" translatable="false">Settings</string>
     <!-- Settings related strings. -->
@@ -126,4 +126,6 @@
     <string name="capture_image">Take Capture</string>
     <string name="description_verify">Pastikan wajah anda \nlurus menghadap kamera</string>
     <string name="mulai_verifikasi">Mulai Verifikasi</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

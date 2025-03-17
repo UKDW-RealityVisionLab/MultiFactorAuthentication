@@ -8,6 +8,7 @@ route.get('/:kode_jadwal', presensiController.dataPresensi)
 route.post('/', presensiController.insertPresensi)
 route.post('/getProfile/:email', presensiController.getProfile)
 route.post('/cekStatusPresensi', presensiController.cekStatusPresensi)
+route.get("/total-hadir/:kodeKelas/:nim",presensiController.statistik)
 route.patch('/:id',presensiController.updatePresensi)
 
 route.delete('/:id',presensiController.deletePresensi)

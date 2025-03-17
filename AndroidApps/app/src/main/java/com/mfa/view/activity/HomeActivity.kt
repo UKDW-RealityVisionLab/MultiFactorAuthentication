@@ -2,22 +2,19 @@ package com.mfa.view.activity
 
 import android.annotation.SuppressLint
 import android.content.Intent
-import android.content.IntentSender
+import android.media.FaceDetector.Face
 import android.os.Bundle
 import android.util.Log
-import android.view.Menu
-import android.view.MenuItem
+import android.widget.ImageButton
 import android.widget.Toast
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.google.android.gms.common.api.ResolvableApiException
-import com.google.android.gms.location.LocationRequest
-import com.google.android.gms.location.LocationServices
-import com.google.android.gms.location.LocationSettingsRequest
+import com.firebase.ui.auth.AuthUI
+import com.google.android.gms.tasks.Task
 import com.mfa.Helper
 import com.mfa.view.adapter.JadwalAdapter
 import com.mfa.R
@@ -27,11 +24,13 @@ import com.mfa.databinding.ActivityHomeBinding
 import com.mfa.di.Injection
 import com.mfa.utils.PreferenceUtils
 import com.mfa.`object`.Email
+import com.mfa.view.custom.CustomAlertDialog
 import com.mfa.view_model.JadwalViewModel
 import com.mfa.view_model.ProfileViewModel
 import com.mfa.view_model.ViewModelFactory
 import java.text.SimpleDateFormat
 import java.util.Date
+import java.util.Locale
 
 
 class HomeActivity : AppCompatActivity() {
@@ -45,10 +44,49 @@ class HomeActivity : AppCompatActivity() {
         const val NAME = "name"
     }
 
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityHomeBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        val toolbar: Toolbar = binding.topAppBar
+        setSupportActionBar(toolbar)
+//        supportActionBar?.setDisplayHomeAsUpEnabled(false) // Matikan tombol kembali
+//        supportActionBar?.setHomeButtonEnabled(false) // Matikan tombol home
+//        supportActionBar?.setDisplayShowHomeEnabled(false) // Pastikan ikon tidak muncul
+
+        // Tombol Ubah Wajah
+        findViewById<ImageButton>(R.id.btn_change_face).setOnClickListener {
+            // In MainActivity
+            val intent = Intent(this, Simpanwajah::class.java)
+//            intent.putExtra(FaceProcessorActivity.CALLER, "ubah wajah")
+            startActivity(intent)
+        }
+
+        // Tombol Logout
+        findViewById<ImageButton>(R.id.btn_logout).setOnClickListener {
+            val alert= CustomAlertDialog(this)
+            alert.showDialog(
+                title = "Logout",
+                message = "Apakah anda yakin ingin keluar?",
+                onYesClick = {
+                    AuthUI.getInstance().signOut(this)
+                        .addOnCompleteListener { task: Task<Void?>? ->
+                            PreferenceUtils.clearData(applicationContext)
+//                            val intent = Intent(this, OnboardingActivity::class.java).apply {
+//                                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+//                            }
+//                            startActivity(intent)
+                            finishAffinity()
+                        }
+                        .addOnFailureListener { e: Exception ->
+                            Toast.makeText(this, "Gagal keluar Applikasi :" + e.message, Toast.LENGTH_LONG).show()
+                        }
+                }
+            )
+        }
+
         binding.namaUser.text = PreferenceUtils.getUsername(this)
 
         viewModel = ViewModelProvider(
@@ -101,7 +139,7 @@ class HomeActivity : AppCompatActivity() {
 
     private fun setJadwal(data: List<HomeResponseItem?>?) {
         if (data != null) {
-            adapter.submitList(data)
+            adapter.submitSortedList(data)
             Log.d("data Home:", "$data")
         } else {
             // Handle null data if needed
@@ -118,25 +156,25 @@ class HomeActivity : AppCompatActivity() {
         setDate()
     }
 
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(R.menu.home_menu, menu)
-        return super.onCreateOptionsMenu(menu)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            R.id.profile -> {
-                startActivity(Intent(this, UserProfileActivity::class.java))
-                return true
-            }
-
-            else -> return super.onOptionsItemSelected(item)
-        }
-    }
+//    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+//        menuInflater.inflate(R.menu.home_menu, menu)
+//        return super.onCreateOptionsMenu(menu)
+//    }
+//
+//    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+//        when (item.itemId) {
+//            R.id.profile -> {
+//                startActivity(Intent(this, UserProfileActivity::class.java))
+//                return true
+//            }
+//
+//            else -> return super.onOptionsItemSelected(item)
+//        }
+//    }
 
     @SuppressLint("SimpleDateFormat")
     private fun setDate() {
-        val formatter = SimpleDateFormat("dd-MM-yyyy")
+        val formatter = SimpleDateFormat("EEE, dd MMMM yyyy", Locale.ENGLISH)
         val date = Date()
         val current = formatter.format(date)
 
