@@ -14,6 +14,7 @@ import android.widget.Button
 import android.widget.RelativeLayout
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
@@ -118,6 +119,18 @@ class QRCodeScanActivity : AppCompatActivity() {
                 )
             })
         })
+
+        onBackPressedDispatcher.addCallback(this,object :OnBackPressedCallback(true){
+            override fun handleOnBackPressed() {
+                showCustomDialog(
+                    title = "Pemberitahuan",
+                    message = "Mohon selesaikan proses presensi",
+                    buttonText = "Oke"
+                ){
+                    onResume()
+                }
+            }
+        })
     }
 
 
@@ -173,6 +186,8 @@ class QRCodeScanActivity : AppCompatActivity() {
         super.onPause()
         barcodeView.pause()
     }
+
+
 
     override fun onRequestPermissionsResult(
         requestCode: Int,

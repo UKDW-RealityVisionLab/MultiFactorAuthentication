@@ -14,6 +14,7 @@ import android.view.View
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
@@ -94,6 +95,18 @@ class FaceProcessorActivity : AppCompatActivity(), CameraManager.OnTakeImageCall
                 Log.i(TAG, "Result not OK: ${result.toString()}")
             }
         }
+
+        onBackPressedDispatcher.addCallback(this,object : OnBackPressedCallback(true){
+            override fun handleOnBackPressed() {
+                showCustomDialog(
+                    title = "Pemberitahuan",
+                    message = "Mohon selesaikan proses presensi",
+                    buttonText = "Oke"
+                ){
+                    onResume()
+                }
+            }
+        })
     }
 
     private fun buttonClicks() {
@@ -198,6 +211,8 @@ class FaceProcessorActivity : AppCompatActivity(), CameraManager.OnTakeImageCall
         }
 
         dialog.show()
+
+
     }
 
 
