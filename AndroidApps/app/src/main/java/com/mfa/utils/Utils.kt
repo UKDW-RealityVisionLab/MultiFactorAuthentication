@@ -4,7 +4,9 @@ import android.content.Context
 import android.content.res.AssetManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import java.io.FileInputStream
@@ -112,12 +114,16 @@ class Utils {
          * @param bitmap
          * @return
          */
-        fun getFirebaseEmbedding(): DatabaseReference {
-            val user = FirebaseAuth.getInstance().currentUser
-            val userName = user!!.uid + "_" + user.displayName!!.replace(" ", "")
-            val embeddingReference =
-                FirebaseDatabase.getInstance().getReference("newfaceantispooflog/$userName/faceEmbeddings")
-            return embeddingReference
+        fun getFirebaseEmbedding(user: FirebaseUser): DatabaseReference {
+            if (user == null) {
+                Log.e("Utils", "FirebaseUser is null")
+                throw IllegalStateException("FirebaseUser cannot be null")
+            }
+            Log.d("firebase Utils", "User UID: ${user.uid}, Email: ${user.email}, Display Name: ${user.displayName}")
+            val userName = user.uid + "_" + (user.displayName ?: "unknown").replace(" ", "")
+            val dataImage= FirebaseDatabase.getInstance().getReference("newfaceantispooflog/$userName/faceEmbeddings")
+            Log.d("data image user login","$dataImage")
+            return dataImage
         }
 
         fun setFirebaseEmbedding(embedingFloatList: List<String> ){

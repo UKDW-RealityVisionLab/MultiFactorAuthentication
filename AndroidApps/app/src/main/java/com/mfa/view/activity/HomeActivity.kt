@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.firebase.ui.auth.AuthUI
 import com.google.android.gms.tasks.Task
+import com.google.firebase.auth.FirebaseAuth
 import com.mfa.Helper
 import com.mfa.view.adapter.JadwalAdapter
 import com.mfa.R
@@ -31,6 +32,7 @@ import com.mfa.view_model.ViewModelFactory
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import kotlin.math.log
 
 
 class HomeActivity : AppCompatActivity() {
@@ -71,6 +73,8 @@ class HomeActivity : AppCompatActivity() {
                 title = "Logout",
                 message = "Apakah anda yakin ingin keluar?",
                 onYesClick = {
+                    val user= FirebaseAuth.getInstance().currentUser
+                    Log.d("home user:", "$user")
                     AuthUI.getInstance().signOut(this)
                         .addOnCompleteListener { task: Task<Void?>? ->
                             PreferenceUtils.clearData(applicationContext)

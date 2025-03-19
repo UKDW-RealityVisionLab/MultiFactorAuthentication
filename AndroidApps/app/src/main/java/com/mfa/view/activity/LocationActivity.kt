@@ -91,14 +91,7 @@ class LocationActivity : AppCompatActivity() {
                 title = "Cek lokasi",
                 message = "Mulai cek lokasi anda??",
                 onYesClick = {
-                    AuthUI.getInstance().signOut(this)
-                        .addOnCompleteListener { task: Task<Void?>? ->
-                            PreferenceUtils.clearData(applicationContext)
-                            requestPermissionLauncher.launch(android.Manifest.permission.ACCESS_FINE_LOCATION)
-                        }
-                        .addOnFailureListener { e: Exception ->
-                            Toast.makeText(this, "batal cek lokasi :" + e.message, Toast.LENGTH_LONG).show()
-                        }
+                    requestPermissionLauncher.launch(android.Manifest.permission.ACCESS_FINE_LOCATION)
                 }
             )
 
