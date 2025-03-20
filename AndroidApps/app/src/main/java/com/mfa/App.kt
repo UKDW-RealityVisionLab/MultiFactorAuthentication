@@ -1,6 +1,7 @@
 package com.mfa
 
 import android.app.Application
+import com.google.firebase.FirebaseApp
 
 class App : Application() {
     private lateinit var singleton: App
@@ -12,5 +13,7 @@ class App : Application() {
     override fun onCreate() {
         super.onCreate()
         singleton = this
+        FirebaseApp.initializeApp(this)
+
     }
 }
