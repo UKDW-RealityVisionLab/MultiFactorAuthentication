@@ -52,18 +52,79 @@ class BitmapUtils {
          * Converts a YUV_420_888 image from CameraX API to a bitmap.
          */
         @ExperimentalGetImage
-        fun getBitmap(image: ImageProxy): Bitmap? {
-            val frameMetadata =
-                FrameMetadata.Builder()
-                    .setWidth(image.width)
-                    .setHeight(image.height)
-                    .setRotation(image.imageInfo.rotationDegrees)
-                    .build()
+        fun getBitmap(imageProxy: ImageProxy): Bitmap? {
+            val image = imageProxy.image ?: run {
+                Log.e("BitmapUtils", "Image is null or in an unexpected format")
+                return null
+            }
 
-            val nv21Buffer =
-                yuv420ThreePlanesToNV21(image.image!!.planes, image.width, image.height)
-            return getBitmap(nv21Buffer, frameMetadata)
+            return when (image.format) {
+                ImageFormat.YUV_420_888 -> {
+                    val nv21Bytes = yuv420ToNv21(image)
+                    val yuvImage = YuvImage(nv21Bytes, ImageFormat.NV21, image.width, image.height, null)
+                    val out = ByteArrayOutputStream()
+                    yuvImage.compressToJpeg(Rect(0, 0, image.width, image.height), 100, out)
+                    BitmapFactory.decodeByteArray(out.toByteArray(), 0, out.size())
+                }
+                ImageFormat.JPEG -> {
+                    convertJPEGImageProxyJPEGToBitmap(imageProxy)
+                }
+                else -> {
+                    Log.e("BitmapUtils", "Unsupported image format: ${image.format}")
+                    null
+                }
+            }
         }
+
+
+        private fun yuv420ToNv21(image: Image): ByteArray {
+            val yBuffer = image.planes[0].buffer // Y
+            val uBuffer = image.planes[1].buffer // U
+            val vBuffer = image.planes[2].buffer // V
+
+            val ySize = yBuffer.remaining()
+            val uSize = uBuffer.remaining()
+            val vSize = vBuffer.remaining()
+
+            val nv21 = ByteArray(ySize + uSize + vSize)
+
+            yBuffer.get(nv21, 0, ySize)
+            vBuffer.get(nv21, ySize, vSize)
+            uBuffer.get(nv21, ySize + vSize, uSize)
+
+            return nv21
+        }
+
+
+
+        fun convertNV21ToBitmap(nv21: ByteArray, width: Int, height: Int): Bitmap? {
+            val ySize = width * height
+            val uvSize = width * height / 2
+
+            Log.d("CameraEkspresi", "Converting NV21 to Bitmap. Width: $width, Height: $height")
+
+            // Create a YUV image from the NV21 byte array
+            val yuvImage = YuvImage(nv21, ImageFormat.NV21, width, height, null)
+
+            // Create a ByteArrayOutputStream to hold the image data
+            val out = ByteArrayOutputStream()
+
+            // Compress the YUV image to JPEG format (or any other supported format)
+            val rect = Rect(0, 0, width, height)
+            val success = yuvImage.compressToJpeg(rect, 100, out)
+
+            if (!success) {
+                Log.e("CameraEkspresi", "Failed to compress YUV image to JPEG")
+                return null
+            }
+
+            // Convert the output byte array into a Bitmap
+            val imageBytes = out.toByteArray()
+            return BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
+        }
+
+
+
 
         /**
          * Rotates a bitmap if it is converted from a bytebuffer.

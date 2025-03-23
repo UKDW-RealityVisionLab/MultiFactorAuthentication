@@ -95,7 +95,6 @@ class FaceRecognizer @Throws(IOException::class) constructor(assetManager: Asset
      */
     private fun getTwoImageDatasets(bitmap1: Bitmap, bitmap2: Bitmap): Array<Array<Array<FloatArray>>> {
         val bitmaps = arrayOf(bitmap1, bitmap2)
-
         val ddims = intArrayOf(bitmaps.size, INPUT_IMAGE_SIZE, INPUT_IMAGE_SIZE, 3)
         val datasets = Array(ddims[0]) {
             Array(ddims[1]) {

@@ -6,6 +6,7 @@ import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.Button
@@ -19,6 +20,7 @@ import com.mfa.R
 import com.mfa.databinding.ActivitySimpanwajahBinding
 import com.mfa.camerax.CameraManager
 import com.mfa.databinding.DialogAddFaceBinding
+import com.mfa.facedetector.FaceAntiSpoofing
 import com.mfa.facedetector.FaceRecognizer
 import com.mfa.utils.PreferenceUtils
 import com.mfa.utils.Utils
@@ -67,7 +69,24 @@ class Simpanwajah : AppCompatActivity(), CameraManager.OnTakeImageCallback {
 
     override fun onTakeImageSuccess(image: Bitmap) {
         val addFaceBinding = DialogAddFaceBinding.inflate(layoutInflater)
-        addFaceBinding.capturedFace.setImageBitmap(image)
+
+        // **Lakukan Cropping Sebelum Anti-Spoofing**
+        val resizedBmp: Bitmap = Bitmap.createBitmap(
+            image, image.width / 8, 0, image.width - (image.width / 4), image.height - (image.height / 20)
+        )
+        addFaceBinding.capturedFace.setImageBitmap(resizedBmp)
+
+        // **Cek Face Anti-Spoofing sebelum lanjut**
+        val faceAntiSpoofing = FaceAntiSpoofing(assets)
+        val spoofScore = faceAntiSpoofing.antiSpoofing(resizedBmp)
+
+        Log.d("FaceAntiSpoofing", "Spoof Score: $spoofScore (Threshold: ${FaceAntiSpoofing.THRESHOLD})")
+
+        if (spoofScore > FaceAntiSpoofing.THRESHOLD) {
+            Log.e("FaceAntiSpoofing", "⚠️ Deteksi serangan! Wajah palsu terdeteksi.")
+            Toast.makeText(this, "Wajah palsu terdeteksi! Coba lagi dengan wajah asli.", Toast.LENGTH_LONG).show()
+            return  // **Jangan lanjutkan proses simpan jika wajah palsu**
+        }
 
         val dialog = AlertDialog.Builder(this)
             .setView(addFaceBinding.root)
@@ -79,35 +98,34 @@ class Simpanwajah : AppCompatActivity(), CameraManager.OnTakeImageCallback {
         dialog.setOnShowListener {
             val okButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
             okButton.setOnClickListener {
-                dialog.dismiss() // Tutup dialog konfirmasi dulu
+                dialog.dismiss()
 
-                // Tampilkan loading setelah user menekan "OK"
                 val loadingDialog = LoadingDialogFragment()
                 loadingDialog.show(supportFragmentManager, "loadingDialog")
 
                 lifecycleScope.launch(Dispatchers.Main) {
-                    val embeddings = withContext(Dispatchers.IO) { faceRecognizer.getEmbeddingsOfImage(image) }
+                    val embeddings = withContext(Dispatchers.IO) { faceRecognizer.getEmbeddingsOfImage(resizedBmp) }
+                    Log.d("EmbeddingDebug", "Jumlah embedding yang dihasilkan: ${embeddings.size}")
 
                     if (embeddings.isEmpty() || embeddings[0].isEmpty()) {
-                        loadingDialog.dismiss() // Tutup loading jika gagal
+                        Log.e("EmbeddingDebug", "Gagal mendapatkan embedding! Embeddings kosong!")
+                        loadingDialog.dismiss()
                         Toast.makeText(this@Simpanwajah, "Gagal mendapatkan embeddings. Coba lagi.", Toast.LENGTH_LONG).show()
                         return@launch
                     }
 
                     val embeddingStringList = embeddings[0].map { it.toString() }
+                    Log.d("EmbeddingDebug", "Isi embedding yang akan dikirim: ${embeddingStringList.take(5)} ...")
                     Utils.setFirebaseEmbedding(embeddingStringList)
                     PreferenceUtils.saveFaceEmbeddings(applicationContext, embeddingStringList)
                     loadingDialog.dismiss()
                     showCustomDialog(
                         title = "Hasil scan wajah",
-                        message = "Selamat! anda berhasil menyimpan wajah",
-                        buttonText = "kembali ke home"
+                        message = "Selamat! Anda berhasil menyimpan wajah",
+                        buttonText = "Kembali ke Home"
                     ) {
                         Toast.makeText(this@Simpanwajah, "Wajah tersimpan!", Toast.LENGTH_SHORT).show()
-
-                        // Ambil email sebelum membuat intent baru
                         val userEmail = intent.getStringExtra("email")
-
                         val intent = Intent(this@Simpanwajah, HomeActivity::class.java)
                         intent.putExtra("email", userEmail)
                         startActivity(intent)
@@ -118,6 +136,7 @@ class Simpanwajah : AppCompatActivity(), CameraManager.OnTakeImageCallback {
 
         dialog.show()
     }
+
 
 
     private fun showCustomDialog(title: String, message: String, buttonText: String, action: () -> Unit) {
