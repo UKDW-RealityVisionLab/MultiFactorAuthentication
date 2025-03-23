@@ -38,17 +38,23 @@ class MlKitAnalyzer(
     }
 
     override fun stop() {
-       try {
-           detector.close()
-       } catch (e : Exception) {
-           Log.e(TAG , "stop : $e")
-       }
+        try {
+            detector.close()
+        } catch (e : Exception) {
+            Log.e(TAG , "stop : $e")
+        }
     }
 
     override fun onSuccess(results: List<Face>, graphicOverlay: GraphicOverlay<*>, rect: Rect) {
         graphicOverlay.clear()
         results.forEach {
+            var box = it.boundingBox
+            box.left = box.left+ (box.width()/10)
+            box.right = box.right- (box.width()/10)
+            it.boundingBox.left = box.left
+            it.boundingBox.right = box.right
             val faceGraphic = RectangleOverlay(graphicOverlay, it, rect)
+
             graphicOverlay.add(faceGraphic)
         }
         graphicOverlay.postInvalidate()

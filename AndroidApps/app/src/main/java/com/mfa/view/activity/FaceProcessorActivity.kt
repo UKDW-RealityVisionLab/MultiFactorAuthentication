@@ -6,8 +6,11 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Color
+import android.graphics.Matrix
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -20,6 +23,8 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
+import androidx.camera.core.CameraSelector
+import androidx.camera.core.ImageCaptureException
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
@@ -33,10 +38,12 @@ import com.google.firebase.database.ValueEventListener
 import com.mfa.R
 import com.mfa.api.request.EmailRequest
 import com.mfa.api.request.UpdateStatusReq
+import com.mfa.camerax.CameraEkspresi
 import com.mfa.camerax.CameraManager
 import com.mfa.databinding.ActivityCaptureFaceBinding
 import com.mfa.databinding.DialogAddFaceBinding
 import com.mfa.di.Injection
+import com.mfa.facedetector.EkspresiRecognizer
 import com.mfa.facedetector.FaceAntiSpoofing
 import com.mfa.facedetector.FaceRecognizer
 import com.mfa.`object`.Email
@@ -52,15 +59,41 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import java.lang.Exception
+import kotlin.math.pow
 import kotlin.math.sqrt
 
-class FaceProcessorActivity : AppCompatActivity(), CameraManager.OnTakeImageCallback {
+class FaceProcessorActivity : AppCompatActivity() {
     private val TAG = "FaceProcessor"
     private lateinit var binding: ActivityCaptureFaceBinding
-    private lateinit var cameraManager: CameraManager
-
-    private val EMBEDDING_THRESHOLD = 0.8
+    private lateinit var cameraEkspresi: CameraEkspresi
+    private lateinit var ekspresiRecognizer: EkspresiRecognizer
+    private val EMBEDDING_THRESHOLD = 0.8f
     private lateinit var profileViewModel: ProfileViewModel
+
+
+    private val allExpressions = listOf("senyum", "hadap kiri", "hadap kanan", "kedip", "tutup mata kiri", "tutup mata kanan")
+
+    //mengambil 5 ekspresi random
+    private val selectedExpressions = allExpressions.shuffled().take(5).toMutableList()
+    private var currentIndex = 0
+    private fun startExpressionChallenge() {
+        if (currentIndex < selectedExpressions.size) {
+            val currentExpression = selectedExpressions[currentIndex]
+            Log.d("FaceProcessor", "Mulai tantangan ekspresi: $currentExpression") // 🔥 Log ekspresi
+            binding.expressionCommandText.text = "Silakan lakukan ekspresi: $currentExpression"
+        } else {
+            Log.d("FaceProcessor", "Semua ekspresi selesai! Mulai verifikasi wajah.")
+            startFaceVerification()
+        }
+    }
+
+
+
+
+    private var start_verify = false
+    private var exp_face_ok = false
+    private var verify_counter = 0
+    lateinit var face_image:Bitmap
 
     private lateinit var faceRecognizer: FaceRecognizer // Face recognizer
     private lateinit var fas: FaceAntiSpoofing // Face anti-spoofing
@@ -70,64 +103,59 @@ class FaceProcessorActivity : AppCompatActivity(), CameraManager.OnTakeImageCall
         binding = ActivityCaptureFaceBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        ekspresiRecognizer = EkspresiRecognizer { expression -> handleDetectedExpression(expression) }
         val toolbar: Toolbar = binding.topAppBar
         setSupportActionBar(toolbar)
 
-        // Inisialisasi komponen
         faceRecognizer = FaceRecognizer(assets)
         fas = FaceAntiSpoofing(assets)
-        cameraManager = CameraManager(
-            this,
-            binding.viewCameraPreview,
-            binding.viewGraphicOverlay,
-            this
-        )
+        cameraEkspresi = CameraEkspresi(this, binding.previewView, this) { expression -> handleDetectedExpression(expression) }
 
-        // Cek user Firebase
-        val user = FirebaseAuth.getInstance().currentUser
-        if (user != null) {
-            Log.d(TAG, "User UID: ${user.uid}, Email: ${user.email}")
-        } else {
-            Log.e(TAG, "User is null")
-        }
+        cameraEkspresi.cameraStart()
 
-        // Inisialisasi ViewModel
         profileViewModel = ViewModelProvider(
             this,
             ViewModelFactory(Injection.provideRepository(this))
         ).get(ProfileViewModel::class.java)
 
         askCameraPermission()
-        buttonClicks()
 
-        // Handle back button press
+        // **Pastikan ekspresi pertama muncul**
+        startExpressionChallenge()  // 🔥 Tambahkan ini agar perintah pertama muncul
+
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 showCustomDialog(
                     title = "Pemberitahuan",
                     message = "Mohon selesaikan proses presensi",
                     buttonText = "Oke"
-                ) {
-                    onResume()
-                }
+                ) { onResume() }
             }
         })
     }
 
-    private fun buttonClicks() {
-        binding.buttonTurnCamera.setOnClickListener {
-            cameraManager.changeCamera()
-        }
-        binding.buttonStopCamera.setOnClickListener {
-            cameraManager.onTakeImage(this)
+    fun onTakeImageSuccess(image: Bitmap) {
+        Log.d(TAG, "✅ Gambar berhasil diambil! Ukuran: ${image.width}x${image.height}")
+        face_image = image // Simpan gambar untuk proses verifikasi
+
+        runOnUiThread {
+            binding.imageViewPreview.setImageBitmap(image)
+            binding.imageViewPreview.visibility = View.VISIBLE
+            binding.previewView.visibility = View.GONE
+            binding.verifyButton.visibility = View.VISIBLE
+
+            binding.verifyButton.setOnClickListener {
+                startFaceVerification()
+            }
         }
     }
+
 
     private fun askCameraPermission() {
         if (arrayOf(android.Manifest.permission.CAMERA).all {
                 ContextCompat.checkSelfPermission(this, it) == PackageManager.PERMISSION_GRANTED
             }) {
-            cameraManager.cameraStart()
+            cameraEkspresi.cameraStart()
         } else {
             ActivityCompat.requestPermissions(this, arrayOf(android.Manifest.permission.CAMERA), 0)
         }
@@ -144,53 +172,72 @@ class FaceProcessorActivity : AppCompatActivity(), CameraManager.OnTakeImageCall
                 android.Manifest.permission.CAMERA
             ) == PackageManager.PERMISSION_GRANTED
         ) {
-            cameraManager.cameraStart()
+            cameraEkspresi.cameraStart()
         } else {
             Toast.makeText(this, "Camera Permission Denied!", Toast.LENGTH_SHORT).show()
         }
     }
 
-    override fun onTakeImageSuccess(image: Bitmap) {
-        val addFaceBinding = DialogAddFaceBinding.inflate(layoutInflater)
-        addFaceBinding.capturedFace.setImageBitmap(image)
 
-        val dialog = AlertDialog.Builder(this)
-            .setView(addFaceBinding.root)
-            .setTitle("Confirm Face")
-            .setPositiveButton("OK", null)
-            .setNegativeButton("Cancel") { d, _ -> d.dismiss() }
-            .create()
-
-        dialog.setOnShowListener {
-            val okButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
-            okButton.setOnClickListener {
-                dialog.dismiss()
-
-                lifecycleScope.launch(Dispatchers.Main) {
-                    try {
-                        if (antiSpoofDetection(image)) {
-                            val embeddings = withContext(Dispatchers.IO) { faceRecognizer.getEmbeddingsOfImage(image) }
-
-                            if (embeddings.isEmpty() || embeddings[0].isEmpty()) {
-                                Toast.makeText(this@FaceProcessorActivity, "Gagal mendapatkan embeddings. Coba lagi.", Toast.LENGTH_LONG).show()
-                                return@launch
-                            }
-
-                            val embeddingFloatList = embeddings[0].map { it.toString() }
-                            Log.d(TAG, "Embeddings: ${embeddingFloatList.joinToString(", ")}")
-
-                            // Proses embedding langsung di activity ini
-                            handleEmbeddings(ArrayList(embeddingFloatList))
+    val handler = Handler(Looper.getMainLooper())
+    fun stop_handler(){
+        //handler.removeCallbacks(runnableDetectionHandler)
+        on_detect = false;
+        if(!exp_face_ok){
+            verifyFace(face_image)
+            exp_face_ok = true
+        }
+    }
+    private var on_detect = false
+    val runnableDetectionHandler = object : Runnable {
+        override fun run() {
+            if(on_detect) {
+                cameraEkspresi.onTakeImage(object : CameraEkspresi.OnTakeImageCallback {
+                    override fun onTakeImageSuccess(bitmap: Bitmap?) {
+                        if (bitmap == null) {
+                            return
                         }
-                    } catch (e: Exception) {
-                        Log.e(TAG, "Error: ${e.message}")
-                        Toast.makeText(this@FaceProcessorActivity, "Terjadi kesalahan: ${e.message}", Toast.LENGTH_LONG).show()
+                        runOnUiThread {
+                            /*if (verify_counter < 5) {
+                                binding.expressionCommandText.text =
+                                    "Verifikasi wajah " + (verify_counter + 1)
+                                binding.imageViewPreview.setImageBitmap(bitmap)
+                                verify_counter++;
+                            } else {*/
+                            var width = bitmap.width
+                            var height = bitmap.height
+                            var x = width /10
+                            width = width - (x*2)
+                            val resizedBmp: Bitmap = Bitmap.createBitmap(bitmap, x, 0, width, height)
+                            binding.imageViewPreview.setImageBitmap(resizedBmp)
+                            face_image = resizedBmp
+                            stop_handler()
+                            //}
+                        }
                     }
+
+                    override fun onTakeImageError(exception: ImageCaptureException) {
+                    }
+                })
+                if (verify_counter < 5) {
+                    handler.postDelayed(this, 500)
+                } else {
+                    handler.removeCallbacks(this)
                 }
             }
         }
-        dialog.show()
     }
+
+    fun runnableDetection(i : Int) {
+        if(i==1){
+            //binding.expressionCommandText.text = "Mengulang!"
+        }
+        if(!on_detect) {
+            on_detect = true;
+            runnableDetectionHandler.run()
+        }
+    }
+
 
     private fun antiSpoofDetection(faceBitmap: Bitmap): Boolean {
         val laplaceScore: Int = fas.laplacian(faceBitmap)
@@ -207,71 +254,265 @@ class FaceProcessorActivity : AppCompatActivity(), CameraManager.OnTakeImageCall
         return score < FaceAntiSpoofing.THRESHOLD
     }
 
-    override fun onTakeImageError(exception: Exception) {
-        Toast.makeText(this, "onTakeImageError: ${exception.message}", Toast.LENGTH_SHORT).show()
+
+
+    private var isreset = false
+    private var time_millis = System.currentTimeMillis();
+    private var isCapturing = false
+    private var verify_face = false
+
+    fun handleDetectedExpression(expression: String) {
+        if (isreset || isCapturing || verify_face) return // Mencegah tumpang tindih proses
+
+        if (expression.equals(selectedExpressions[currentIndex], ignoreCase = true)) {
+            Log.d("FaceVerification", "✅ Ekspresi cocok: $expression, mengambil gambar...")
+
+            if (currentIndex < selectedExpressions.size - 1) {
+                // 🔹 Tahap 1-4: Tidak ada auto capture, hanya lanjut ke ekspresi berikutnya
+                currentIndex++
+                runOnUiThread {
+                    binding.expressionCommandText.text = "Silakan lakukan ekspresi: ${selectedExpressions[currentIndex]}"
+                }
+            } else {
+                // 🔹 Tahap 5: Auto capture 1 kali saja, lalu tunggu tombol "Lanjut"
+                Log.d("FaceVerification", "Tahap 5! Auto capture 1 kali...")
+
+                isCapturing = true // Mencegah auto capture berulang
+
+                cameraEkspresi.onTakeImage(object : CameraEkspresi.OnTakeImageCallback {
+                    override fun onTakeImageSuccess(bitmap: Bitmap?) {
+                        if (bitmap == null) {
+                            Log.e("FaceVerification", "❌ Capture gagal!")
+                            isCapturing = false
+                            return
+                        }
+
+                        Log.d("FaceVerification", "📸 Auto capture tahap 5 berhasil!")
+
+                        // **Gunakan metode cropping yang sama dengan APK lama**
+                        val width = bitmap.width
+                        val height = bitmap.height
+                        val x = width / 10
+                        val croppedBitmap: Bitmap = Bitmap.createBitmap(bitmap, x, 0, width - (x * 2), height)
+
+                        // Simpan gambar terakhir untuk verifikasi wajah
+                        face_image = croppedBitmap
+
+                        runOnUiThread {
+                            binding.imageViewPreview.visibility = View.VISIBLE
+                            binding.imageViewPreview.setImageBitmap(croppedBitmap)
+                            binding.previewView.visibility = View.GONE
+
+                            // 🔥 Tampilkan tombol "Lanjut" sebelum masuk tahap verifikasi
+                            binding.verifyButton.visibility = View.VISIBLE
+                            binding.verifyButton.text = "Lanjut"
+                            binding.verifyButton.setOnClickListener {
+                                Log.d("FaceVerification", "🔍 Baru mulai auto capture 5x setelah tombol 'Lanjut' diklik!")
+
+                                binding.imageViewPreview.visibility = View.GONE
+                                binding.previewView.visibility = View.VISIBLE
+                                binding.verifyButton.visibility = View.GONE
+
+                                isCapturing = false
+                                verify_face = false
+                                start_verify = true
+                                time_millis = System.currentTimeMillis()
+
+                                startFaceVerification() // **Auto capture 5x dimulai setelah "Lanjut" ditekan**
+                            }
+                        }
+                    }
+
+                    override fun onTakeImageError(exception: ImageCaptureException) {
+                        Log.e("FaceVerification", "❌ Capture gagal: ${exception.message}")
+                        isCapturing = false
+                    }
+                })
+            }
+        } else {
+            Log.d("FaceVerification", "❌ Ekspresi tidak cocok: $expression, menunggu ekspresi: ${selectedExpressions[currentIndex]}")
+        }
     }
 
-    private fun handleEmbeddings(embeddingList: ArrayList<String>) {
-        // Tampilkan loading saat proses verifikasi dimulai
-        val loadingDialog = LoadingDialogFragment()
-        loadingDialog.show(supportFragmentManager, "loadingDialog")
+
+
+
+    private fun flipBitmap(bitmap: Bitmap): Bitmap {
+        val matrix = Matrix().apply { postScale(-1f, 1f, bitmap.width / 2f, bitmap.height / 2f) }
+        return Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+    }
+
+    private fun verifyFace(bitmap: Bitmap) {
+        Log.d("FaceVerification", "Memulai verifikasi wajah...")
+
+        // Pastikan bitmap tidak null
+        if (bitmap == null) {
+            Log.e("FaceVerification", "Bitmap yang diberikan null!")
+            return
+        }
+
+        var processedBitmap = bitmap
+        Log.d("FaceVerification", "Memproses gambar untuk ekstraksi embedding: ${processedBitmap.width}x${processedBitmap.height}")
+        // Flip jika menggunakan kamera depan
+        if (CameraManager.cameraOption == CameraSelector.LENS_FACING_FRONT) {
+            processedBitmap = flipBitmap(processedBitmap)
+            Log.d("FaceVerification", "Gambar dibalik (flip) untuk kamera depan")
+        }
+
+        // Ubah ukuran gambar menjadi 256x256
+        processedBitmap = Bitmap.createScaledBitmap(processedBitmap, 256, 256, false)
+        Log.d("FaceVerification", "Ukuran Gambar setelah flip dan resize: ${processedBitmap.width}x${processedBitmap.height}")
+
+        // Cek apakah gambar sudah siap untuk ekstraksi embedding
+        if (processedBitmap.width == 0 || processedBitmap.height == 0) {
+            Log.e("FaceVerification", "Ukuran gambar yang diproses tidak valid!")
+            return
+        }
+
+        try {
+            // Log sebelum ekstraksi embedding
+            Log.d("FaceVerification", "Menyiapkan untuk ekstraksi embedding wajah... Gambar ukuran: ${bitmap.width}x${bitmap.height}")
+            val embeddings = faceRecognizer.getEmbeddingsOfImage(processedBitmap)
+            Log.d("FaceVerification", "Hasil ekstraksi embedding: ${embeddings?.joinToString(", ")}")
+
+            // Cek apakah embeddings null atau kosong
+            if (embeddings == null || embeddings.isEmpty()) {
+                Log.e("FaceVerification", "Gagal mendapatkan embedding wajah: Hasil embeddings kosong atau null!")
+            } else {
+                Log.d("FaceVerification", "Embedding berhasil: ${embeddings.contentToString()}")
+            }
+            val embeddingList = embeddings[0]  // Ambil embedding pertama
+
+            // Pastikan embedding tidak kosong
+            if (embeddingList.isEmpty()) {
+                Log.e("FaceVerification", "Embedding wajah kosong!")
+                return
+            }
+            // Lanjutkan untuk membandingkan dengan embedding yang disimpan di Firebase
+            handleEmbeddings(embeddingList)
+        } catch (e: Exception) {
+            // Log error jika terjadi exception
+            Log.e("FaceVerification", "Error saat ekstraksi embedding wajah: ${e.message}")
+            e.printStackTrace()
+        }
+    }
+
+
+
+
+    private fun startFaceVerification() {
+        Toast.makeText(this, "Mulai verifikasi wajah (5 kali auto capture)...", Toast.LENGTH_LONG).show()
+
+        binding.imageViewPreview.visibility = View.VISIBLE
+        binding.previewView.visibility = View.GONE
+        binding.verifyButton.visibility = View.GONE
+
+        // Reset counter sebelum mulai auto capture
+        verify_counter = 0
+        autoCaptureForVerification()
+    }
+
+
+    // Fungsi untuk melakukan auto capture 5 kali sebelum verifikasi wajah
+    private fun autoCaptureForVerification() {
+        if (verify_counter < 5) {
+            cameraEkspresi.onTakeImage(object : CameraEkspresi.OnTakeImageCallback {
+                override fun onTakeImageSuccess(bitmap: Bitmap?) {
+                    if (bitmap == null) {
+                        Log.e("FaceVerification", "Capture gagal, mencoba lagi...")
+                        return
+                    }
+
+                    Log.d("FaceVerification", "Auto capture ${verify_counter + 1}/5 berhasil!")
+
+                    // **Lakukan Cropping Seperti di Simpanwajah**
+                    var width = bitmap.width
+                    var height = bitmap.height
+                    var x = width /10
+                    width = width - (x*2)
+                    val resizedBmp: Bitmap = Bitmap.createBitmap(bitmap, x, 0, width, height)
+
+                    // Simpan gambar terakhir untuk verifikasi wajah
+                    face_image = resizedBmp
+                    binding.imageViewPreview.setImageBitmap(resizedBmp)
+
+                    verify_counter++
+
+                    // Jika belum mencapai 5 kali, ulangi lagi auto capture dengan delay lebih cepat (0.5 detik)
+                    if (verify_counter < 5) {
+                        Handler(Looper.getMainLooper()).postDelayed({ autoCaptureForVerification() }, 500) // 🔥 Kurangi delay ke 500ms
+                    } else {
+                        Log.d("FaceVerification", "Auto capture selesai! Mulai verifikasi wajah...")
+                        verifyFace(face_image)  // **Pastikan yang digunakan adalah gambar yang sudah di-crop**
+                    }
+                }
+
+                override fun onTakeImageError(exception: ImageCaptureException) {
+                    Log.e("FaceVerification", "Capture gagal: ${exception.message}")
+                }
+            })
+        }
+    }
+
+
+
+
+
+    private fun handleEmbeddings(embeddingList: FloatArray) {
+        Log.d("FaceVerification", "Membandingkan embedding wajah dengan data di Firebase...")
 
         lifecycleScope.launch(Dispatchers.Main) {
             try {
-                Log.d(TAG, "handleEmbeddings called")
-                val newEmbedding = embeddingList.map { it.toFloat() }.toFloatArray()
-                Log.d(TAG, "New embedding: ${newEmbedding.toList()}")
-
                 val user = FirebaseAuth.getInstance().currentUser
                 if (user == null) {
-                    Log.e(TAG, "User is null")
+                    Log.e("FaceVerification", "User tidak ditemukan!")
                     Toast.makeText(this@FaceProcessorActivity, "User tidak ditemukan!", Toast.LENGTH_LONG).show()
                     return@launch
                 }
 
-                // Ambil data embedding dari Firebase
+                // Ambil data embedding dari Firebase dengan coroutine
                 val savedEmbeddingList = withContext(Dispatchers.IO) {
                     Utils.getFirebaseEmbedding(user).get().await()
                         .let { dataSnapshot ->
-                            (dataSnapshot.value as? List<*>)?.map { it.toString().toFloat() }?.toFloatArray()
+                            (dataSnapshot.value as? List<*>)?.mapNotNull { it.toString().toFloatOrNull() }?.toFloatArray()
                         }
                 }
 
-                Log.d(TAG, "Saved embedding: ${savedEmbeddingList?.toList()}")
+                if (savedEmbeddingList == null || savedEmbeddingList.isEmpty()) {
+                    Log.e("FaceVerification", "Data embedding dari Firebase kosong atau tidak valid!")
+                    return@launch
+                }
 
-                if (savedEmbeddingList != null) {
-                    val similarity = calculateCosineSimilarity(newEmbedding, savedEmbeddingList)
-                    if (similarity > EMBEDDING_THRESHOLD) {
-                        Toast.makeText(this@FaceProcessorActivity, "Face verification success!", Toast.LENGTH_LONG).show()
-                        showCustomDialog(
-                            title = "Hasil verifikasi wajah",
-                            message = "Selamat! Anda berhasil menyelesaikan verifikasi wajah.",
-                            buttonText = "Lihat status presensi"
-                        ) {
-                            reqFaceApi()
-                        }
-                    } else {
-                        Toast.makeText(this@FaceProcessorActivity, "Face verification failed!", Toast.LENGTH_LONG).show()
-                        showCustomDialog(
-                            title = "Hasil verifikasi wajah",
-                            message = "Maaf, kami gagal mengenali Anda. Mohon gunakan wajah Anda sendiri untuk verifikasi.",
-                            buttonText = "Coba lagi"
-                        ) {
-                            onResume()
-                        }
-                    }
+                Log.d("FaceVerification", "Ukuran embedding di Firebase: ${savedEmbeddingList.size}")
+                Log.d("FaceVerification", "Ukuran embedding wajah yang diverifikasi: ${embeddingList.size}")
+
+                if (savedEmbeddingList.size != embeddingList.size) {
+                    Log.e("FaceVerification", "Ukuran embedding tidak cocok! Firebase: ${savedEmbeddingList.size}, Verifikasi: ${embeddingList.size}")
+                    return@launch
+                }
+
+                val similarity = cosineDistance(embeddingList, savedEmbeddingList)
+                Log.d("FaceVerification", "Hasil Similarity: $similarity")
+
+                if (similarity > EMBEDDING_THRESHOLD) {
+                    Log.d("FaceVerification", "Wajah terverifikasi! Similarity: $similarity")
+                    binding.expressionCommandText.text = "Wajah terverifikasi $similarity"
+                    Toast.makeText(this@FaceProcessorActivity, "Verifikasi wajah berhasil $similarity", Toast.LENGTH_LONG).show()
+                    reqFaceApi()
                 } else {
-                    Toast.makeText(this@FaceProcessorActivity, "No saved embedding found!", Toast.LENGTH_LONG).show()
+                    Log.e("FaceVerification", "Verifikasi wajah gagal! Similarity: $similarity")
+                    binding.expressionCommandText.text = "Verifikasi wajah gagal! Similarity: $similarity"
+                    Handler(Looper.getMainLooper()).postDelayed({
+                        finish()
+                    }, 1000)
                 }
             } catch (e: Exception) {
-                Log.e(TAG, "Error in handleEmbeddings: ${e.message}")
+                Log.e("FaceVerification", "Gagal mengambil data embedding dari Firebase: ${e.message}")
                 Toast.makeText(this@FaceProcessorActivity, "Gagal memproses verifikasi: ${e.message}", Toast.LENGTH_LONG).show()
-            } finally {
-                // Sembunyikan loading setelah proses selesai
-                loadingDialog.dismiss()
             }
         }
     }
+
 
     private fun showCustomDialog(title: String, message: String, buttonText: String, action: () -> Unit) {
         val dialog = Dialog(this)
@@ -319,11 +560,35 @@ class FaceProcessorActivity : AppCompatActivity(), CameraManager.OnTakeImageCall
         }
     }
 
-    private fun calculateCosineSimilarity(vecA: FloatArray, vecB: FloatArray): Float {
-        val dotProduct = vecA.zip(vecB).sumOf { (a, b) -> (a * b).toDouble() }.toFloat()
-        val magnitudeA = sqrt(vecA.sumOf { (it * it).toDouble() }).toFloat()
-        val magnitudeB = sqrt(vecB.sumOf { (it * it).toDouble() }).toFloat()
-        return dotProduct / (magnitudeA * magnitudeB)
+    private fun cosineDistance(x1: FloatArray, x2: FloatArray): Float {
+        val x1norm = normalizeVector(x1)
+        val x2norm = normalizeVector(x2)
+        var mag1 = 0.0f
+        var mag2 = 0.0f
+        var product = 0.0f
+        for (i in x1norm.indices) {
+            mag1 += x1norm[i].pow(2)
+            mag2 += x2norm[i].pow(2)
+            product += x1norm[i] * x2norm[i]
+        }
+        mag1 = sqrt(mag1)
+        mag2 = sqrt(mag2)
+        var recog = (product / (mag1 * mag2)) * 1.05f
+        if (recog > 1.0f) {
+            recog = 1.0f
+        }
+        return recog
+    }
+
+    private fun normalizeVector(vector: FloatArray): FloatArray {
+        val magnitude = sqrt(vector.map { it * it }.sum().toDouble()).toFloat()
+        return if (magnitude != 0f) vector.map { it / magnitude }.toFloatArray() else vector
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        Log.d("FaceVerification", "Menutup kamera...")
+        cameraEkspresi.cameraStop()
     }
 
     companion object {
