@@ -1,8 +1,14 @@
 package com.mfa.preprocessor
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import java.util.*
 
 class PreprocessingUtils {
+    private val conv : Convolution = Convolution();
     private fun gaussian(x: Int, y: Int, sigma: Double): Double {
         require(!(sigma <= 0)) { "Sigma must be positive." }
         val squaredDistance = (x * x + y * y).toDouble()
@@ -11,23 +17,35 @@ class PreprocessingUtils {
         return 1 / (2 * Math.PI * sigma * sigma) * Math.exp(exponent)
     }
 
-    fun calculateVariance(image: Array<IntArray>): Double {
-        val rows = image.size
-        val cols = image[0].size
-        var sum: Long = 0
-        for (i in 0 until rows) {
-            for (j in 0 until cols) {
-                sum += image[i][j].toLong()
-            }
+    fun calculateVariance(array: Array<IntArray>): Double = runBlocking {
+        val rows = array.size
+        val cols = array[0].size
+        val totalElements = rows * cols
+
+        if (totalElements == 0) return@runBlocking 0.0
+
+        // Step 1: Calculate the mean in parallel
+        val sum = withContext(Dispatchers.Default) {
+            array.map { row ->
+                async { row.sum() } // Each row is summed in parallel
+            }.awaitAll().sum() // Combine results from all coroutines
         }
-        val mean = sum.toDouble() / (rows * cols)
-        var varianceSum = 0.0
-        for (i in 0 until rows) {
-            for (j in 0 until cols) {
-                varianceSum += Math.pow(image[i][j] - mean, 2.0)
-            }
+        val mean = sum.toDouble() / totalElements
+
+        // Step 2: Calculate the sum of squared differences in parallel
+        val sumSquaredDifferences = withContext(Dispatchers.Default) {
+            array.map { row ->
+                async {
+                    row.sumOf { value ->
+                        val diff = value - mean
+                        diff * diff
+                    }
+                }
+            }.awaitAll().sum() // Combine results from all coroutines
         }
-        return varianceSum / (rows * cols)
+
+        // Step 3: Divide by the number of elements to get the variance
+        sumSquaredDifferences / totalElements
     }
 
     fun histogramEqualization(image: Array<IntArray>, width: Int, height: Int): Array<IntArray> {
@@ -86,46 +104,24 @@ class PreprocessingUtils {
         return result
     }
 
-    fun convolve(pixels: Array<IntArray>, kernel: FloatArray, ksize: Int): Array<IntArray?> {
-        val width = pixels.size
-        val height = pixels[0].size
-        val out = arrayOfNulls<IntArray>(pixels.size)
-        for (i in pixels.indices) {
-            out[i] = Arrays.copyOf(pixels[i], pixels[i].size)
-        }
-        val half_k = ksize / 2
-        for (i in half_k until width - half_k) {
-            for (j in half_k until height - half_k) {
-                var sum = 0f
-                for (ki in kernel.indices) {
-                    val kx = ki % ksize
-                    val ky = ki / ksize
-                    val offset_x = kx - half_k
-                    val offset_y = ky - half_k
-                    sum += kernel[ki] * pixels[i + offset_y][j + offset_x]
-                }
-                val temp = Math.min(255, Math.max(0, Math.abs(sum.toInt())))
-                out[i]!![j] = temp
-            }
-        }
-        return out
+    fun convolve(pixels: Array<IntArray>, kernel: FloatArray, ksize: Int): Array<IntArray> {
+        return conv.convolve(pixels, kernel, ksize, ksize);
     }
+
 
     fun  isBlurry(pixels: Array<IntArray>): Boolean {
         val threshold = 650;
         val gaussianKernel = generateGaussianKernel(3, 3/6f);
-        val l_kernel2 : FloatArray = arrayOf(
+        val lKernel2 : FloatArray = arrayOf(
             1f, 1f, 1f,
             1f, -8f, 1f,
             1f, 1f, 1f
         ).toFloatArray();
-        var newPixels : Array<IntArray?>;
+        var newPixels : Array<IntArray>;
         val eqPixels = histogramEqualization(pixels, 224, 224);
         newPixels = convolve(eqPixels, gaussianKernel, 3);
-        if (newPixels == null) return false;
-        newPixels = convolve(newPixels.requireNoNulls(), l_kernel2, 3);
-        if (newPixels == null) return false;
-        val variance = calculateVariance(newPixels.requireNoNulls());
+        newPixels = convolve(newPixels, lKernel2, 3);
+        val variance = calculateVariance(newPixels);
         println(variance);
         return variance < threshold;
     }
