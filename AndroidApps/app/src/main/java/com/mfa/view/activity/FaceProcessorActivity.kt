@@ -49,6 +49,7 @@ import com.mfa.facedetector.FaceRecognizer
 import com.mfa.`object`.Email
 import com.mfa.`object`.IdJadwal
 import com.mfa.`object`.StatusMhs
+import com.mfa.preprocessor.PreprocessingUtils
 import com.mfa.utils.Utils
 import com.mfa.view.custom.LoadingDialogFragment
 import com.mfa.view_model.ProfileViewModel
@@ -67,7 +68,7 @@ class FaceProcessorActivity : AppCompatActivity() {
     private lateinit var binding: ActivityCaptureFaceBinding
     private lateinit var cameraEkspresi: CameraEkspresi
     private lateinit var ekspresiRecognizer: EkspresiRecognizer
-    private val EMBEDDING_THRESHOLD = 0.8f
+    private val EMBEDDING_THRESHOLD = 0.85f
     private lateinit var profileViewModel: ProfileViewModel
 
 
@@ -432,9 +433,21 @@ class FaceProcessorActivity : AppCompatActivity() {
                     width = width - (x*2)
                     val resizedBmp: Bitmap = Bitmap.createBitmap(bitmap, x, 0, width, height)
 
+                    val p = PreprocessingUtils()
+                    var greyPixels = p.convertRawGreyImg(resizedBmp);
+//                    val variance = p.isBlurryD(greyPixels)
+                    Log.e("BLURRY", "Gambar Blurry")
+//                    Toast.makeText(this@FaceProcessorActivity, "Variance : ${variance}", Toast.LENGTH_SHORT).show();
+
+
+
+
+                    greyPixels = p.convolve(greyPixels, p.generateGaussianKernel(3, 5f/6f), 5)
+                    val processedPixels = p.convertArrayToBitmap(greyPixels);
+
                     // Simpan gambar terakhir untuk verifikasi wajah
-                    face_image = resizedBmp
-                    binding.imageViewPreview.setImageBitmap(resizedBmp)
+                    face_image = processedPixels
+                    binding.imageViewPreview.setImageBitmap(processedPixels)
 
                     verify_counter++
 
@@ -442,8 +455,9 @@ class FaceProcessorActivity : AppCompatActivity() {
                     if (verify_counter < 5) {
                         Handler(Looper.getMainLooper()).postDelayed({ autoCaptureForVerification() }, 500) // 🔥 Kurangi delay ke 500ms
                     } else {
+                        Toast.makeText(this@FaceProcessorActivity, "Auto capture selesai! Mulai verifikasi wajah...", Toast.LENGTH_SHORT).show();
                         Log.d("FaceVerification", "Auto capture selesai! Mulai verifikasi wajah...")
-                        verifyFace(face_image)  // **Pastikan yang digunakan adalah gambar yang sudah di-crop**
+                        verifyFace(resizedBmp)  // **Pastikan yang digunakan adalah gambar yang sudah di-crop**
                     }
                 }
 
