@@ -437,12 +437,7 @@ class FaceProcessorActivity : AppCompatActivity() {
                     var greyPixels = p.convertRawGreyImg(resizedBmp);
 //                    val variance = p.isBlurryD(greyPixels)
                     Log.e("BLURRY", "Gambar Blurry")
-//                    Toast.makeText(this@FaceProcessorActivity, "Variance : ${variance}", Toast.LENGTH_SHORT).show();
-
-
-
-
-                    greyPixels = p.convolve(greyPixels, p.generateGaussianKernel(3, 5f/6f), 5)
+                    greyPixels = p.convolve(greyPixels, p.generateGaussianKernel(3, 3f/6f), 3)
                     val processedPixels = p.convertArrayToBitmap(greyPixels);
 
                     // Simpan gambar terakhir untuk verifikasi wajah
