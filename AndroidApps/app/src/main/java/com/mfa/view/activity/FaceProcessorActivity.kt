@@ -436,8 +436,7 @@ class FaceProcessorActivity : AppCompatActivity() {
                     val p = PreprocessingUtils()
                     var greyPixels = p.convertRawGreyImg(resizedBmp);
 //                    val variance = p.isBlurryD(greyPixels)
-                    Log.e("BLURRY", "Gambar Blurry")
-                    greyPixels = p.convolve(greyPixels, p.generateGaussianKernel(3, 3f/6f), 3)
+                    greyPixels = p.convolve(greyPixels, p.generateGaussianKernel(3, 3f/6f), 3);
                     val processedPixels = p.convertArrayToBitmap(greyPixels);
 
                     // Simpan gambar terakhir untuk verifikasi wajah
@@ -452,7 +451,7 @@ class FaceProcessorActivity : AppCompatActivity() {
                     } else {
                         Toast.makeText(this@FaceProcessorActivity, "Auto capture selesai! Mulai verifikasi wajah...", Toast.LENGTH_SHORT).show();
                         Log.d("FaceVerification", "Auto capture selesai! Mulai verifikasi wajah...")
-                        verifyFace(resizedBmp)  // **Pastikan yang digunakan adalah gambar yang sudah di-crop**
+                        verifyFace(processedPixels)  // **Pastikan yang digunakan adalah gambar yang sudah di-crop**
                     }
                 }
 
