@@ -7,6 +7,7 @@ import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.face.FaceDetection
 import com.google.mlkit.vision.face.FaceDetector
 import com.google.mlkit.vision.face.FaceDetectorOptions
+import com.mfa.preprocessor.PreprocessingUtils
 import java.io.IOException
 
 class EkspresiRecognizer @Throws(IOException::class) constructor(
@@ -26,7 +27,18 @@ class EkspresiRecognizer @Throws(IOException::class) constructor(
     fun detectExpression(croppedBitmap: Bitmap, boundingBox: Rect) {
         // Crop gambar sesuai bounding box wajah
         if (boundingBox.width() > 0 && boundingBox.height() > 0) {
-            val image = InputImage.fromBitmap(croppedBitmap, 0)
+            val p = PreprocessingUtils()
+
+            if (p.isBlurry(p.convertRawGreyImg(croppedBitmap))) {
+                Log.e("BLURRY", "Gambar Blurry")
+                return
+            }
+
+            var greyPixels = p.convertGreyImg(croppedBitmap);
+            greyPixels = p.convolve(greyPixels, p.generateGaussianKernel(3, 3f/6f), 3)
+
+            val processedPixels = p.convertArrayToBitmap(greyPixels);
+            val image = InputImage.fromBitmap(processedPixels, 0)
 
             faceDetector.process(image)
                 .addOnSuccessListener { faces ->
