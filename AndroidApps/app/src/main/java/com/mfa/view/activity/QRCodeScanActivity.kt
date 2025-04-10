@@ -4,6 +4,7 @@ import android.Manifest
 import android.app.Dialog
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.res.ColorStateList
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
@@ -100,7 +101,8 @@ class QRCodeScanActivity : AppCompatActivity() {
                     showCustomDialog(
                         "Hasil scan QR Code",
                         "Selamat, QR code yang Anda scan berhasil dan terbukti cocok. Satu langkah lagi untuk menuju keberhasilan presensi.",
-                        "Siap, Lanjut"
+                        "Siap, Lanjut",
+                        R.color.green_primary
                     ) {
                         val intent = Intent(this@QRCodeScanActivity, FaceProcessorActivity::class.java)
                         startActivity(intent)
@@ -113,6 +115,7 @@ class QRCodeScanActivity : AppCompatActivity() {
                     title = "Hasil scan QR Code",
                     message = "Hasil QR code yang Anda scan tidak cocok dengan yang dibuat dosen di kelas Anda saat ini atau telah expired",
                     buttonText = "Coba Lagi",
+                    color = R.color.red,
                     action = {
                         onResume()
                     }
@@ -125,7 +128,8 @@ class QRCodeScanActivity : AppCompatActivity() {
                 showCustomDialog(
                     title = "Pemberitahuan",
                     message = "Mohon selesaikan proses presensi",
-                    buttonText = "Oke"
+                    buttonText = "Oke",
+                    color = R.color.green_primary
                 ){
                     onResume()
                 }
@@ -134,26 +138,32 @@ class QRCodeScanActivity : AppCompatActivity() {
     }
 
 
-        private fun showCustomDialog(title: String, message: String, buttonText: String, action: () -> Unit) {
-        val dialog = Dialog(this)
-        val dialogView: View = LayoutInflater.from(this).inflate(R.layout.custom_alert_dialog, null)
+    private fun showCustomDialog(
+        title: String,
+        message: String,
+        buttonText: String,
+        color: Int, // warna tombol
+        action: () -> Unit
+    ) {
+        val dialog = Dialog(this).apply {
+            setCancelable(false)
+            setContentView(R.layout.custom_alert_dialog)
+            window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
 
-        dialog.setContentView(dialogView)
-        dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT)) // Hapus background default
-
-        val tvTitle = dialogView.findViewById<TextView>(R.id.tvTitle)
-        val tvMessage = dialogView.findViewById<TextView>(R.id.tvMessage)
-        val btnConfirm = dialogView.findViewById<Button>(R.id.btnConfirm)
-
-        tvTitle.text = title
-        tvMessage.text = message
-        btnConfirm.text = buttonText
-
-        btnConfirm.setOnClickListener {
-            action() // Eksekusi aksi yang dikirim dari parameter
-            dialog.dismiss() // Tutup dialog setelah aksi
+            findViewById<TextView>(R.id.tvTitle).text = title
+            findViewById<TextView>(R.id.tvMessage).text = message
+            findViewById<Button>(R.id.btnConfirm).apply {
+                text = buttonText
+                setTextColor(Color.WHITE) // Warna teks
+//                setBackgroundColor(color)
+                val buttonColor = ContextCompat.getColor(context, color)
+                backgroundTintList = ColorStateList.valueOf(buttonColor) // Warna latar
+                setOnClickListener {
+                    action()
+                    dismiss()
+                }
+            }
         }
-
         dialog.show()
     }
 

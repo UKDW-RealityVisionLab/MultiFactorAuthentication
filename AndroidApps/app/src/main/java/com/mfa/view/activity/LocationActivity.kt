@@ -4,6 +4,7 @@ import android.app.Dialog
 import android.content.Intent
 import android.content.IntentSender
 import android.content.pm.PackageManager
+import android.content.res.ColorStateList
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.location.Location
@@ -230,6 +231,7 @@ class LocationActivity : AppCompatActivity() {
                                 runOnUiThread {
                                     showCustomDialog("Hasil cek lokasi","Anda berada di dalam kelas. Terima kasih \natas kejujurannya. Selanjutnya mohon scan \nqr code yang dibuat oleh dosen",
                                         buttonText = "Oke, lanjut",
+                                        color = R.color.green_primary,
                                         action = {
                                             val intent= Intent(this, QRCodeScanActivity::class.java)
                                             intent.putExtra("kodeJadwal","$idJadwal")
@@ -243,7 +245,9 @@ class LocationActivity : AppCompatActivity() {
                                 runOnUiThread {
                                     showCustomDialog("Hasil cek lokasi","Anda berada di luar kelas. Mohon masuk\nke dalam ruangan kelas anda!!"
                                     , buttonText = "Coba lagi",
-                                        action = { Log.d("hasil lokasi ", "ga") }
+                                        color = R.color.red,
+                                        action = { Log.d("hasil lokasi ", "ga")
+                                        }
                                     )
 //                                    binding.position.text = "Anda di luar ruang $ruang"
 //                                    adapter.isvalid = false
@@ -265,30 +269,34 @@ class LocationActivity : AppCompatActivity() {
         }
     }
 
-    private fun showCustomDialog(title: String, message: String, buttonText: String, action: () -> Unit) {
-        val dialog = Dialog(this)
-        val dialogView: View = LayoutInflater.from(this).inflate(R.layout.custom_alert_dialog, null)
+    private fun showCustomDialog(
+        title: String,
+        message: String,
+        buttonText: String,
+        color: Int, // warna tombol
+        action: () -> Unit
+    ) {
+        val dialog = Dialog(this).apply {
+            setCancelable(false)
+            setContentView(R.layout.custom_alert_dialog)
+            window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
 
-        dialog.setContentView(dialogView)
-        dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT)) // Hapus background default
-
-        val tvTitle = dialogView.findViewById<TextView>(R.id.tvTitle)
-        val tvMessage = dialogView.findViewById<TextView>(R.id.tvMessage)
-        val btnConfirm = dialogView.findViewById<Button>(R.id.btnConfirm)
-
-        tvTitle.text = title
-        tvMessage.text = message
-        btnConfirm.text = buttonText
-
-        btnConfirm.setOnClickListener {
-            action() // Eksekusi aksi yang dikirim dari parameter
-            dialog.dismiss() // Tutup dialog setelah aksi
+            findViewById<TextView>(R.id.tvTitle).text = title
+            findViewById<TextView>(R.id.tvMessage).text = message
+            findViewById<Button>(R.id.btnConfirm).apply {
+                text = buttonText
+                setTextColor(Color.WHITE) // Warna teks
+//                setBackgroundColor(color)
+                val buttonColor = ContextCompat.getColor(context, color)
+                backgroundTintList = ColorStateList.valueOf(buttonColor) // Warna latar
+                setOnClickListener {
+                    action()
+                    dismiss()
+                }
+            }
         }
-
         dialog.show()
     }
-
-
 
     private fun isWithinRadius(
         userLatitude: Double,

@@ -5,6 +5,8 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Matrix
 import android.graphics.RectF
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.util.Size
 import androidx.camera.core.*
@@ -30,6 +32,7 @@ class CameraEkspresi(
     private val lifecycleOwner: LifecycleOwner,
     private val onExpressionDetected: (String) -> Unit // Callback untuk ekspresi yang terdeteksi
 ) {
+    private val TAG:String = "Camera ekspresi"
     private lateinit var cameraProvider: ProcessCameraProvider
     private lateinit var imageCapture: ImageCapture
     private lateinit var previewUseCase: Preview
@@ -74,17 +77,22 @@ class CameraEkspresi(
     }
 
     private fun bindPreviewUseCase(cameraSelector: CameraSelector) {
-        previewUseCase = Preview.Builder().build().also {
-            it.setSurfaceProvider(previewView.surfaceProvider)
-        }
+        previewUseCase = Preview.Builder()
+            .setTargetRotation(previewView.display.rotation)
+            .build()
+            .also {
+                it.setSurfaceProvider(previewView.surfaceProvider)
+            }
+
         cameraProvider.bindToLifecycle(lifecycleOwner, cameraSelector, previewUseCase)
     }
-
     private fun bindImageCaptureUseCase(cameraSelector: CameraSelector) {
-        val activity: Activity = context as Activity
+        val activity = context as Activity
+        val rotation = previewView.display.rotation
+
         imageCapture = ImageCapture.Builder()
-            .setTargetRotation(activity.windowManager.defaultDisplay.rotation)
-            .setCaptureMode(ImageCapture.CAPTURE_MODE_MAXIMIZE_QUALITY) // Maksimalkan kualitas gambar
+            .setTargetRotation(rotation)
+            .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
             .build()
 
         cameraProvider.bindToLifecycle(lifecycleOwner, cameraSelector, imageCapture)
@@ -104,49 +112,169 @@ class CameraEkspresi(
     }
 
     @androidx.annotation.OptIn(ExperimentalGetImage::class)
-    @OptIn(ExperimentalGetImage::class) // Menandai penggunaan API eksperimental pada function ini
     private fun getBitmapFromImageProxy(imageProxy: ImageProxy): Bitmap? {
-        val mediaImage = imageProxy.image // Menggunakan API eksperimental, harus ditandai
-        if (mediaImage == null) {
-            Log.e("CameraEkspresi", "Media image null!")
-            imageProxy.close()
+        val mediaImage = imageProxy.image ?: return null
+        try {
+            val bitmap = BitmapUtils.getBitmap(imageProxy)
+
+            // Dapatkan rotasi yang diperlukan
+            val rotationDegrees = imageProxy.imageInfo.rotationDegrees
+            Log.d(TAG, "Rotation degrees: $rotationDegrees")
+
+            // Rotasi bitmap jika diperlukan
+            return if (rotationDegrees != 0) {
+                rotateBitmap(bitmap!!, rotationDegrees.toFloat())
+            } else {
+                bitmap
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Gagal konversi bitmap: ${e.message}")
             return null
+        } finally {
+            imageProxy.close()
         }
-        return BitmapUtils.getBitmap(imageProxy) // Menggunakan API eksperimental, harus ditandai
     }
 
-    fun onTakeImage(callback: OnTakeImageCallback) {
-        imageCapture.takePicture(cameraExecutor, object : ImageCapture.OnImageCapturedCallback() {
-            override fun onCaptureSuccess(imageProxy: ImageProxy) {
-                val bitmap = getBitmapFromImageProxy(imageProxy)
-                imageProxy.close()
-                bitmap?.let { img ->
-                    detectFace(img) { faces ->
-                        faces.firstOrNull()?.let { face ->
-                            val boundingBox = face.boundingBox
-                            Log.d("CameraEkspresi", "Bounding Box Verifikasi: $boundingBox")
-                            val adjustedBoundingBox = RectF(
-                                boundingBox.left.toFloat().coerceAtLeast(0f),
-                                boundingBox.top.toFloat().coerceAtLeast(0f),
-                                boundingBox.right.toFloat().coerceAtMost(img.width.toFloat()),
-                                boundingBox.bottom.toFloat().coerceAtMost(img.height.toFloat())
-                            )
-                            var croppedBitmap = BitmapUtils.getCropBitmapByCPU(img, adjustedBoundingBox)
+    private fun rotateBitmap(source: Bitmap, degrees: Float): Bitmap {
+        val matrix = Matrix().apply {
+            postRotate(degrees)
+            // Untuk kamera depan, tambahkan flip horizontal
+            if (CameraManager.cameraOption == CameraSelector.LENS_FACING_FRONT) {
+                postScale(-1f, 1f)
+            }
+        }
+        return Bitmap.createBitmap(source, 0, 0, source.width, source.height, matrix, true)
+    }
 
-                            if (CameraManager.cameraOption == CameraSelector.LENS_FACING_FRONT) {
-                                croppedBitmap = flipBitmap(croppedBitmap)
+
+    // Define a callback interface
+    fun cropFace(bitmap: Bitmap, onCropComplete: (Bitmap?) -> Unit) {
+        // Convert the bitmap to InputImage for ML Kit
+        val image = InputImage.fromBitmap(bitmap, 0)
+
+        // Use ML Kit to detect faces
+        faceDetector.process(image)
+            .addOnSuccessListener { faces ->
+                if (faces.isEmpty()) {
+                    Log.e(TAG, "No faces detected")
+                    onCropComplete(null) // No face detected, callback with null
+                    return@addOnSuccessListener
+                }
+
+                // Get the bounding box for the first detected face
+                val face = faces[0]
+                val bounds = face.boundingBox
+
+                // Make sure the bounds are valid
+                if (bounds.width() <= 0 || bounds.height() <= 0) {
+                    Log.e(TAG, "Invalid bounding box")
+                    onCropComplete(null) // Invalid bounding box, callback with null
+                    return@addOnSuccessListener
+                }
+
+                // Crop the bitmap based on the bounding box
+                val croppedBitmap = Bitmap.createBitmap(bitmap, bounds.left, bounds.top, bounds.width(), bounds.height())
+
+                // Optionally, scale the cropped bitmap
+                val scaledBitmap = Bitmap.createScaledBitmap(croppedBitmap, 256, 256, true)
+
+                // Call the callback with the scaled cropped bitmap
+                onCropComplete(scaledBitmap)
+            }
+            .addOnFailureListener { e ->
+                Log.e(TAG, "Face detection failed: ${e.message}")
+                onCropComplete(null) // If face detection fails, callback with null
+            }
+    }
+
+
+
+    fun onTakeImage(callback: OnTakeImageCallback) {
+        Log.d(TAG, "Memulai proses pengambilan gambar...")
+
+        try {
+            if (!this::imageCapture.isInitialized) {
+                Log.e(TAG, "ImageCapture belum diinisialisasi")
+                callback.onTakeImageError(
+                    ImageCaptureException(
+                        ImageCapture.ERROR_INVALID_CAMERA,
+                        "ImageCapture not initialized",
+                        null
+                    )
+                )
+                return
+            }
+
+            imageCapture.takePicture(
+                ContextCompat.getMainExecutor(context),
+                object : ImageCapture.OnImageCapturedCallback() {
+                    override fun onCaptureSuccess(imageProxy: ImageProxy) {
+                        Log.d(TAG, "ImageProxy diterima, format: ${imageProxy.format}")
+                        try {
+                            val bitmap = getBitmapFromImageProxy(imageProxy)
+                            if (bitmap == null) {
+                                callback.onTakeImageError(
+                                    ImageCaptureException(
+                                        ImageCapture.ERROR_CAPTURE_FAILED,
+                                        "Failed to convert image to bitmap",
+                                        null
+                                    )
+                                )
+                                return
                             }
 
-                            croppedBitmap = Bitmap.createScaledBitmap(croppedBitmap, 256, 256, false)
+//                            val croppedBitmap = cropFace(bitmap)
+//                            callback.onTakeImageSuccess(croppedBitmap)
+////                            callback.onTakeImageSuccess(bitmap)
+                            cropFace(bitmap) { croppedBitmap ->
+                                if (croppedBitmap != null) {
+                                    // If cropping was successful, pass it to the callback
+                                    callback.onTakeImageSuccess(croppedBitmap)
+                                } else {
+                                    // If cropping failed, handle it
+                                    callback.onTakeImageError(
+                                        ImageCaptureException(
+                                            ImageCapture.ERROR_CAPTURE_FAILED,
+                                            "Face cropping failed",
+                                            null
+                                        )
+                                    )
+                                }
+                            }
 
-                            Log.d("CameraEkspresi", "Verifikasi - Ukuran Cropped Face: ${croppedBitmap.width}x${croppedBitmap.height}")
-
-                            callback.onTakeImageSuccess(croppedBitmap)
+                        } catch (e: Exception) {
+                            callback.onTakeImageError(
+                                ImageCaptureException(
+                                    ImageCapture.ERROR_CAPTURE_FAILED,
+                                    "Image processing failed",
+                                    e
+                                )
+                            )
+                        } finally {
+                            imageProxy.close()
                         }
                     }
+
+                    override fun onError(exception: ImageCaptureException) {
+                        callback.onTakeImageError(
+                            ImageCaptureException(
+                                exception.imageCaptureError,
+                                exception.message ?: "Unknown capture error",
+                                exception.cause
+                            )
+                        )
+                    }
                 }
-            }
-        })
+            )
+        } catch (e: Exception) {
+            callback.onTakeImageError(
+                ImageCaptureException(
+                    ImageCapture.ERROR_UNKNOWN,
+                    "Unexpected error: ${e.message}",
+                    e
+                )
+            )
+        }
     }
 
 
