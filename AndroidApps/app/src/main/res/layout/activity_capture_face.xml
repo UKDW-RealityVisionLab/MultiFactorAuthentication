@@ -25,6 +25,16 @@
         android:layout_marginTop="?attr/actionBarSize"
         app:scaleType="fillCenter"/>
 
+
+    <!-- Garis scanning (animasi naik turun) -->
+    <View
+        android:id="@+id/scanLine"
+        android:layout_width="match_parent"
+        android:layout_height="3dp"
+        android:layout_marginTop="?attr/actionBarSize"
+        android:background="@drawable/scan_line_gradient"
+        android:visibility="visible"/>
+
     <!-- Overlay untuk bounding box -->
     <com.mfa.camerax.GraphicOverlay
         android:id="@+id/viewGraphicOverlay"
@@ -40,8 +50,8 @@
         android:layout_marginTop="?attr/actionBarSize"
         android:gravity="center"
         android:padding="16dp"
-        android:background="@color/green_primary"
-        android:text="Silahkan Lakukan Ekspresi :"
+        android:background="@color/teal_700"
+        android:text="Memulai kamera"
         android:textColor="@android:color/white"
         android:textSize="18sp"
         android:textStyle="bold"
