@@ -1,9 +1,12 @@
 package com.mfa.view.activity
 
+import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.Intent
+import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.Color
+import android.graphics.Typeface
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -14,6 +17,8 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
+import androidx.core.content.ContextCompat
+import androidx.core.view.marginEnd
 import androidx.lifecycle.lifecycleScope
 import com.mfa.R
 import com.mfa.databinding.ActivitySimpanwajahBinding
@@ -65,18 +70,48 @@ class Simpanwajah : AppCompatActivity(), CameraManager.OnTakeImageCallback {
         }
     }
 
+    @SuppressLint("ResourceAsColor")
     override fun onTakeImageSuccess(image: Bitmap) {
         val addFaceBinding = DialogAddFaceBinding.inflate(layoutInflater)
         addFaceBinding.capturedFace.setImageBitmap(image)
 
         val dialog = AlertDialog.Builder(this)
             .setView(addFaceBinding.root)
-            .setTitle("Confirm Face")
-            .setPositiveButton("OK", null) // Override di onShowListener
-            .setNegativeButton("Cancel") { d, _ -> d.dismiss() }
+            .setTitle("Konfirmasi wajah")
+            .setPositiveButton("Verifikasi", null)
+            .setIcon(R.drawable.logo_png)
+            .setNegativeButton("Batalkan") { d, _ -> d.dismiss() }
             .create()
 
+
         dialog.setOnShowListener {
+            dialog.window?.setBackgroundDrawableResource(R.color.green_primary) // Ganti dengan warna yang diinginkan
+            // Atur padding untuk konten dialog (jika menggunakan custom view)
+
+            // 1. Title: Putih & Bold
+            dialog.findViewById<TextView>(android.R.id.title)?.apply {
+                setTextColor(Color.WHITE)
+                setTypeface(typeface, Typeface.BOLD)
+            }
+
+            // 2. Tombol Positif (Verifikasi): Teks putih + Background hijau
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE)?.apply {
+                setTextColor(Color.WHITE)
+                setBackgroundColor(ContextCompat.getColor(context, R.color.teal_700))
+            }
+
+            // 3. Tombol Negatif (Batalkan): Teks putih + Background merah
+            dialog.getButton(AlertDialog.BUTTON_NEGATIVE)?.apply {
+                setTextColor(Color.WHITE)
+                setBackgroundColor(ContextCompat.getColor(context, R.color.red))
+            }
+
+            // Opsional: Atur padding tombol
+            listOf(AlertDialog.BUTTON_POSITIVE, AlertDialog.BUTTON_NEGATIVE).forEach { buttonType ->
+                dialog.getButton(buttonType)?.setPadding(32.toPx(), 16.toPx(), 32.toPx(), 16.toPx())
+            }
+
+
             val okButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
             okButton.setOnClickListener {
                 dialog.dismiss() // Tutup dialog konfirmasi dulu
@@ -118,6 +153,8 @@ class Simpanwajah : AppCompatActivity(), CameraManager.OnTakeImageCallback {
 
         dialog.show()
     }
+
+    fun Int.toPx(): Int = (this * Resources.getSystem().displayMetrics.density).toInt()
 
 
     private fun showCustomDialog(title: String, message: String, buttonText: String, action: () -> Unit) {

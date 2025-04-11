@@ -1,11 +1,15 @@
 package com.mfa.view.activity
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Dialog
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.res.ColorStateList
+import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.Color
+import android.graphics.Typeface
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.util.Log
@@ -106,7 +110,8 @@ class FaceProcessorActivity : AppCompatActivity(), CameraManager.OnTakeImageCall
                 showCustomDialog(
                     title = "Pemberitahuan",
                     message = "Mohon selesaikan proses presensi",
-                    buttonText = "Oke"
+                    buttonText = "Oke",
+                    color = R.color.green_primary
                 ) {
                     onResume()
                 }
@@ -150,19 +155,46 @@ class FaceProcessorActivity : AppCompatActivity(), CameraManager.OnTakeImageCall
         }
     }
 
+    @SuppressLint("ResourceAsColor")
     override fun onTakeImageSuccess(image: Bitmap) {
         val addFaceBinding = DialogAddFaceBinding.inflate(layoutInflater)
         addFaceBinding.capturedFace.setImageBitmap(image)
 
         val dialog = AlertDialog.Builder(this)
             .setView(addFaceBinding.root)
-            .setTitle("Confirm Face")
-            .setPositiveButton("OK", null)
-            .setNegativeButton("Cancel") { d, _ -> d.dismiss() }
+            .setTitle("Konfirmasi wajah")
+            .setPositiveButton("Verifikasi", null)
+            .setIcon(R.drawable.logo_png)
+            .setNegativeButton("Batalkan") { d, _ -> d.dismiss() }
             .create()
+
 
         dialog.setOnShowListener {
             val okButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+            dialog.window?.setBackgroundDrawableResource(R.color.green_primary)
+            // 1. Title: Putih & Bold
+            dialog.findViewById<TextView>(android.R.id.title)?.apply {
+                setTextColor(Color.WHITE)
+                setTypeface(typeface, Typeface.BOLD)
+            }
+
+            // 2. Tombol Positif (Verifikasi): Teks putih + Background hijau
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE)?.apply {
+                setTextColor(Color.WHITE)
+                setBackgroundColor(ContextCompat.getColor(context, R.color.teal_700))
+            }
+
+            // 3. Tombol Negatif (Batalkan): Teks putih + Background merah
+            dialog.getButton(AlertDialog.BUTTON_NEGATIVE)?.apply {
+                setTextColor(Color.WHITE)
+                setBackgroundColor(ContextCompat.getColor(context, R.color.red))
+            }
+
+//            // Opsional: Atur padding tombol
+            listOf(AlertDialog.BUTTON_POSITIVE, AlertDialog.BUTTON_NEGATIVE).forEach { buttonType ->
+                dialog.getButton(buttonType)?.setPadding(32.toPx(), 16.toPx(), 32.toPx(), 16.toPx())
+            }
+
             okButton.setOnClickListener {
                 dialog.dismiss()
 
@@ -191,6 +223,7 @@ class FaceProcessorActivity : AppCompatActivity(), CameraManager.OnTakeImageCall
         }
         dialog.show()
     }
+    fun Int.toPx(): Int = (this * Resources.getSystem().displayMetrics.density).toInt()
 
     private fun antiSpoofDetection(faceBitmap: Bitmap): Boolean {
         val laplaceScore: Int = fas.laplacian(faceBitmap)
@@ -246,7 +279,8 @@ class FaceProcessorActivity : AppCompatActivity(), CameraManager.OnTakeImageCall
                         showCustomDialog(
                             title = "Hasil verifikasi wajah",
                             message = "Selamat! Anda berhasil menyelesaikan verifikasi wajah.",
-                            buttonText = "Lihat status presensi"
+                            buttonText = "Lihat status presensi",
+                            color = R.color.green_primary
                         ) {
                             reqFaceApi()
                         }
@@ -255,7 +289,8 @@ class FaceProcessorActivity : AppCompatActivity(), CameraManager.OnTakeImageCall
                         showCustomDialog(
                             title = "Hasil verifikasi wajah",
                             message = "Maaf, kami gagal mengenali Anda. Mohon gunakan wajah Anda sendiri untuk verifikasi.",
-                            buttonText = "Coba lagi"
+                            buttonText = "Coba lagi",
+                            color = R.color.red
                         ) {
                             onResume()
                         }
@@ -273,26 +308,32 @@ class FaceProcessorActivity : AppCompatActivity(), CameraManager.OnTakeImageCall
         }
     }
 
-    private fun showCustomDialog(title: String, message: String, buttonText: String, action: () -> Unit) {
-        val dialog = Dialog(this)
-        val dialogView: View = LayoutInflater.from(this).inflate(R.layout.custom_alert_dialog, null)
+    private fun showCustomDialog(
+        title: String,
+        message: String,
+        buttonText: String,
+        color: Int, // warna tombol
+        action: () -> Unit
+    ) {
+        val dialog = Dialog(this).apply {
+            setCancelable(false)
+            setContentView(R.layout.custom_alert_dialog)
+            window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
 
-        dialog.setContentView(dialogView)
-        dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-
-        val tvTitle = dialogView.findViewById<TextView>(R.id.tvTitle)
-        val tvMessage = dialogView.findViewById<TextView>(R.id.tvMessage)
-        val btnConfirm = dialogView.findViewById<Button>(R.id.btnConfirm)
-
-        tvTitle.text = title
-        tvMessage.text = message
-        btnConfirm.text = buttonText
-
-        btnConfirm.setOnClickListener {
-            action()
-            dialog.dismiss()
+            findViewById<TextView>(R.id.tvTitle).text = title
+            findViewById<TextView>(R.id.tvMessage).text = message
+            findViewById<Button>(R.id.btnConfirm).apply {
+                text = buttonText
+                setTextColor(Color.WHITE) // Warna teks
+//                setBackgroundColor(color)
+                val buttonColor = ContextCompat.getColor(context, color)
+                backgroundTintList = ColorStateList.valueOf(buttonColor) // Warna latar
+                setOnClickListener {
+                    action()
+                    dismiss()
+                }
+            }
         }
-
         dialog.show()
     }
 
