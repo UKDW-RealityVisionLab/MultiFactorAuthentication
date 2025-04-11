@@ -75,6 +75,10 @@ class FaceProcessorActivity : AppCompatActivity() {
     private val EMBEDDING_THRESHOLD = 0.8f
     private lateinit var profileViewModel: ProfileViewModel
 
+    private var isCameraChanging = false
+    private var pausedExpression: String? = null
+    private var pausedIndex = 0
+
 
     private val allExpressions = listOf("senyum", "hadap kiri", "hadap kanan", "kedip", "tutup mata kiri", "tutup mata kanan")
 
@@ -117,6 +121,39 @@ class FaceProcessorActivity : AppCompatActivity() {
         cameraEkspresi = CameraEkspresi(this, binding.previewView, this) { expression -> handleDetectedExpression(expression) }
 
         cameraEkspresi.cameraStart()
+        binding.buttonTurnCamera.setOnClickListener {
+            if (isCameraChanging) return@setOnClickListener
+
+            isCameraChanging = true
+
+            // 1. Simpan state saat ini
+            pausedExpression = if (currentIndex < selectedExpressions.size) selectedExpressions[currentIndex] else null
+            pausedIndex = currentIndex
+
+            // 2. Hentikan sementara deteksi
+            cameraEkspresi.detection_disable()
+
+            // 3. Set listener untuk kamera siap
+            cameraEkspresi.setOnCameraReadyListener {
+                runOnUiThread {
+                    isCameraChanging = false
+                    cameraEkspresi.detection_enable()
+
+                    // 4. Pulihkan state setelah kamera siap
+                    if (pausedExpression != null) {
+                        currentIndex = pausedIndex
+                        selectedExpressions[currentIndex] = pausedExpression!!
+                        binding.expressionCommandText.text = "Yuk coba berekspresi: ${selectedExpressions[currentIndex]}"
+
+                        // 5. Paksa update state di recognizer
+                        ekspresiRecognizer.resetState()
+                    }
+                }
+            }
+
+            // 6. Ubah kamera
+            cameraEkspresi.changeCamera()
+        }
 
         profileViewModel = ViewModelProvider(
             this,
@@ -240,8 +277,8 @@ class FaceProcessorActivity : AppCompatActivity() {
     private var verify_face = false
 
     fun handleDetectedExpression(expression: String) {
-        if (currentIndex >= selectedExpressions.size) {
-            Log.e("FaceVerification", "Index melebihi batas!")
+        if (isCameraChanging || currentIndex >= selectedExpressions.size) {
+            Log.d("FaceVerification", "Proses diabaikan karena kamera sedang berubah")
             return
         }
 
@@ -250,74 +287,91 @@ class FaceProcessorActivity : AppCompatActivity() {
             return
         }
 
+        // Pastikan ekspresi cocok dengan yang diminta
         if (expression.equals(selectedExpressions[currentIndex], ignoreCase = true)) {
-            Log.d("FaceVerification", "✅ Ekspresi cocok: $expression, mengambil gambar...")
+            Log.d("FaceVerification", "✅ Ekspresi cocok: $expression (ke-${currentIndex + 1})")
 
             if (currentIndex < selectedExpressions.size - 1) {
-                // 🔹 Tahap 1-4: Tidak ada auto capture, hanya lanjut ke ekspresi berikutnya
+                // Untuk ekspresi 1-4: lanjut ke ekspresi berikutnya
                 currentIndex++
                 runOnUiThread {
-                    binding.expressionCommandText.text = "Sekarang tunjukkan eksprei: ${selectedExpressions[currentIndex]}"
+                    binding.expressionCommandText.text = "Sekarang tunjukkan ekspresi: ${selectedExpressions[currentIndex]}"
                 }
             } else {
-                // 🔹 Tahap 5: Auto capture 1 kali saja, lalu tampilkan dialog
-                Log.d("FaceVerification", "Tahap 5! Auto capture 1 kali...")
-                binding.expressionCommandText.text= "Pemanasan selesai"
-                isCapturing = true // Mencegah auto capture berulang
-
-                cameraEkspresi.onTakeImage(object : CameraEkspresi.OnTakeImageCallback {
-                    override fun onTakeImageSuccess(bitmap: Bitmap?) {
-                        if (bitmap == null) {
-                            Log.e("FaceVerification", "❌ Capture gagal!")
-                            isCapturing = false
-                            return
-                        }
-
-                        Log.d("FaceVerification", "📸 Auto capture tahap 5 berhasil!")
-
-                        // **Gunakan metode cropping yang sama dengan APK lama**
-                        val width = bitmap.width
-                        val height = bitmap.height
-                        val x = width / 10
-                        val croppedBitmap: Bitmap = Bitmap.createBitmap(bitmap, x, 0, width - (x * 2), height)
-
-                        // Simpan gambar terakhir untuk verifikasi wajah
-                        face_image = croppedBitmap
-
-                        runOnUiThread {
-                            binding.imageViewPreview.visibility = View.VISIBLE
-                            binding.previewView.visibility = View.VISIBLE
-
-                            // Show the dialog only after warm-up is complete
-                            showCustomDialog("Pemberitahuan",
-                                "Keren, sekarang kamu siap untuk verifikasi wajahmu",
-                                buttonText = "Verifikasi wajah",
-                                color = R.color.green_primary){
-                                Log.d("FaceVerification", "🔍 Mulai verifikasi wajah setelah tombol diklik")
-                                binding.expressionCommandText.text="Mohon tahan posisi hp dan wajah anda \n dalam beberapa detik..."
-                                binding.imageViewPreview.visibility = View.GONE
-                                binding.previewView.visibility = View.VISIBLE
-                                binding.verifyButton.visibility = View.INVISIBLE
-
-                                isCapturing = false
-                                verify_face = false
-                                start_verify = true
-                                time_millis = System.currentTimeMillis()
-
-                                startFaceVerification()
-                            }
-                        }
-                    }
-
-                    override fun onTakeImageError(exception: ImageCaptureException) {
-                        Log.e("FaceVerification", "❌ Capture gagal: ${exception.message}")
-                        isCapturing = false
-                    }
-                })
+                // Hanya untuk ekspresi ke-5: tampilkan dialog
+                handleFifthExpressionMatch()
             }
         } else {
             Log.d("FaceVerification", "❌ Ekspresi tidak cocok: $expression, menunggu ekspresi: ${selectedExpressions[currentIndex]}")
         }
+    }
+
+    private fun handleFifthExpressionMatch() {
+        Log.d("FaceVerification", "🎉 Ekspresi ke-5 cocok! Menyiapkan capture...")
+        binding.expressionCommandText.text = "Pemanasan selesai"
+        isCapturing = true
+
+        cameraEkspresi.onTakeImage(object : CameraEkspresi.OnTakeImageCallback {
+            override fun onTakeImageSuccess(bitmap: Bitmap?) {
+                if (bitmap == null) {
+                    Log.e("FaceVerification", "❌ Capture gagal!")
+                    isCapturing = false
+                    return
+                }
+
+                Log.d("FaceVerification", "📸 Capture berhasil setelah ekspresi ke-5")
+                processFinalCapture(bitmap)
+            }
+
+            override fun onTakeImageError(exception: ImageCaptureException) {
+                Log.e("FaceVerification", "❌ Capture gagal: ${exception.message}")
+                isCapturing = false
+            }
+        })
+    }
+
+    private fun processFinalCapture(bitmap: Bitmap) {
+        val width = bitmap.width
+        val height = bitmap.height
+        val x = width / 10
+        val croppedBitmap: Bitmap = Bitmap.createBitmap(bitmap, x, 0, width - (x * 2), height)
+        face_image = croppedBitmap
+
+        runOnUiThread {
+            binding.imageViewPreview.visibility = View.VISIBLE
+            binding.previewView.visibility = View.VISIBLE
+
+            // Tampilkan dialog HANYA setelah ekspresi ke-5 berhasil
+            showCompletionDialog()
+        }
+    }
+
+    private fun showCompletionDialog() {
+        showCustomDialog(
+            "Pemberitahuan",
+            "Keren, kamu telah menyelesaikan pemanasan!",
+            "Verifikasi wajah",
+            R.color.green_primary
+        ) {
+            Handler(Looper.getMainLooper()).postDelayed({
+                Log.d("FaceVerification", "Memulai verifikasi wajah...")
+                prepareForVerification()
+            }, 1500)
+        }
+    }
+
+    private fun prepareForVerification() {
+        binding.expressionCommandText.text = "Mohon tahan posisi hp dan wajah anda \n dalam beberapa detik..."
+        binding.imageViewPreview.visibility = View.GONE
+        binding.previewView.visibility = View.VISIBLE
+        binding.verifyButton.visibility = View.INVISIBLE
+
+        isCapturing = false
+        verify_face = false
+        start_verify = true
+        time_millis = System.currentTimeMillis()
+
+        startFaceVerification()
     }
 
 
@@ -435,55 +489,60 @@ class FaceProcessorActivity : AppCompatActivity() {
             cameraEkspresi.onTakeImage(object : CameraEkspresi.OnTakeImageCallback {
                 override fun onTakeImageSuccess(bitmap: Bitmap?) {
                     if (bitmap == null) {
-                        Log.e("FaceVerification", "Capture gagal, mencoba lagi...")
+                        Log.e("FaceVerification", "Bitmap null, retrying...")
+                        Handler(Looper.getMainLooper()).postDelayed(
+                            { autoCaptureForVerification() },
+                            1000 // Delay lebih lama
+                        )
                         return
                     }
 
-                    Log.d("FaceVerification", "Auto capture ${verify_counter + 1}/5 berhasil!")
+                    // Proses gambar (crop + konversi ke grayscale)
+                    processCapturedImage(bitmap) { processedBitmap ->
+                        verify_counter++
 
-                    // **Lakukan Cropping Seperti di Simpanwajah**
-                    var width = bitmap.width
-                    var height = bitmap.height
-                    var x = width /10
-                    width = width - (x*2)
-                    val resizedBmp: Bitmap = Bitmap.createBitmap(bitmap, x, 0, width, height)
-
-                    val p = PreprocessingUtils()
-                    var greyPixels = p.convertRawGreyImg(resizedBmp);
-//                    val variance = p.isBlurryD(greyPixels)
-                    greyPixels = p.convolve(greyPixels, p.generateGaussianKernel(3, 3f/6f), 3);
-                    val processedPixels = p.convertArrayToBitmap(greyPixels);
-
-                    // Simpan gambar terakhir untuk verifikasi wajah
-                    face_image = processedPixels
-//                    binding.imageViewPreview.setImageBitmap(processedPixels)
-
-                    verify_counter++
-
-                    // Jika belum mencapai 5 kali, ulangi lagi auto capture dengan delay lebih cepat (0.5 detik)
-                    if (verify_counter < 5) {
-                        Handler(Looper.getMainLooper()).postDelayed({ autoCaptureForVerification() }, 500) // 🔥 Kurangi delay ke 500ms
-                    } else {
-                        Toast.makeText(this@FaceProcessorActivity, "Auto capture selesai! Mulai verifikasi wajah...", Toast.LENGTH_SHORT).show();
-                        Log.d("FaceVerification", "Auto capture selesai! Mulai verifikasi wajah...")
-                        verifyFace(processedPixels)  // **Pastikan yang digunakan adalah gambar yang sudah di-crop**
+                        if (verify_counter < 5) {
+                            Handler(Looper.getMainLooper()).postDelayed(
+                                { autoCaptureForVerification() },
+                                1000
+                            )
+                        } else {
+                            verifyFace(processedBitmap)
+                        }
                     }
                 }
 
                 override fun onTakeImageError(exception: ImageCaptureException) {
-                    Log.e("FaceVerification", "Capture gagal: ${exception.message}")
-                    runOnUiThread {
-                        showCustomDialog(
-                            title = "Error",
-                            message = "Gagal mengambil gambar. Silakan coba lagi.",
-                            buttonText = "Coba Lagi",
-                            color = R.color.red
-                        ) {
-                            resetVerificationProcess()
-                        }
-                    }
+                    Log.e("FaceVerification", "Error: ${exception.message}, retrying...")
+                    Handler(Looper.getMainLooper()).postDelayed(
+                        { autoCaptureForVerification() },
+                        1000
+                    )
                 }
             })
+        }
+    }
+
+    private fun processCapturedImage(bitmap: Bitmap, callback: (Bitmap) -> Unit) {
+        // 1. Coba crop wajah pakai ML Kit dulu
+        cameraEkspresi.cropFace(bitmap) { croppedBitmap ->
+            if (croppedBitmap != null) {
+                // 2. Jika berhasil, lanjut ke preprocessing
+                val p = PreprocessingUtils()
+                val greyPixels = p.convertRawGreyImg(croppedBitmap)
+                val processedBitmap = p.convertArrayToBitmap(greyPixels)
+                callback(processedBitmap)
+            } else {
+                // 3. Fallback: Crop manual jika deteksi wajah gagal
+                Log.w("FaceVerification", "ML Kit gagal, gunakan crop manual")
+                val width = bitmap.width
+                val height = bitmap.height
+                val x = width / 10
+                val cropped = Bitmap.createBitmap(bitmap, x, 0, width - (x * 2), height)
+                val p = PreprocessingUtils()
+                val greyPixels = p.convertRawGreyImg(cropped)
+                callback(p.convertArrayToBitmap(greyPixels))
+            }
         }
     }
 
@@ -503,7 +562,7 @@ class FaceProcessorActivity : AppCompatActivity() {
                     return@launch
                 }
 
-                // Ambil data embedding dari Firebase dengan coroutine
+                // Ambil data embedding dari Firebase
                 val savedEmbeddingList = withContext(Dispatchers.IO) {
                     Utils.getFirebaseEmbedding(user).get().await()
                         .let { dataSnapshot ->
@@ -516,86 +575,83 @@ class FaceProcessorActivity : AppCompatActivity() {
                     return@launch
                 }
 
-                Log.d("FaceVerification", "Ukuran embedding di Firebase: ${savedEmbeddingList.size}")
-                Log.d("FaceVerification", "Ukuran embedding wajah yang diverifikasi: ${embeddingList.size}")
-
-                if (savedEmbeddingList.size != embeddingList.size) {
-                    Log.e("FaceVerification", "Ukuran embedding tidak cocok! Firebase: ${savedEmbeddingList.size}, Verifikasi: ${embeddingList.size}")
-                    return@launch
-                }
-
                 val similarity = cosineDistance(embeddingList, savedEmbeddingList)
                 Log.d("FaceVerification", "Hasil Similarity: $similarity")
 
-
-
                 if (similarity > EMBEDDING_THRESHOLD) {
-                    Log.d("FaceVerification", "Wajah terverifikasi! Similarity: $similarity")
-                    binding.expressionCommandText.text = "verifikasi wajah berhasil"
-                    Toast.makeText(this@FaceProcessorActivity, "Verifikasi wajah berhasil", Toast.LENGTH_LONG).show()
+                    // Verifikasi berhasil
+                    binding.expressionCommandText.text = "Verifikasi wajah berhasil"
                     showCustomDialog(
                         title = "Hasil verifikasi wajah",
-                        message = "Selamat anda telah berhasil untuk menyelesaikan semua persyaratan  yang digunakan untuk presensi",
+                        message = "Selamat anda telah berhasil menyelesaikan semua persyaratan presensi",
                         buttonText = "Lihat status presensi",
-                        color = R.color.green_primary){
+                        color = R.color.green_primary
+                    ) {
                         reqFaceApi()
                     }
                 } else {
-                    Log.e("FaceVerification", "Verifikasi wajah gagal! Similarity: $similarity")
-                    binding.expressionCommandText.text = "Verifikasi wajah gagal!"
-                    Handler(Looper.getMainLooper()).postDelayed({
-                        showCustomDialog(
-                            title = "Hasil verifikasi wajah",
-                            message = "Maaf kami gagal mengenali anda. Mohon menggunakan wajah anda sendiri untuk verifikasi wajah",
-                            buttonText = "Coba lagi",
-                            color = R.color.red
-                        ) {
-                            // Panggil fungsi reset ketika tombol "Coba lagi" diklik
-                            resetVerificationProcess()
-                        }
-                    }, 1000)
+                    // Verifikasi gagal - Tampilkan dialog dan reset proses
+                    showCustomDialog(
+                        title = "Hasil verifikasi wajah",
+                        message = "Maaf kami gagal mengenali anda. Silakan coba lagi dari awal.",
+                        buttonText = "Mulai Ulang",
+                        color = R.color.red
+                    ) {
+                        resetVerificationProcess() // 🔥 Memulai ulang dari pemanasan
+                    }
                 }
             } catch (e: Exception) {
-                Log.e("FaceVerification", "Gagal mengambil data embedding dari Firebase: ${e.message}")
-                Toast.makeText(this@FaceProcessorActivity, "Gagal memproses verifikasi: ${e.message}", Toast.LENGTH_LONG).show()
+                Log.e("FaceVerification", "Error: ${e.message}")
+                showCustomDialog(
+                    title = "Error",
+                    message = "Terjadi kesalahan saat verifikasi: ${e.message}",
+                    buttonText = "Coba Lagi",
+                    color = R.color.red
+                ) {
+                    resetVerificationProcess()
+                }
             }
         }
     }
 
     private fun resetVerificationProcess() {
-        Log.d("FaceVerification", "Memulai ulang proses verifikasi...")
+        Log.d("FaceVerification", "Memulai ulang proses verifikasi dari awal dengan kamera depan...")
 
-        // Reset semua state
+        // 1. Set kamera ke depan (wajib sebelum restart kamera)
+        CameraManager.cameraOption = CameraSelector.LENS_FACING_FRONT
+
+        // 2. Reset semua variabel state
         currentIndex = 0
+        verify_counter = 0
         isCapturing = false
         verify_face = false
         start_verify = false
         exp_face_ok = false
-        verify_counter = 0
 
-        // Acak ulang ekspresi
+        // 3. Acak ulang ekspresi pemanasan
         selectedExpressions.clear()
         selectedExpressions.addAll(allExpressions.shuffled().take(5))
-        Log.d("FaceVerification", "Ekspresi baru: $selectedExpressions")
 
-        // Reset UI
+        // 4. Reset UI
         runOnUiThread {
             binding.imageViewPreview.visibility = View.GONE
             binding.previewView.visibility = View.VISIBLE
+            binding.scanLine.visibility = View.GONE
             binding.verifyButton.visibility = View.GONE
-            binding.expressionCommandText.text = "Memulai verifikasi wajah..."
+            binding.expressionCommandText.text = "Memulai ulang verifikasi..."
         }
 
-        // Restart kamera dengan delay untuk memastikan
+        // 5. Restart kamera dengan front-facing
         lifecycleScope.launch {
             cameraEkspresi.cameraStop()
-            delay(300) // Beri waktu untuk kamera benar-benar berhenti
+            delay(300) // Beri jeda untuk kamera berhenti
 
-            // Inisialisasi ulang recognizer
+            // 6. Inisialisasi ulang recognizer
             ekspresiRecognizer = EkspresiRecognizer { expression ->
                 handleDetectedExpression(expression)
             }
 
+            // 7. Pastikan CameraEkspresi menggunakan kamera depan
             cameraEkspresi = CameraEkspresi(
                 this@FaceProcessorActivity,
                 binding.previewView,
@@ -604,15 +660,15 @@ class FaceProcessorActivity : AppCompatActivity() {
                 handleDetectedExpression(expression)
             }
 
+            // 8. Start kamera depan
             cameraEkspresi.cameraStart()
-            delay(300) // Beri waktu kamera untuk inisialisasi
 
-            // Mulai tantangan ekspresi
+            // 9. Mulai tantangan ekspresi
             runOnUiThread {
                 startExpressionChallenge()
                 Toast.makeText(
                     this@FaceProcessorActivity,
-                    "Silakan lakukan ekspresi yang diminta",
+                    "Silakan lakukan pemanasan dengan kamera depan",
                     Toast.LENGTH_SHORT
                 ).show()
             }
@@ -705,14 +761,24 @@ class FaceProcessorActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-        binding.expressionCommandText.visibility=View.INVISIBLE
-        showCustomDialog("Pemberitahuan","Mohon ikuti perintah yang diberikan","Oke", color = R.color.green_primary){
-            showCustomDialog("Pemberitahuan","Sebelum verifikasi, pemanasan dulu yuk!","Mulai", color = R.color.green_primary){
-                resetVerificationProcess()
-                binding.expressionCommandText.visibility=View.VISIBLE
+        binding.expressionCommandText.visibility = View.INVISIBLE
+
+        showCustomDialog(
+            "Pemberitahuan",
+            "Mohon ikuti perintah yang diberikan",
+            "Oke",
+            R.color.green_primary
+        ) {
+            showCustomDialog(
+                "Pemberitahuan",
+                "Sebelum verifikasi, pemanasan dulu yuk!",
+                "Mulai",
+                R.color.green_primary
+            ) {
+                resetVerificationProcess() // Gunakan fungsi reset untuk konsistensi
+                binding.expressionCommandText.visibility = View.VISIBLE
             }
         }
-
     }
 
     companion object {
