@@ -109,17 +109,21 @@ class QRCodeScanActivity : AppCompatActivity() {
                     }
                 }
             }, onFailure = {
-                loadingDialog.dismiss()
+                lifecycleScope.launch {
+                    delay(3000)
+                    loadingDialog.dismiss()
 
-                showCustomDialog(
-                    title = "Hasil scan QR Code",
-                    message = "Hasil QR code yang Anda scan tidak cocok dengan yang dibuat dosen di kelas Anda saat ini atau telah expired",
-                    buttonText = "Coba Lagi",
-                    color = R.color.red,
-                    action = {
-                        onResume()
-                    }
-                )
+                    showCustomDialog(
+                        title = "Hasil scan QR Code",
+                        message = "Hasil QR code yang Anda scan tidak cocok dengan yang dibuat dosen di kelas Anda saat ini atau telah expired",
+                        buttonText = "Coba Lagi",
+                        color = R.color.red,
+                        action = {
+                            onResume()
+                        }
+                    )
+                }
+
             })
         })
 
