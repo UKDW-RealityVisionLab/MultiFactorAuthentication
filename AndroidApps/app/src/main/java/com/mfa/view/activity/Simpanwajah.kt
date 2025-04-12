@@ -10,6 +10,7 @@ import android.graphics.Color
 import android.graphics.Typeface
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.Button
@@ -21,6 +22,7 @@ import androidx.appcompat.widget.Toolbar
 import androidx.core.content.ContextCompat
 import androidx.core.view.marginEnd
 import androidx.lifecycle.lifecycleScope
+import com.google.firebase.auth.FirebaseAuth
 import com.mfa.R
 import com.mfa.databinding.ActivitySimpanwajahBinding
 import com.mfa.camerax.CameraManager
@@ -112,38 +114,48 @@ class Simpanwajah : AppCompatActivity(), CameraManager.OnTakeImageCallback {
 
             val okButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
             okButton.setOnClickListener {
-                dialog.dismiss() // Tutup dialog konfirmasi dulu
+                dialog.dismiss()
 
-                // Tampilkan loading setelah user menekan "OK"
                 val loadingDialog = LoadingDialogFragment()
                 loadingDialog.show(supportFragmentManager, "loadingDialog")
 
                 lifecycleScope.launch(Dispatchers.Main) {
-                    val embeddings = withContext(Dispatchers.IO) { faceRecognizer.getEmbeddingsOfImage(image) }
+                    try {
+                        val embeddings = withContext(Dispatchers.IO) { faceRecognizer.getEmbeddingsOfImage(image) }
 
-                    if (embeddings.isEmpty() || embeddings[0].isEmpty()) {
-                        loadingDialog.dismiss() // Tutup loading jika gagal
-                        Toast.makeText(this@Simpanwajah, "Gagal mendapatkan embeddings. Coba lagi.", Toast.LENGTH_LONG).show()
-                        return@launch
-                    }
+                        if (embeddings.isEmpty() || embeddings[0].isEmpty()) {
+                            loadingDialog.dismiss()
+                            Toast.makeText(this@Simpanwajah, "Gagal mendapatkan embeddings. Coba lagi.", Toast.LENGTH_LONG).show()
+                            return@launch
+                        }
 
-                    val embeddingStringList = embeddings[0].map { it.toString() }
-                    Utils.setFirebaseEmbedding(embeddingStringList)
-                    PreferenceUtils.saveFaceEmbeddings(applicationContext, embeddingStringList)
-                    loadingDialog.dismiss()
-                    showCustomDialog(
-                        title = "Hasil scan wajah",
-                        message = "Selamat! anda berhasil menyimpan wajah",
-                        buttonText = "kembali ke home"
-                    ) {
-                        Toast.makeText(this@Simpanwajah, "Wajah tersimpan!", Toast.LENGTH_SHORT).show()
+                        val embeddingStringList = embeddings[0].map { it.toString() }
 
-                        // Ambil email sebelum membuat intent baru
-                        val userEmail = intent.getStringExtra("email")
+                        // Pastikan user sudah login sebelum menyimpan
+                        if (FirebaseAuth.getInstance().currentUser != null) {
+                            Utils.setFirebaseEmbedding(embeddingStringList)
+                            PreferenceUtils.saveFaceEmbeddings(applicationContext, embeddingStringList)
 
-                        val intent = Intent(this@Simpanwajah, HomeActivity::class.java)
-                        intent.putExtra("email", userEmail)
-                        startActivity(intent)
+                            loadingDialog.dismiss()
+                            showCustomDialog(
+                                title = "Hasil scan wajah",
+                                message = "Selamat! anda berhasil menyimpan wajah",
+                                buttonText = "kembali ke home"
+                            ) {
+                                Toast.makeText(this@Simpanwajah, "Wajah tersimpan!", Toast.LENGTH_SHORT).show()
+                                val userEmail = intent.getStringExtra("email")
+                                val intent = Intent(this@Simpanwajah, HomeActivity::class.java)
+                                intent.putExtra("email", userEmail)
+                                startActivity(intent)
+                            }
+                        } else {
+                            loadingDialog.dismiss()
+                            Toast.makeText(this@Simpanwajah, "Anda harus login terlebih dahulu", Toast.LENGTH_LONG).show()
+                        }
+                    } catch (e: Exception) {
+                        loadingDialog.dismiss()
+                        Toast.makeText(this@Simpanwajah, "Terjadi kesalahan: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
+                        Log.e("SaveFace", "Error saving face", e)
                     }
                 }
             }
