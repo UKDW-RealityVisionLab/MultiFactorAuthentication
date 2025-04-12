@@ -163,15 +163,17 @@ class FaceProcessorActivity : AppCompatActivity(), CameraManager.OnTakeImageCall
         val dialog = AlertDialog.Builder(this)
             .setView(addFaceBinding.root)
             .setTitle("Konfirmasi wajah")
-            .setPositiveButton("Verifikasi", null)
-            .setIcon(R.drawable.logo_png)
-            .setNegativeButton("Batalkan") { d, _ -> d.dismiss() }
+            .setPositiveButton("KONFIRMASI", null)
+            .setNegativeButton("BATALKAN") { d, _ -> d.dismiss() }
             .create()
 
 
         dialog.setOnShowListener {
             val okButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
-            dialog.window?.setBackgroundDrawableResource(R.color.green_primary)
+
+            dialog.window?.setBackgroundDrawableResource(R.color.gray_light) // Ganti dengan warna yang diinginkan
+            // Atur padding untuk konten dialog (jika menggunakan custom view)
+
             // 1. Title: Putih & Bold
             dialog.findViewById<TextView>(android.R.id.title)?.apply {
                 setTextColor(Color.WHITE)
@@ -190,7 +192,7 @@ class FaceProcessorActivity : AppCompatActivity(), CameraManager.OnTakeImageCall
                 setBackgroundColor(ContextCompat.getColor(context, R.color.red))
             }
 
-//            // Opsional: Atur padding tombol
+            // Opsional: Atur padding tombol
             listOf(AlertDialog.BUTTON_POSITIVE, AlertDialog.BUTTON_NEGATIVE).forEach { buttonType ->
                 dialog.getButton(buttonType)?.setPadding(32.toPx(), 16.toPx(), 32.toPx(), 16.toPx())
             }

@@ -2,6 +2,7 @@ package com.mfa.view.activity
 
 import android.annotation.SuppressLint
 import android.app.Dialog
+import android.content.DialogInterface
 import android.content.Intent
 import android.content.res.Resources
 import android.graphics.Bitmap
@@ -78,14 +79,12 @@ class Simpanwajah : AppCompatActivity(), CameraManager.OnTakeImageCallback {
         val dialog = AlertDialog.Builder(this)
             .setView(addFaceBinding.root)
             .setTitle("Konfirmasi wajah")
-            .setPositiveButton("Verifikasi", null)
-            .setIcon(R.drawable.logo_png)
-            .setNegativeButton("Batalkan") { d, _ -> d.dismiss() }
+            .setPositiveButton("KONFIRMASI", null)
+            .setNegativeButton("BATALKAN") { d, _ -> d.dismiss() }
             .create()
 
-
         dialog.setOnShowListener {
-            dialog.window?.setBackgroundDrawableResource(R.color.green_primary) // Ganti dengan warna yang diinginkan
+            dialog.window?.setBackgroundDrawableResource(R.color.gray_light) // Ganti dengan warna yang diinginkan
             // Atur padding untuk konten dialog (jika menggunakan custom view)
 
             // 1. Title: Putih & Bold
@@ -110,7 +109,6 @@ class Simpanwajah : AppCompatActivity(), CameraManager.OnTakeImageCallback {
             listOf(AlertDialog.BUTTON_POSITIVE, AlertDialog.BUTTON_NEGATIVE).forEach { buttonType ->
                 dialog.getButton(buttonType)?.setPadding(32.toPx(), 16.toPx(), 32.toPx(), 16.toPx())
             }
-
 
             val okButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
             okButton.setOnClickListener {

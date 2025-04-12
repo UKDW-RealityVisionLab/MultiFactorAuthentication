@@ -19,4 +19,5 @@
     <color name="black">#000000</color>
     <color name="gray_light">#DDDDDD</color>
     <color name="gray_dark">#666666</color>
+    <color name="dialog_background">#FFEB3B</color>
 </resources>
