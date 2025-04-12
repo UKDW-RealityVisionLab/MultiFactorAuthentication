@@ -14,6 +14,9 @@ class EkspresiRecognizer @Throws(IOException::class) constructor(
     private val onExpressionDetected: (String) -> Unit // Callback untuk auto foto
 ) {
     private val faceDetector: FaceDetector
+    private var lastExpression: String = ""
+    private var lastDetectionTime: Long = 0L
+    private val EXPRESSION_COOLDOWN = 1000L
 
     init {
         val options = FaceDetectorOptions.Builder()
@@ -22,6 +25,23 @@ class EkspresiRecognizer @Throws(IOException::class) constructor(
             .setClassificationMode(FaceDetectorOptions.CLASSIFICATION_MODE_ALL)
             .build()
         faceDetector = FaceDetection.getClient(options)
+    }
+
+//    fun processExpression(expression: String) {
+//        val currentTime = System.currentTimeMillis()
+//
+//        // Cek cooldown dan perubahan ekspresi
+//        if (expression != lastExpression || currentTime - lastDetectionTime > EXPRESSION_COOLDOWN) {
+//            lastExpression = expression
+//            lastDetectionTime = currentTime
+//            onExpressionDetected(expression)
+//        }
+//    }
+
+    fun resetState() {
+        // Reset internal state recognizer jika diperlukan
+        lastExpression = ""
+        lastDetectionTime = 0L
     }
 
     fun detectExpression(croppedBitmap: Bitmap, boundingBox: Rect) {
