@@ -76,7 +76,7 @@ class FaceProcessorActivity : AppCompatActivity() {
     private lateinit var profileViewModel: ProfileViewModel
     private var expressionTimeoutHandler: Handler? = null
     private var expressionTimeoutRunnable: Runnable? = null
-    private val MAX_EXPRESSION_TIME_MS = 3000L
+    private val MAX_EXPRESSION_TIME_MS = 7000L
     private var isCameraChanging = false
     private var pausedExpression: String? = null
     private var pausedIndex = 0
@@ -255,7 +255,6 @@ class FaceProcessorActivity : AppCompatActivity() {
                             //}
                         }
                     }
-
                     override fun onTakeImageError(exception: ImageCaptureException) {
                     }
                 })
