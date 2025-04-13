@@ -74,13 +74,25 @@ class FaceProcessorActivity : AppCompatActivity() {
     private lateinit var ekspresiRecognizer: EkspresiRecognizer
     private val EMBEDDING_THRESHOLD = 0.8f
     private lateinit var profileViewModel: ProfileViewModel
-
+    private var expressionTimeoutHandler: Handler? = null
+    private var expressionTimeoutRunnable: Runnable? = null
+    private val MAX_EXPRESSION_TIME_MS = 7000L
     private var isCameraChanging = false
     private var pausedExpression: String? = null
     private var pausedIndex = 0
 
 
-    private val allExpressions = listOf("senyum", "hadap kiri", "hadap kanan", "kedip", "tutup mata kiri", "tutup mata kanan")
+    private val allExpressions = listOf(
+        "senyum dan angkat kepala", "tutup mata kiri dan miring kanan",
+        "senyum dan kedip", "tutup mata kanan dan miring kiri",
+        "senyum dan miring kanan", "tutup mata kanan dan miring kanan",
+        "tutup mata kiri dan miring kiri", "hadap kiri",
+        "hadap kanan", "angkat kepala",
+        "tunduk (angguk)", "kedip dua kali",
+        "miring kanan", "miring kiri",
+        "senyum", "kedip",
+        "tutup mata kanan", "tutup mata kiri"
+    )
 
     //mengambil 5 ekspresi random
     private val selectedExpressions = allExpressions.shuffled().take(5).toMutableList()
@@ -90,6 +102,7 @@ class FaceProcessorActivity : AppCompatActivity() {
             val currentExpression = selectedExpressions[currentIndex]
             Log.d("FaceProcessor", "Mulai tantangan ekspresi: $currentExpression") // 🔥 Log ekspresi
             binding.expressionCommandText.text = "Yuk coba berekspresi: $currentExpression"
+            startExpressionTimeout()
         } else {
             Log.d("FaceProcessor", "Semua ekspresi selesai! Mulai verifikasi wajah.")
             startFaceVerification()
@@ -242,7 +255,6 @@ class FaceProcessorActivity : AppCompatActivity() {
                             //}
                         }
                     }
-
                     override fun onTakeImageError(exception: ImageCaptureException) {
                     }
                 })
@@ -289,20 +301,22 @@ class FaceProcessorActivity : AppCompatActivity() {
 
         // Pastikan ekspresi cocok dengan yang diminta
         if (expression.equals(selectedExpressions[currentIndex], ignoreCase = true)) {
+            cancelExpressionTimeout()
             Log.d("FaceVerification", "✅ Ekspresi cocok: $expression (ke-${currentIndex + 1})")
 
             if (currentIndex < selectedExpressions.size - 1) {
-                // Untuk ekspresi 1-4: lanjut ke ekspresi berikutnya
+                // 🔹 Tahap 1-4: Tidak ada auto capture, hanya lanjut ke ekspresi berikutnya
                 currentIndex++
                 runOnUiThread {
-                    binding.expressionCommandText.text = "Sekarang tunjukkan ekspresi: ${selectedExpressions[currentIndex]}"
+                    binding.expressionCommandText.text = "Silakan lakukan ekspresi: ${selectedExpressions[currentIndex]}"
                 }
+                startExpressionTimeout()
             } else {
                 // Hanya untuk ekspresi ke-5: tampilkan dialog
                 handleFifthExpressionMatch()
             }
         } else {
-            Log.d("FaceVerification", "❌ Ekspresi tidak cocok: $expression, menunggu ekspresi: ${selectedExpressions[currentIndex]}")
+            Log.d("FaceVerification", "❌ Current index : $currentIndex Ekspresi tidak cocok: $expression, menunggu ekspresi: ${selectedExpressions[currentIndex]}")
         }
     }
 
@@ -614,6 +628,47 @@ class FaceProcessorActivity : AppCompatActivity() {
         }
     }
 
+    private fun startExpressionTimeout() {
+        cancelExpressionTimeout()
+        if (currentIndex == 0) return
+        expressionTimeoutHandler = Handler(Looper.getMainLooper())
+        expressionTimeoutRunnable = Runnable {
+            // Jika user tidak menyelesaikan ekspresi dalam waktu 3 detik, ulang dari tahap 1
+            showCustomDialog(
+                title = "Peringatan",
+                message = "Perubahan ekspresi terlalu lama.",
+                buttonText = "Ulangi" ,
+                R.color.red
+            ) {
+                resetExpressionChallenge()
+            }
+        }
+        expressionTimeoutHandler?.postDelayed(expressionTimeoutRunnable!!, MAX_EXPRESSION_TIME_MS)
+        Log.d("FaceProcessor", "Timeout dimulai untuk tahap ekspresi ke-${currentIndex + 1}")
+    }
+
+    private fun cancelExpressionTimeout() {
+        expressionTimeoutRunnable?.let {
+            expressionTimeoutHandler?.removeCallbacks(it)
+        }
+    }
+
+    private fun resetExpressionChallenge() {
+        currentIndex = 0
+        selectedExpressions.clear()
+        selectedExpressions.addAll(allExpressions.shuffled().take(5)) // Ambil ulang 5 ekspresi random
+
+        runOnUiThread {
+            Toast.makeText(this, "Tantangan ekspresi diulang!", Toast.LENGTH_SHORT).show()
+            binding.imageViewPreview.visibility = View.GONE
+            binding.previewView.visibility = View.VISIBLE
+            binding.verifyButton.visibility = View.GONE
+        }
+
+        startExpressionChallenge()
+    }
+
+
     private fun resetVerificationProcess() {
         Log.d("FaceVerification", "Memulai ulang proses verifikasi dari awal dengan kamera depan...")
 
@@ -755,6 +810,7 @@ class FaceProcessorActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
+        cancelExpressionTimeout()
         Log.d("FaceVerification", "Menutup kamera...")
         cameraEkspresi.cameraStop()
     }
