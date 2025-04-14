@@ -97,9 +97,15 @@ class FaceAntiSpoofing @Throws(IOException::class) constructor(assetManager: Ass
      */
     fun laplacian(bitmap: Bitmap): Int {
         // Resize the face to a size of 256X256, because the shape of the placeholder that needs feed data below is (1, 256, 256, 3)
-        val bitmapScale = Bitmap.createScaledBitmap(bitmap, INPUT_IMAGE_SIZE, INPUT_IMAGE_SIZE, true)
+        val bitmapScale = Bitmap.createScaledBitmap(bitmap, INPUT_IMAGE_SIZE, INPUT_IMAGE_SIZE, false
+        )
 
-        val laplace = arrayOf(intArrayOf(0, 1, 0), intArrayOf(1, -4, 1), intArrayOf(0, 1, 0))
+//        val laplace = arrayOf(intArrayOf(0, 1, 0), intArrayOf(1, -4, 1), intArrayOf(0, 1, 0))
+        val laplace = arrayOf(
+            intArrayOf(1, 1, 1),
+            intArrayOf(1, -8, 1),
+            intArrayOf(1, 1, 1)
+        )
         val size = laplace.size
         val img: Array<IntArray> = Utils.convertGreyImg(bitmapScale)
         val height = img.size
@@ -115,7 +121,7 @@ class FaceAntiSpoofing @Throws(IOException::class) constructor(assetManager: Ass
                         result += (img[x + i][y + j] and 0xFF) * laplace[i][j]
                     }
                 }
-                if (result > LAPLACE_THRESHOLD) {
+                if (abs(result) > LAPLACE_THRESHOLD) {
                     score++
                 }
             }

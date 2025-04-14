@@ -63,7 +63,7 @@ class FaceProcessorActivity : AppCompatActivity(), CameraManager.OnTakeImageCall
     private lateinit var binding: ActivityCaptureFaceBinding
     private lateinit var cameraManager: CameraManager
 
-    private val EMBEDDING_THRESHOLD = 0.8
+    private val EMBEDDING_THRESHOLD = 0.7
     private lateinit var profileViewModel: ProfileViewModel
 
     private lateinit var faceRecognizer: FaceRecognizer // Face recognizer
@@ -241,18 +241,65 @@ class FaceProcessorActivity : AppCompatActivity(), CameraManager.OnTakeImageCall
     fun Int.toPx(): Int = (this * Resources.getSystem().displayMetrics.density).toInt()
 
     private fun antiSpoofDetection(faceBitmap: Bitmap): Boolean {
-        val laplaceScore: Int = fas.laplacian(faceBitmap)
+        // 1. Blur Detection with Laplacian
+        val laplaceScore = fas.laplacian(faceBitmap)
+        Log.d(TAG, "Laplacian Blur Score: $laplaceScore")
+
         if (laplaceScore < FaceAntiSpoofing.LAPLACIAN_THRESHOLD) {
-            Toast.makeText(this, "Image too blurry!", Toast.LENGTH_LONG).show()
+            runOnUiThread {
+                Toast.makeText(
+                    this,
+                    "Kualitas foto rendah. Pastikan wajah terlihat jelas dan tidak blur.",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+            Log.w(TAG, "Blur detected - Laplacian score too low ($laplaceScore)")
             return false
         }
 
-        val start = System.currentTimeMillis()
-        val score = fas.antiSpoofing(faceBitmap)
-        val end = System.currentTimeMillis()
-        Log.d(TAG, "Spoof detection process time: ${end - start} ms")
+        // 2. Anti-Spoofing Analysis
+        Log.d(TAG, "Starting anti-spoofing analysis...")
+        val startTime = System.currentTimeMillis()
 
-        return score < FaceAntiSpoofing.THRESHOLD
+        try {
+            val spoofScore = fas.antiSpoofing(faceBitmap)
+            val processingTime = System.currentTimeMillis() - startTime
+
+            Log.d(TAG, """
+            Anti-Spoofing Results:
+            - Score: $spoofScore
+            - Threshold: ${FaceAntiSpoofing.THRESHOLD}
+            - Processing Time: ${processingTime}ms
+        """.trimIndent())
+
+            if (spoofScore >= FaceAntiSpoofing.THRESHOLD) {
+                runOnUiThread {
+                    Toast.makeText(
+                        this,
+                        "Deteksi kecurangan: Wajah tidak asli!",
+                        Toast.LENGTH_LONG
+                    ).show()
+                    showCustomDialog("Hasil verifikasi wajah",
+                        "Mohon jangan gunakan foto",
+                        "Oke", R.color.red){
+                        onResume()
+                    }
+                }
+                Log.w(TAG, "Potential spoof detected (score: $spoofScore)")
+            }
+
+            return spoofScore < FaceAntiSpoofing.THRESHOLD
+        } catch (e: Exception) {
+            Log.e(TAG, "Anti-spoofing failed: ${e.message}", e)
+            runOnUiThread {
+                Toast.makeText(
+                    this,
+                    "Gagal memproses deteksi wajah. Coba lagi.",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+            return false
+        }
     }
 
     override fun onTakeImageError(exception: Exception) {
@@ -303,7 +350,7 @@ class FaceProcessorActivity : AppCompatActivity(), CameraManager.OnTakeImageCall
                         Toast.makeText(this@FaceProcessorActivity, "Face verification failed!", Toast.LENGTH_LONG).show()
                         showCustomDialog(
                             title = "Hasil verifikasi wajah",
-                            message = "Maaf, kami gagal mengenali Anda. Mohon gunakan wajah Anda sendiri untuk verifikasi.",
+                            message = "Maaf, kami gagal mengenali Anda. Mohon gunakan wajah anda sendiri untuk verifikasi.",
                             buttonText = "Coba lagi",
                             color = R.color.red
                         ) {
