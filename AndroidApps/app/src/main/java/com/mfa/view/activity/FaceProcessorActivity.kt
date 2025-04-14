@@ -107,14 +107,27 @@ class FaceProcessorActivity : AppCompatActivity(), CameraManager.OnTakeImageCall
         // Handle back button press
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                showCustomDialog(
-                    title = "Pemberitahuan",
-                    message = "Mohon selesaikan proses presensi",
-                    buttonText = "Oke",
-                    color = R.color.green_primary
-                ) {
-                    onResume()
+//                showCustomDialog(
+//                    title = "Pemberitahuan",
+//                    message = "Mohon selesaikan proses presensi",
+//                    buttonText = "Oke",
+//                    color = R.color.green_primary
+//                ) {
+//                    onResume()
+//                }
+                val builder = AlertDialog.Builder(this@FaceProcessorActivity,R.style.CustomAlertDialogStyle)
+                builder.setTitle("Pemberitahuan")
+                builder.setMessage("Apakah kamu ingin membatalkan presensi?")
+                builder.setPositiveButton("Iya"){ _, _ ->
+                    val back = Intent(this@FaceProcessorActivity, PresensiActivity::class.java)
+                    back.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+                    startActivity(back)
                 }
+                builder.setNegativeButton("Batalkan"){ _, _->
+//                    system will handle it
+                }
+                builder.setCancelable(false)
+                builder.show()
             }
         })
     }

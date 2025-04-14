@@ -17,6 +17,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.viewModels
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.app.ActivityCompat
@@ -128,14 +129,27 @@ class QRCodeScanActivity : AppCompatActivity() {
 
         onBackPressedDispatcher.addCallback(this,object :OnBackPressedCallback(true){
             override fun handleOnBackPressed() {
-                showCustomDialog(
-                    title = "Pemberitahuan",
-                    message = "Mohon selesaikan proses presensi",
-                    buttonText = "Oke",
-                    color = R.color.green_primary
-                ){
-                    onResume()
+//                showCustomDialog(
+//                    title = "Pemberitahuan",
+//                    message = "Mohon selesaikan proses presensi",
+//                    buttonText = "Oke",
+//                    color = R.color.green_primary
+//                ){
+//                    onResume()
+//                }
+                val builder = AlertDialog.Builder(this@QRCodeScanActivity,R.style.CustomAlertDialogStyle)
+                builder.setTitle("Pemberitahuan")
+                builder.setMessage("Apakah kamu ingin membatalkan presensi?")
+                builder.setPositiveButton("Iya"){ _, _ ->
+                    val back = Intent(this@QRCodeScanActivity, PresensiActivity::class.java)
+                    back.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+                    startActivity(back)
                 }
+                builder.setNegativeButton("Batalkan"){ _, _->
+//                    system will handle it
+                }
+                builder.setCancelable(false)
+                builder.show()
             }
         })
     }

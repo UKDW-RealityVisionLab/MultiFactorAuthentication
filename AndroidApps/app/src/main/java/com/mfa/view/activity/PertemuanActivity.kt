@@ -36,8 +36,6 @@ class PertemuanActivity : AppCompatActivity() {
     private lateinit var adapter: PertemuanAdapter
     private lateinit var profileViewModel: ProfileViewModel
 
-
-
     companion object {
         const val KODEKELAS = "kode_kelas"
         const val NAMAPERTEMUAN = "pertemuan"
