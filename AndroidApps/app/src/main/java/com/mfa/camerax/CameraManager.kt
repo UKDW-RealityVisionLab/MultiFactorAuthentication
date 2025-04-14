@@ -98,6 +98,9 @@ class CameraManager(
     }
 
     fun onTakeImage(callback: OnTakeImageCallback) {
+        Handler(Looper.getMainLooper()).post {
+            callback.onTakeImageStart()
+        }
         imageCapture.takePicture(cameraExecutor, object : OnImageCapturedCallback() {
             override fun onCaptureSuccess(imageProxy: ImageProxy) {
                 @SuppressLint("UnsafeOptInUsageError")
@@ -139,8 +142,6 @@ class CameraManager(
                 }
             }
 
-
-
             override fun onError(exception: ImageCaptureException) {
                 Handler(Looper.getMainLooper()).post {
                     callback.onTakeImageError(exception)
@@ -172,6 +173,7 @@ class CameraManager(
     interface OnTakeImageCallback {
         fun onTakeImageSuccess(image : Bitmap)
         fun onTakeImageError(exception: Exception)
+        fun onTakeImageStart()
     }
 
     companion object {

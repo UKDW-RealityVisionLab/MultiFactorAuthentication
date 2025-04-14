@@ -63,11 +63,13 @@ class FaceProcessorActivity : AppCompatActivity(), CameraManager.OnTakeImageCall
     private lateinit var binding: ActivityCaptureFaceBinding
     private lateinit var cameraManager: CameraManager
 
-    private val EMBEDDING_THRESHOLD = 0.7
+    private val EMBEDDING_THRESHOLD = 0.8
     private lateinit var profileViewModel: ProfileViewModel
 
     private lateinit var faceRecognizer: FaceRecognizer // Face recognizer
     private lateinit var fas: FaceAntiSpoofing // Face anti-spoofing
+
+    private var loadingDialog: LoadingDialogFragment? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -132,6 +134,18 @@ class FaceProcessorActivity : AppCompatActivity(), CameraManager.OnTakeImageCall
         })
     }
 
+    private fun showLoadingDialog() {
+        if (loadingDialog?.isAdded == true) return // Jangan tampilkan jika sudah ada
+
+        loadingDialog = LoadingDialogFragment()
+        loadingDialog?.show(supportFragmentManager, "loadingDialog")
+    }
+
+    private fun dismissLoadingDialog() {
+        loadingDialog?.dismiss()
+        loadingDialog = null
+    }
+
     private fun buttonClicks() {
         binding.buttonTurnCamera.setOnClickListener {
             cameraManager.changeCamera()
@@ -170,6 +184,9 @@ class FaceProcessorActivity : AppCompatActivity(), CameraManager.OnTakeImageCall
 
     @SuppressLint("ResourceAsColor")
     override fun onTakeImageSuccess(image: Bitmap) {
+//        binding.progressBar.visibility = View.GONE
+        showLoadingDialog()
+        binding.buttonStopCamera.isEnabled = true
         val addFaceBinding = DialogAddFaceBinding.inflate(layoutInflater)
         addFaceBinding.capturedFace.setImageBitmap(image)
 
@@ -209,13 +226,18 @@ class FaceProcessorActivity : AppCompatActivity(), CameraManager.OnTakeImageCall
             listOf(AlertDialog.BUTTON_POSITIVE, AlertDialog.BUTTON_NEGATIVE).forEach { buttonType ->
                 dialog.getButton(buttonType)?.setPadding(32.toPx(), 16.toPx(), 32.toPx(), 16.toPx())
             }
+            dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setOnClickListener {
+                dismissLoadingDialog()
+                dialog.dismiss()
+            }
+
 
             okButton.setOnClickListener {
                 dialog.dismiss()
-
+//                dismissLoadingDialog()
                 lifecycleScope.launch(Dispatchers.Main) {
                     try {
-                        if (antiSpoofDetection(image)) {
+                        if (antiSpoofDetection(image)!=false) {
                             val embeddings = withContext(Dispatchers.IO) { faceRecognizer.getEmbeddingsOfImage(image) }
 
                             if (embeddings.isEmpty() || embeddings[0].isEmpty()) {
@@ -240,10 +262,17 @@ class FaceProcessorActivity : AppCompatActivity(), CameraManager.OnTakeImageCall
     }
     fun Int.toPx(): Int = (this * Resources.getSystem().displayMetrics.density).toInt()
 
+    override fun onTakeImageStart() {
+//        binding.progressBar.visibility = View.VISIBLE
+        // Disable tombol capture sementara
+        showLoadingDialog()
+//        binding.buttonStopCamera.isEnabled = false
+    }
     private fun antiSpoofDetection(faceBitmap: Bitmap): Boolean {
         // 1. Blur Detection with Laplacian
         val laplaceScore = fas.laplacian(faceBitmap)
         Log.d(TAG, "Laplacian Blur Score: $laplaceScore")
+        dismissLoadingDialog()
 
         if (laplaceScore < FaceAntiSpoofing.LAPLACIAN_THRESHOLD) {
             runOnUiThread {
@@ -282,7 +311,6 @@ class FaceProcessorActivity : AppCompatActivity(), CameraManager.OnTakeImageCall
                     showCustomDialog("Hasil verifikasi wajah",
                         "Mohon jangan gunakan foto",
                         "Oke", R.color.red){
-                        onResume()
                     }
                 }
                 Log.w(TAG, "Potential spoof detected (score: $spoofScore)")
@@ -303,13 +331,15 @@ class FaceProcessorActivity : AppCompatActivity(), CameraManager.OnTakeImageCall
     }
 
     override fun onTakeImageError(exception: Exception) {
-        Toast.makeText(this, "onTakeImageError: ${exception.message}", Toast.LENGTH_SHORT).show()
+//        binding.progressBar.visibility = View.GONE
+        dismissLoadingDialog()
+        binding.buttonStopCamera.isEnabled = true
+        Toast.makeText(this, "Gagal mengambil foto: ${exception.message}", Toast.LENGTH_SHORT).show()
     }
 
     private fun handleEmbeddings(embeddingList: ArrayList<String>) {
         // Tampilkan loading saat proses verifikasi dimulai
-        val loadingDialog = LoadingDialogFragment()
-        loadingDialog.show(supportFragmentManager, "loadingDialog")
+         showLoadingDialog()
 
         lifecycleScope.launch(Dispatchers.Main) {
             try {
@@ -344,6 +374,7 @@ class FaceProcessorActivity : AppCompatActivity(), CameraManager.OnTakeImageCall
                             buttonText = "Lihat status presensi",
                             color = R.color.green_primary
                         ) {
+                            dismissLoadingDialog()
                             reqFaceApi()
                         }
                     } else {
@@ -365,7 +396,8 @@ class FaceProcessorActivity : AppCompatActivity(), CameraManager.OnTakeImageCall
                 Toast.makeText(this@FaceProcessorActivity, "Gagal memproses verifikasi: ${e.message}", Toast.LENGTH_LONG).show()
             } finally {
                 // Sembunyikan loading setelah proses selesai
-                loadingDialog.dismiss()
+//                loadingDialog.dismiss()
+                dismissLoadingDialog()
             }
         }
     }

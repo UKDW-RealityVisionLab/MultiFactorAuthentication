@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.DialogInterface
 import android.content.Intent
+import android.content.res.ColorStateList
 import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.Color
@@ -27,6 +28,7 @@ import com.mfa.R
 import com.mfa.databinding.ActivitySimpanwajahBinding
 import com.mfa.camerax.CameraManager
 import com.mfa.databinding.DialogAddFaceBinding
+import com.mfa.facedetector.FaceAntiSpoofing
 import com.mfa.facedetector.FaceRecognizer
 import com.mfa.utils.PreferenceUtils
 import com.mfa.utils.Utils
@@ -40,6 +42,9 @@ class Simpanwajah : AppCompatActivity(), CameraManager.OnTakeImageCallback {
     private lateinit var binding: ActivitySimpanwajahBinding
     private lateinit var cameraManager: CameraManager
     private lateinit var faceRecognizer: FaceRecognizer
+    private lateinit var fas: FaceAntiSpoofing
+
+    private var loadingDialog: LoadingDialogFragment? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -49,6 +54,8 @@ class Simpanwajah : AppCompatActivity(), CameraManager.OnTakeImageCallback {
         setSupportActionBar(toolbar)
         supportActionBar?.title="Simpan wajah"
 
+        faceRecognizer = FaceRecognizer(assets)
+        fas = FaceAntiSpoofing(assets)
         // Inisialisasi CameraManager untuk menangkap gambar
         cameraManager = CameraManager(
             this,
@@ -73,8 +80,83 @@ class Simpanwajah : AppCompatActivity(), CameraManager.OnTakeImageCallback {
         }
     }
 
+    private fun showLoadingDialog() {
+        if (loadingDialog?.isAdded == true) return // Jangan tampilkan jika sudah ada
+
+        loadingDialog = LoadingDialogFragment()
+        loadingDialog?.show(supportFragmentManager, "loadingDialog")
+    }
+
+    private fun dismissLoadingDialog() {
+        loadingDialog?.dismiss()
+        loadingDialog = null
+    }
+
+    private fun antiSpoofDetection(faceBitmap: Bitmap): Boolean {
+        // 1. Blur Detection with Laplacian
+        val laplaceScore = fas.laplacian(faceBitmap)
+        Log.d("simpan wajah", "Laplacian Blur Score: $laplaceScore")
+        dismissLoadingDialog()
+
+        if (laplaceScore < FaceAntiSpoofing.LAPLACIAN_THRESHOLD) {
+                Toast.makeText(
+                    this,
+                    "Kualitas foto rendah. Pastikan wajah terlihat jelas dan tidak blur.",
+                    Toast.LENGTH_LONG
+                ).show()
+
+            Log.w("simpan wajah", "Blur detected - Laplacian score too low ($laplaceScore)")
+            return false
+        }
+
+        // 2. Anti-Spoofing Analysis
+        Log.d("simpan wajah", "Starting anti-spoofing analysis...")
+        val startTime = System.currentTimeMillis()
+
+        try {
+            val spoofScore = fas.antiSpoofing(faceBitmap)
+            val processingTime = System.currentTimeMillis() - startTime
+
+            Log.d("simpan wajah", """
+            Anti-Spoofing Results:
+            - Score: $spoofScore
+            - Threshold: ${FaceAntiSpoofing.THRESHOLD}
+            - Processing Time: ${processingTime}ms
+        """.trimIndent())
+
+            if (spoofScore >= FaceAntiSpoofing.THRESHOLD) {
+                    Toast.makeText(
+                        this,
+                        "Deteksi kecurangan: Wajah tidak asli!",
+                        Toast.LENGTH_LONG
+                    ).show()
+                    showCustomDialog("Hasil verifikasi wajah",
+                        "Mohon jangan gunakan foto",
+                        "Oke", R.color.red){
+
+                    }
+
+                Log.w("simpan wajah", "Potential spoof detected (score: $spoofScore)")
+            }
+
+            return spoofScore < FaceAntiSpoofing.THRESHOLD
+        } catch (e: Exception) {
+            Log.e("simpan wajah", "Anti-spoofing failed: ${e.message}", e)
+                Toast.makeText(
+                    this,
+                    "Gagal memproses deteksi wajah. Coba lagi.",
+                    Toast.LENGTH_LONG
+                ).show()
+
+            return false
+        }
+    }
     @SuppressLint("ResourceAsColor")
     override fun onTakeImageSuccess(image: Bitmap) {
+//        binding.progressBar.visibility = View.GONE
+        binding.buttonStopCamera.isEnabled = true
+//        val loadingDialog = LoadingDialogFragment()
+        dismissLoadingDialog()
         val addFaceBinding = DialogAddFaceBinding.inflate(layoutInflater)
         addFaceBinding.capturedFace.setImageBitmap(image)
 
@@ -111,51 +193,63 @@ class Simpanwajah : AppCompatActivity(), CameraManager.OnTakeImageCallback {
             listOf(AlertDialog.BUTTON_POSITIVE, AlertDialog.BUTTON_NEGATIVE).forEach { buttonType ->
                 dialog.getButton(buttonType)?.setPadding(32.toPx(), 16.toPx(), 32.toPx(), 16.toPx())
             }
+            dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setOnClickListener {
+                dismissLoadingDialog()
+                dialog.dismiss()
+            }
 
             val okButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
             okButton.setOnClickListener {
-                dialog.dismiss()
-
-                val loadingDialog = LoadingDialogFragment()
-                loadingDialog.show(supportFragmentManager, "loadingDialog")
-
+                showLoadingDialog()
                 lifecycleScope.launch(Dispatchers.Main) {
                     try {
-                        val embeddings = withContext(Dispatchers.IO) { faceRecognizer.getEmbeddingsOfImage(image) }
-
-                        if (embeddings.isEmpty() || embeddings[0].isEmpty()) {
-                            loadingDialog.dismiss()
-                            Toast.makeText(this@Simpanwajah, "Gagal mendapatkan embeddings. Coba lagi.", Toast.LENGTH_LONG).show()
+//                        Log.d("simpan wajah antispoof","${antiSpoofDetection(image)}")
+                        if(antiSpoofDetection(image) === false){
+                            dialog.dismiss()
                             return@launch
-                        }
+                        }else{
+                            val embeddings = withContext(Dispatchers.IO) { faceRecognizer.getEmbeddingsOfImage(image) }
 
-                        val embeddingStringList = embeddings[0].map { it.toString() }
-
-                        // Pastikan user sudah login sebelum menyimpan
-                        if (FirebaseAuth.getInstance().currentUser != null) {
-                            Utils.setFirebaseEmbedding(embeddingStringList)
-                            PreferenceUtils.saveFaceEmbeddings(applicationContext, embeddingStringList)
-
-                            loadingDialog.dismiss()
-                            showCustomDialog(
-                                title = "Hasil scan wajah",
-                                message = "Selamat! anda berhasil menyimpan wajah",
-                                buttonText = "kembali ke home"
-                            ) {
-                                Toast.makeText(this@Simpanwajah, "Wajah tersimpan!", Toast.LENGTH_SHORT).show()
-                                val userEmail = intent.getStringExtra("email")
-                                val intent = Intent(this@Simpanwajah, HomeActivity::class.java)
-                                intent.putExtra("email", userEmail)
-                                startActivity(intent)
+                            if (embeddings.isEmpty() || embeddings[0].isEmpty()) {
+//                                loadingDialog.dismiss()
+//                                dismissLoadingDialog()
+                                Toast.makeText(this@Simpanwajah, "Gagal mendapatkan embeddings. Coba lagi.", Toast.LENGTH_LONG).show()
+                                return@launch
                             }
-                        } else {
-                            loadingDialog.dismiss()
-                            Toast.makeText(this@Simpanwajah, "Anda harus login terlebih dahulu", Toast.LENGTH_LONG).show()
+
+                            val embeddingStringList = embeddings[0].map { it.toString() }
+
+                            // Pastikan user sudah login sebelum menyimpan
+                            if (FirebaseAuth.getInstance().currentUser != null) {
+                                Utils.setFirebaseEmbedding(embeddingStringList)
+                                PreferenceUtils.saveFaceEmbeddings(applicationContext, embeddingStringList)
+
+//                                loadingDialog.dismiss()
+//                                dismissLoadingDialog()
+                                dialog.dismiss()
+                                showCustomDialog(
+                                    title = "Hasil scan wajah",
+                                    message = "Selamat! anda berhasil menyimpan wajah",
+                                    buttonText = "kembali ke home", color = R.color.green_primary
+                                ) {
+                                    Toast.makeText(this@Simpanwajah, "Wajah tersimpan!", Toast.LENGTH_SHORT).show()
+                                    val userEmail = intent.getStringExtra("email")
+                                    val intent = Intent(this@Simpanwajah, HomeActivity::class.java)
+                                    intent.putExtra("email", userEmail)
+                                    startActivity(intent)
+                                }
+                            } else {
+                                Toast.makeText(this@Simpanwajah, "Anda harus login terlebih dahulu", Toast.LENGTH_LONG).show()
+                            }
                         }
+
                     } catch (e: Exception) {
-                        loadingDialog.dismiss()
+//                        loadingDialog.dismiss()
+//                        dismissLoadingDialog()
                         Toast.makeText(this@Simpanwajah, "Terjadi kesalahan: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
                         Log.e("SaveFace", "Error saving face", e)
+                    }finally {
+                        dismissLoadingDialog()
                     }
                 }
             }
@@ -167,31 +261,51 @@ class Simpanwajah : AppCompatActivity(), CameraManager.OnTakeImageCallback {
     fun Int.toPx(): Int = (this * Resources.getSystem().displayMetrics.density).toInt()
 
 
-    private fun showCustomDialog(title: String, message: String, buttonText: String, action: () -> Unit) {
-        val dialog = Dialog(this)
-        val dialogView: View = LayoutInflater.from(this).inflate(R.layout.custom_alert_dialog, null)
+    private fun showCustomDialog(
+        title: String,
+        message: String,
+        buttonText: String,
+        color: Int, // warna tombol
+        action: () -> Unit
+    ) {
+        val dialog = Dialog(this).apply {
+            setCancelable(false)
+            setContentView(R.layout.custom_alert_dialog)
+            window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
 
-        dialog.setContentView(dialogView)
-        dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT)) // Hapus background default
-
-        val tvTitle = dialogView.findViewById<TextView>(R.id.tvTitle)
-        val tvMessage = dialogView.findViewById<TextView>(R.id.tvMessage)
-        val btnConfirm = dialogView.findViewById<Button>(R.id.btnConfirm)
-
-        tvTitle.text = title
-        tvMessage.text = message
-        btnConfirm.text = buttonText
-
-        btnConfirm.setOnClickListener {
-            action() // Eksekusi aksi yang dikirim dari parameter
-            dialog.dismiss() // Tutup dialog setelah aksi
+            findViewById<TextView>(R.id.tvTitle).text = title
+            findViewById<TextView>(R.id.tvMessage).text = message
+            findViewById<Button>(R.id.btnConfirm).apply {
+                text = buttonText
+                setTextColor(Color.WHITE) // Warna teks
+//                setBackgroundColor(color)
+                val buttonColor = ContextCompat.getColor(context, color)
+                backgroundTintList = ColorStateList.valueOf(buttonColor) // Warna latar
+                setOnClickListener {
+                    action()
+                    dismiss()
+                }
+            }
         }
-
         dialog.show()
     }
 
     override fun onTakeImageError(exception: Exception) {
+//        binding.progressBar.visibility = View.GONE
+//        val loadingDialog = LoadingDialogFragment()
+//        loadingDialog.dismiss()
+        dismissLoadingDialog()
+        binding.buttonStopCamera.isEnabled = true
         Toast.makeText(this, "Gagal mengambil gambar: ${exception.message}", Toast.LENGTH_SHORT).show()
+    }
+
+    override fun onTakeImageStart() {
+//        binding.progressBar.visibility = View.VISIBLE
+        // Disable tombol capture sementara
+        binding.buttonStopCamera.isEnabled = false
+        showLoadingDialog()
+//        val loadingDialog = LoadingDialogFragment()
+//        loadingDialog.show(supportFragmentManager, "loadingDialog")
     }
 
 
