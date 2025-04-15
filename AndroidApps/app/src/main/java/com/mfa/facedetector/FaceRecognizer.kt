@@ -39,6 +39,7 @@ class FaceRecognizer @Throws(IOException::class) constructor(assetManager: Asset
         return evaluate(embeddings)
     }
 
+// change into images into embedding with mobile facenet
     fun getEmbeddingsOfImage(bitmapImage: Bitmap): Array<FloatArray> {
         val bitmapScale = Bitmap.createScaledBitmap(bitmapImage, INPUT_IMAGE_SIZE, INPUT_IMAGE_SIZE, true)
         val datasets: Array<Array<Array<FloatArray>>> = getImagesDataset(bitmapScale)
