@@ -54,6 +54,7 @@ class Simpanwajah : AppCompatActivity(), CameraManager.OnTakeImageCallback {
         setSupportActionBar(toolbar)
         supportActionBar?.title="Simpan wajah"
 
+        // Inisialisasi Face Recognizer
         faceRecognizer = FaceRecognizer(assets)
         fas = FaceAntiSpoofing(assets)
         // Inisialisasi CameraManager untuk menangkap gambar
@@ -68,8 +69,7 @@ class Simpanwajah : AppCompatActivity(), CameraManager.OnTakeImageCallback {
             cameraManager.changeCamera()
         }
 
-        // Inisialisasi Face Recognizer
-        faceRecognizer = FaceRecognizer(assets)
+//        faceRecognizer = FaceRecognizer(assets)
 
         // Memulai kamera saat Activity dibuka
         cameraManager.cameraStart()
@@ -204,6 +204,7 @@ class Simpanwajah : AppCompatActivity(), CameraManager.OnTakeImageCallback {
                 lifecycleScope.launch(Dispatchers.Main) {
                     try {
 //                        Log.d("simpan wajah antispoof","${antiSpoofDetection(image)}")
+                        //if wajah palsu brarti false
                         if(antiSpoofDetection(image) === false){
                             dialog.dismiss()
                             return@launch

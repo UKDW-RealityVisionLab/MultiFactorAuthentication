@@ -237,6 +237,7 @@ class FaceProcessorActivity : AppCompatActivity(), CameraManager.OnTakeImageCall
 //                dismissLoadingDialog()
                 lifecycleScope.launch(Dispatchers.Main) {
                     try {
+                        //if wajah asli
                         if (antiSpoofDetection(image)!=false) {
                             val embeddings = withContext(Dispatchers.IO) { faceRecognizer.getEmbeddingsOfImage(image) }
 
@@ -315,7 +316,7 @@ class FaceProcessorActivity : AppCompatActivity(), CameraManager.OnTakeImageCall
                 }
                 Log.w(TAG, "Potential spoof detected (score: $spoofScore)")
             }
-
+            // if wajah dianggap asli == true
             return spoofScore < FaceAntiSpoofing.THRESHOLD
         } catch (e: Exception) {
             Log.e(TAG, "Anti-spoofing failed: ${e.message}", e)
