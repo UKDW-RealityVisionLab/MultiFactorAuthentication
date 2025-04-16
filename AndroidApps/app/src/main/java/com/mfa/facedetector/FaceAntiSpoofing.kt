@@ -22,42 +22,38 @@ class FaceAntiSpoofing @Throws(IOException::class) constructor(assetManager: Ass
     }
 
     fun antiSpoofing(bitmap: Bitmap): Float {
-        // Resize the face to 256X256, because the shape of the placeholder required for the feed data below is (1, 256, 256, 3)
+        // 1. Resize ke 224x224
         val bitmapScale = Bitmap.createScaledBitmap(bitmap, INPUT_IMAGE_SIZE, INPUT_IMAGE_SIZE, true)
-        val img: Array<Array<FloatArray>> = normalizeImage(bitmapScale)
-        val input: Array<Array<Array<FloatArray>>?> = arrayOfNulls(1)
-        input[0] = img
-        val clss_pred = Array(1) { FloatArray(8) }
-        val leaf_node_mask = Array(1) { FloatArray(8) }
-        val outputs: MutableMap<Int, Any> = HashMap()
-        outputs[interpreter.getOutputIndex("Identity")] = clss_pred
-        outputs[interpreter.getOutputIndex("Identity_1")] = leaf_node_mask
-        interpreter.runForMultipleInputsOutputs(arrayOf<Any>(input), outputs)
 
-        Log.i(
-            TAG, "[" + clss_pred[0][0] + ", " + clss_pred[0][1] + ", "
-                    + clss_pred[0][2] + ", " + clss_pred[0][3] + ", " + clss_pred[0][4] + ", "
-                    + clss_pred[0][5] + ", " + clss_pred[0][6] + ", " + clss_pred[0][7] + "]"
-        )
-        Log.i(
-            TAG, "[" + leaf_node_mask[0][0] + ", " + leaf_node_mask[0][1] + ", "
-                    + leaf_node_mask[0][2] + ", " + leaf_node_mask[0][3] + ", " + leaf_node_mask[0][4] + ", "
-                    + leaf_node_mask[0][5] + ", " + leaf_node_mask[0][6] + ", " + leaf_node_mask[0][7] + "]"
-        )
+        // 2. Normalisasi gambar ke array [224][224][3]
+        val normalizedImage = normalizeImage(bitmapScale)
 
-        return leaf_score1(clss_pred, leaf_node_mask);
-    }
-
-    private fun leaf_score1(clss_pred: Array<FloatArray>, leaf_node_mask: Array<FloatArray>): Float {
-        var score = 0f
-        for (i in 0..7) {
-            score += abs(clss_pred[0][i]) * leaf_node_mask[0][i]
+        // 3. Bungkus ke dalam shape [1][224][224][3] sesuai input model
+        val input = Array(1) {
+            Array(INPUT_IMAGE_SIZE) {
+                Array(INPUT_IMAGE_SIZE) {
+                    FloatArray(3)
+                }
+            }
         }
-        return score
-    }
 
-    private fun leaf_score2(clss_pred: Array<FloatArray>): Float {
-        return clss_pred[0][ROUTE_INDEX]
+        for (i in 0 until INPUT_IMAGE_SIZE) {
+            for (j in 0 until INPUT_IMAGE_SIZE) {
+                input[0][i][j] = normalizedImage[i][j]
+            }
+        }
+
+        // 4. Output model adalah [1][1], jadi kita siapkan array untuk menampung hasilnya
+        val output = Array(1) { FloatArray(1) }
+
+        // 5. Jalankan model
+        interpreter.run(input, output)
+
+        // 6. Ambil nilai prediksi dari output[0][0]
+        val prediction = output[0][0]
+        Log.d(TAG, "Anti-spoofing prediction result: $prediction")
+
+        return prediction
     }
 
     fun normalizeImage(bitmap: Bitmap): Array<Array<FloatArray>> {
@@ -131,10 +127,10 @@ class FaceAntiSpoofing @Throws(IOException::class) constructor(assetManager: Ass
 
     companion object {
         private val TAG = "FaceAntiSpoofing"
-        private val MODEL_FILE = "DeepTreeFaceAntiSpoofing.tflite"
+        private val MODEL_FILE = "model_anti_spoofing_final_test.tflite"
 
-        val INPUT_IMAGE_SIZE: Int = 256 // The width and height of the placeholder image that needs feed data
-        val THRESHOLD: Float = 0.2f // Set a threshold, greater than this value is considered an attack
+        val INPUT_IMAGE_SIZE: Int = 224 // The width and height of the placeholder image that needs feed data
+        val THRESHOLD: Float = 0.5f // Set a threshold, greater than this value is considered an attack
 
         val ROUTE_INDEX: Int = 6 // Route indices observed during training
 
