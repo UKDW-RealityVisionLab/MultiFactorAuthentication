@@ -125,7 +125,7 @@ class FaceProcessorActivity : AppCompatActivity(), CameraManager.OnTakeImageCall
                     back.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
                     startActivity(back)
                 }
-                builder.setNegativeButton("Batalkan"){ _, _->
+                builder.setNegativeButton("Tidak"){ _, _->
 //                    system will handle it
                 }
                 builder.setCancelable(false)
