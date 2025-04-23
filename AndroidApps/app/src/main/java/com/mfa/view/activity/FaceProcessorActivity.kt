@@ -110,6 +110,8 @@ class FaceProcessorActivity : AppCompatActivity() {
     }
 
 
+    private var timeoutWarningCount = 0
+    private val MAX_TIMEOUT_WARNINGS = 3
 
 
     private var start_verify = false
@@ -320,9 +322,14 @@ class FaceProcessorActivity : AppCompatActivity() {
         }
     }
 
+
+
+
     private fun handleFifthExpressionMatch() {
         Log.d("FaceVerification", "🎉 Ekspresi ke-5 cocok! Menyiapkan capture...")
         binding.expressionCommandText.text = "Pemanasan selesai"
+        timeoutWarningCount = 0 //reset
+        Log.d("FaceVerification", "✅ Semua ekspresi berhasil, warning counter di-reset.")
         isCapturing = true
 
         cameraEkspresi.onTakeImage(object : CameraEkspresi.OnTakeImageCallback {
@@ -562,8 +569,6 @@ class FaceProcessorActivity : AppCompatActivity() {
 
 
 
-
-
     private fun handleEmbeddings(embeddingList: FloatArray) {
         Log.d("FaceVerification", "Membandingkan embedding wajah dengan data di Firebase...")
 
@@ -631,21 +636,48 @@ class FaceProcessorActivity : AppCompatActivity() {
     private fun startExpressionTimeout() {
         cancelExpressionTimeout()
         if (currentIndex == 0) return
+
         expressionTimeoutHandler = Handler(Looper.getMainLooper())
         expressionTimeoutRunnable = Runnable {
-            // Jika user tidak menyelesaikan ekspresi dalam waktu 3 detik, ulang dari tahap 1
-            showCustomDialog(
-                title = "Peringatan",
-                message = "Perubahan ekspresi terlalu lama.",
-                buttonText = "Ulangi" ,
-                R.color.red
-            ) {
-                resetExpressionChallenge()
+            timeoutWarningCount++
+            Log.d("FaceProcessor", "⚠️ Timeout ekspresi ke-$currentIndex. Peringatan ke-$timeoutWarningCount")
+
+            if (timeoutWarningCount < MAX_TIMEOUT_WARNINGS) {
+                // Peringatan ke-1 dan ke-2
+                showCustomDialog(
+                    title = "Peringatan",
+                    message = "Peringatan ke-$timeoutWarningCount: Waktu Anda habis!",
+                    buttonText = "Ulangi",
+                    R.color.red
+                ) {
+                    resetExpressionChallenge()
+                }
+            } else {
+                // Peringatan ke-3: batas akhir
+                showCustomDialog(
+                    title = "Gagal",
+                    message = "❌ Batas percobaan habis! Silakan ulangi lagi!",
+                    buttonText = "Kembali",
+                    R.color.red
+                ) {
+                    timeoutWarningCount = 0 // Reset count
+                    returnToPresensiActivity()
+                }
             }
         }
         expressionTimeoutHandler?.postDelayed(expressionTimeoutRunnable!!, MAX_EXPRESSION_TIME_MS)
         Log.d("FaceProcessor", "Timeout dimulai untuk tahap ekspresi ke-${currentIndex + 1}")
     }
+
+
+    private fun returnToPresensiActivity() {
+        val intent = Intent(this, PresensiActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+        startActivity(intent)
+        finish()
+    }
+
+
 
     private fun cancelExpressionTimeout() {
         expressionTimeoutRunnable?.let {
@@ -656,7 +688,7 @@ class FaceProcessorActivity : AppCompatActivity() {
     private fun resetExpressionChallenge() {
         currentIndex = 0
         selectedExpressions.clear()
-        selectedExpressions.addAll(allExpressions.shuffled().take(5)) // Ambil ulang 5 ekspresi random
+        selectedExpressions.addAll(allExpressions.shuffled().take(5))
 
         runOnUiThread {
             Toast.makeText(this, "Tantangan ekspresi diulang!", Toast.LENGTH_SHORT).show()
@@ -667,6 +699,7 @@ class FaceProcessorActivity : AppCompatActivity() {
 
         startExpressionChallenge()
     }
+
 
 
     private fun resetVerificationProcess() {
