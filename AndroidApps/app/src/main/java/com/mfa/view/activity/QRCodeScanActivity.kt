@@ -104,8 +104,25 @@ class QRCodeScanActivity : AppCompatActivity() {
                         "Siap, Lanjut",
                         R.color.green_primary
                     ) {
-                        val intent = Intent(this@QRCodeScanActivity, FaceProcessorActivity::class.java)
-                        startActivity(intent)
+                        showCustomDialog(
+                            "Pemberitahuan",
+                            "Sebelum verifikasi, kamu akan mengikuti tantangan ekspresi wajah terlebih dahulu.",
+                            "Oke",
+                            R.color.green_primary
+                        ) {
+                            showCustomDialog(
+                                "Pemberitahuan",
+                                "Yuk, ekspresikan dirimu! Tantangan ekspresi wajah akan dimulai sebelum proses verifikasi.",
+                                "Mulai",
+                                R.color.green_primary
+                            ) {
+                                val intent = Intent(
+                                    this@QRCodeScanActivity,
+                                    FaceProcessorActivity::class.java
+                                )
+                                startActivity(intent)
+                            }
+                        }
                     }
                 }
             }, onFailure = {

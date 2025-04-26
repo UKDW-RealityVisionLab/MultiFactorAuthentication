@@ -34,9 +34,20 @@ class MlKitEkspresiAnalyzer(private val onExpressionDetected: (String) -> Unit) 
     private var lastBlinkTime = 0L
     private var blinkCount = 0
     private var lastContourPositions: List<Pair<Float, Float>>? = null
-    private var stableFrameCount = 0
-    private val stabilityThreshold = 15     // Jumlah frame kontur tidak bergerak
-    private val movementThreshold = 5.0f     // Total movement minimum agar dianggap bergerak
+
+    private fun euclideanDistance(p1: Pair<Float, Float>, p2: Pair<Float, Float>): Float {
+        val dx = p1.first - p2.first
+        val dy = p1.second - p2.second
+        return Math.sqrt((dx * dx + dy * dy).toDouble()).toFloat()
+    }
+
+    private fun List<Pair<Float, Float>>.averageXY(): Pair<Float, Float> {
+        val xAvg = this.map { it.first }.average().toFloat()
+        val yAvg = this.map { it.second }.average().toFloat()
+        return xAvg to yAvg
+    }
+
+
 
     @ExperimentalGetImage
     override fun analyze(image: ImageProxy) {
@@ -73,12 +84,39 @@ class MlKitEkspresiAnalyzer(private val onExpressionDetected: (String) -> Unit) 
                         blinkCount++
                         lastBlinkTime = now
                     }
+                    val upperLipTop = face.getContour(FaceContour.UPPER_LIP_TOP)?.points
+                    val lowerLipBottom = face.getContour(FaceContour.LOWER_LIP_BOTTOM)?.points
+
+                    val boundingBoxHeight = face.boundingBox.height().toFloat()
+                    var mouthOpen = false
+                    var mouthGap = 0f
+                    var mouthOpenRatio = 0f
+                    if (!upperLipTop.isNullOrEmpty() && !lowerLipBottom.isNullOrEmpty()) {
+                        val upperIndexes = listOf(6, 7, 8)
+                        val lowerIndexes = listOf(6, 7, 8)
+
+                        val upperAvg = upperIndexes.mapNotNull { upperLipTop.getOrNull(it) }.map { it.x to it.y }.averageXY()
+                        val lowerAvg = lowerIndexes.mapNotNull { lowerLipBottom.getOrNull(it) }.map { it.x to it.y }.averageXY()
+
+                        mouthGap = euclideanDistance(upperAvg, lowerAvg)
+                        mouthOpenRatio = mouthGap / boundingBoxHeight
+                        mouthOpen = mouthOpenRatio > 0.20f // Threshold rasio (0.18 bisa disesuaikan)
+
+                        Log.d(TAG, "Mouth gap: $mouthGap, Face height: $boundingBoxHeight, Ratio: $mouthOpenRatio, Mouth open? $mouthOpen")
+                    }
+
+
                     val expression = when {
+                        mouthOpen && smilingProbability < 0.3f && face.headEulerAngleZ > 15 -> "kaget dan miring kanan"
+                        mouthOpen && smilingProbability < 0.3f && face.headEulerAngleZ < -15 -> "kaget dan miring kiri"
+                        mouthOpen && smilingProbability < 0.3f &&
+                                leftEyeOpenProbability > 0.6f && rightEyeOpenProbability > 0.6f -> "kaget"
                         smilingProbability > 0.5 && pitchAngle > 15 -> "senyum dan angkat kepala"
                         rightEyeOpenProbability < 0.4 && face.headEulerAngleZ > 15 -> "tutup mata kiri dan miring kanan"
                         smilingProbability > 0.5 && eyeClosed -> "senyum dan kedip"
                         leftEyeOpenProbability < 0.4 && face.headEulerAngleZ < -15 -> "tutup mata kanan dan miring kiri"
                         smilingProbability > 0.5 && face.headEulerAngleZ > 15 -> "senyum dan miring kanan"
+                        smilingProbability > 0.5 && face.headEulerAngleZ < -15 -> "senyum dan miring kiri"
                         leftEyeOpenProbability < 0.4 && face.headEulerAngleZ > 15 -> "tutup mata kanan dan miring kanan"
                         rightEyeOpenProbability < 0.4 && face.headEulerAngleZ < -15 -> "tutup mata kiri dan miring kiri"
                         yawAngle > 20 -> "hadap kiri"

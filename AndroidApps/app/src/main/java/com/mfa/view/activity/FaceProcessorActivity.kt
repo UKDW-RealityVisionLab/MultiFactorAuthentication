@@ -83,10 +83,10 @@ class FaceProcessorActivity : AppCompatActivity() {
 
 
     private val allExpressions = listOf(
-        "senyum dan angkat kepala", "tutup mata kiri dan miring kanan",
-        "senyum dan kedip", "tutup mata kanan dan miring kiri",
-        "senyum dan miring kanan", "tutup mata kanan dan miring kanan",
-        "tutup mata kiri dan miring kiri", "hadap kiri",
+        "senyum dan angkat kepala", "kaget dan miring kanan",
+        "senyum dan kedip", "senyum dan miring kiri",
+        "senyum dan miring kanan", "kaget dan miring kiri",
+        "kaget", "hadap kiri",
         "hadap kanan", "angkat kepala",
         "tunduk (angguk)", "kedip dua kali",
         "miring kanan", "miring kiri",
@@ -635,7 +635,7 @@ class FaceProcessorActivity : AppCompatActivity() {
 
     private fun startExpressionTimeout() {
         cancelExpressionTimeout()
-        if (currentIndex == 0) return
+//        if (currentIndex == 0) return
 
         expressionTimeoutHandler = Handler(Looper.getMainLooper())
         expressionTimeoutRunnable = Runnable {
@@ -829,7 +829,7 @@ class FaceProcessorActivity : AppCompatActivity() {
         }
         mag1 = sqrt(mag1)
         mag2 = sqrt(mag2)
-        var recog = (product / (mag1 * mag2)) * 1.05f
+        var recog = (product / (mag1 * mag2)) * 1.2f
         if (recog > 1.0f) {
             recog = 1.0f
         }
@@ -848,27 +848,6 @@ class FaceProcessorActivity : AppCompatActivity() {
         cameraEkspresi.cameraStop()
     }
 
-    override fun onStart() {
-        super.onStart()
-        binding.expressionCommandText.visibility = View.INVISIBLE
-
-        showCustomDialog(
-            "Pemberitahuan",
-            "Mohon ikuti perintah yang diberikan",
-            "Oke",
-            R.color.green_primary
-        ) {
-            showCustomDialog(
-                "Pemberitahuan",
-                "Sebelum verifikasi, pemanasan dulu yuk!",
-                "Mulai",
-                R.color.green_primary
-            ) {
-                resetVerificationProcess() // Gunakan fungsi reset untuk konsistensi
-                binding.expressionCommandText.visibility = View.VISIBLE
-            }
-        }
-    }
 
     companion object {
         const val EXTRA_FACE_EMBEDDING = "EXTRA_FACE_EMBEDDING"
