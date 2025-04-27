@@ -79,6 +79,7 @@ class QRCodeScanActivity : AppCompatActivity() {
 
         supportActionBar?.title = "Scan qr code"
 
+
         // Check camera permission
         checkCameraPermission()
 
@@ -126,6 +127,10 @@ class QRCodeScanActivity : AppCompatActivity() {
 
             })
         })
+
+        toolbar.setNavigationOnClickListener {
+            onBackPressed() // Kembali ke halaman sebelumnya
+        }
 
         onBackPressedDispatcher.addCallback(this,object :OnBackPressedCallback(true){
             override fun handleOnBackPressed() {

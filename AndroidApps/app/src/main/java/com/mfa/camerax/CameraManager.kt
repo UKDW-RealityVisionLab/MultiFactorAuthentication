@@ -7,6 +7,9 @@ import android.graphics.Bitmap
 import android.graphics.RectF
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
+import android.view.MotionEvent
+import android.view.ScaleGestureDetector
 import androidx.camera.core.*
 import androidx.camera.core.ImageCapture.OnImageCapturedCallback
 import androidx.camera.lifecycle.ProcessCameraProvider
@@ -41,28 +44,53 @@ class CameraManager(
     private lateinit var cameraSelector: CameraSelector
     var flipX: Boolean = false
 
+    private var zoomRatio = 1f  // Initial zoom ratio
+
+    private lateinit var scaleGestureDetector: ScaleGestureDetector
+    private var cameraControl: CameraControl? = null
+    fun onTouchEvent(event: MotionEvent) {
+        scaleGestureDetector.onTouchEvent(event)
+    }
+
+
+    private fun handlePinchZoom(scaleFactor: Float) {
+        zoomRatio *= scaleFactor
+        // Pastikan zoom ratio berada dalam rentang yang valid (1x sampai max zoom)
+        zoomRatio = zoomRatio.coerceIn(1f, camera.cameraInfo.zoomState.value?.maxZoomRatio ?: 1f)
+
+        // Terapkan zoom pada camera
+        cameraControl?.setZoomRatio(zoomRatio)
+        Log.d("Zoom", "Setting zoom ratio to: $zoomRatio")
+    }
+
+
     fun cameraStart() {
         val cameraProcessProvider = ProcessCameraProvider.getInstance(context)
-        //After requesting a CameraProvider, verify that its initialization succeeded when the view is created.
         cameraProcessProvider.addListener(
             {
                 // Camera provider is now guaranteed to be available
                 cameraProvider = cameraProcessProvider.get()
 
-                // Choose the camera by requiring a lens facing
+                // Pilih kamera dengan lens facing yang diperlukan
                 cameraSelector = CameraSelector.Builder()
                     .requireLensFacing(cameraOption)
                     .build()
-                //clear prev usecase binding
+
+                // Clear prev usecase binding
                 cameraProvider.unbindAll()
 
                 bindPreviewUseCase()
                 bindImageCaptureUseCase()
                 bindImageAnalysisUseCase()
+
+                // Mengakses cameraControl setelah kamera terikat
+                cameraControl = camera.cameraControl
+                Log.d("CameraControl", "cameraControl initialized: ${cameraControl != null}")
             },
             ContextCompat.getMainExecutor(context)
         )
     }
+
 
     private fun bindPreviewUseCase() {
         /*            camera = cameraProvider.bindToLifecycle(
@@ -176,8 +204,33 @@ class CameraManager(
         fun onTakeImageStart()
     }
 
+    init {
+        scaleGestureDetector = ScaleGestureDetector(context, object : ScaleGestureDetector.OnScaleGestureListener {
+            override fun onScale(detector: ScaleGestureDetector): Boolean {
+                // Ambil scale factor dari gesture detector
+
+                val scaleFactor = detector.scaleFactor
+                Log.d("Zoom", "Scale factor: $scaleFactor")
+                handlePinchZoom(scaleFactor)
+                return true
+            }
+
+            override fun onScaleBegin(detector: ScaleGestureDetector): Boolean {
+                // Tidak perlu implementasi khusus untuk scale begin, bisa langsung return true
+                return true
+            }
+
+            override fun onScaleEnd(detector: ScaleGestureDetector) {
+                // Tidak perlu implementasi khusus untuk scale end
+            }
+        })
+
+    }
+
+
     companion object {
         private const val TAG: String = "CameraManager"
         var cameraOption: Int = CameraSelector.LENS_FACING_FRONT
     }
+
 }

@@ -106,6 +106,15 @@ class FaceProcessorActivity : AppCompatActivity(), CameraManager.OnTakeImageCall
         askCameraPermission()
         buttonClicks()
 
+        showInstructionDialog()
+        toolbar.setNavigationOnClickListener {
+            onBackPressed() // Kembali ke halaman sebelumnya
+        }
+        binding.viewCameraPreview.setOnTouchListener { _, event ->
+            cameraManager.onTouchEvent(event)
+            true
+        }
+
         // Handle back button press
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
@@ -453,6 +462,32 @@ class FaceProcessorActivity : AppCompatActivity(), CameraManager.OnTakeImageCall
                 }
             }
         }
+    }
+    private fun showInstructionDialog() {
+        val dialog = Dialog(this).apply {
+            setCancelable(false)
+            setContentView(R.layout.custom_alert_dialog)
+            window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+
+            findViewById<TextView>(R.id.tvTitle).text = "Petunjuk ambil foto"
+            findViewById<TextView>(R.id.tvMessage).text = """
+              
+            - Ekspresi datar
+            - Tidak memakai kacamata
+            - Wajah agak dekat kamera
+        """.trimIndent()
+
+            findViewById<Button>(R.id.btnConfirm).apply {
+                text = "Oke, Mengerti"
+                setTextColor(Color.WHITE)
+                backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(context, R.color.teal_700))
+                setOnClickListener {
+                    dismiss()
+
+                }
+            }
+        }
+        dialog.show()
     }
 
     private fun calculateCosineSimilarity(vecA: FloatArray, vecB: FloatArray): Float {

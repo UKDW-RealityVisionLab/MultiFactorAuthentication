@@ -204,6 +204,7 @@ class LocationActivity : AppCompatActivity() {
         val idJadwal = intent.getStringExtra(GETJADWAL).toString()
         locationViewModel.getKelasByKodeRuang(idJadwal)
         Log.d("kode jadwal pertemuan activity :", idJadwal)
+
 //        val ruang = intent.getStringExtra(RUANG).toString()
         locationViewModel.getLokasiData.observe(this) { locationData ->
             when (locationData) {

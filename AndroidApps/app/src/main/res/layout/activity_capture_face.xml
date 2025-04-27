@@ -30,6 +30,7 @@
         android:id="@+id/viewGraphicOverlay"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        app:navigationIcon="@drawable/arrow_left"
         android:layout_marginTop="?attr/actionBarSize"/>
 
     <!-- Floating Action Buttons -->

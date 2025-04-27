@@ -17,6 +17,7 @@ import android.view.View
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
@@ -78,6 +79,59 @@ class Simpanwajah : AppCompatActivity(), CameraManager.OnTakeImageCallback {
         binding.buttonStopCamera.setOnClickListener {
             cameraManager.onTakeImage(this)
         }
+
+        onBackPressedDispatcher.addCallback(this,object : OnBackPressedCallback(true){
+            override fun handleOnBackPressed() {
+//                showCustomDialog(
+//                    title = "Pemberitahuan",
+//                    message = "Mohon selesaikan proses presensi",
+//                    buttonText = "Oke",
+//                    color = R.color.green_primary
+//                ){
+//                    onResume()
+//                }
+                val builder = android.app.AlertDialog.Builder(this@Simpanwajah,R.style.CustomAlertDialogStyle)
+                builder.setTitle("Pemberitahuan")
+                builder.setMessage("Apakah kamu ingin membatalkan presensi?")
+                builder.setPositiveButton("Iya"){ _, _ ->
+                    val back = Intent(this@Simpanwajah, HomeActivity::class.java)
+                    back.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+                    startActivity(back)
+                }
+                builder.setNegativeButton("Tidak"){ _, _->
+//                    system will handle it
+                }
+                builder.setCancelable(false)
+                builder.show()
+            }
+        })
+        showInstructionDialog()
+    }
+
+    private fun showInstructionDialog() {
+        val dialog = Dialog(this).apply {
+            setCancelable(false)
+            setContentView(R.layout.custom_alert_dialog)
+            window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+
+            findViewById<TextView>(R.id.tvTitle).text = "Petunjuk ambil foto"
+            findViewById<TextView>(R.id.tvMessage).text = """
+              
+            - Ekspresi datar
+            - Tidak memakai kacamata
+            - Wajah agak dekat kamera
+        """.trimIndent()
+
+            findViewById<Button>(R.id.btnConfirm).apply {
+                text = "Oke, Mengerti"
+                setTextColor(Color.WHITE)
+                backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(context, R.color.teal_700))
+                setOnClickListener {
+                    dismiss()
+                }
+            }
+        }
+        dialog.show()
     }
 
     private fun showLoadingDialog() {
