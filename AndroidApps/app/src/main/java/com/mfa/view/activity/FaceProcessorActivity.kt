@@ -135,17 +135,17 @@ class FaceProcessorActivity : AppCompatActivity() {
         toolbar.setNavigationOnClickListener {
             onBackPressed() // Kembali ke halaman sebelumnya
         }
-        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+        onBackPressedDispatcher.addCallback(this,object :OnBackPressedCallback(true){
             override fun handleOnBackPressed() {
 //                showCustomDialog(
 //                    title = "Pemberitahuan",
 //                    message = "Mohon selesaikan proses presensi",
 //                    buttonText = "Oke",
 //                    color = R.color.green_primary
-//                ) {
+//                ){
 //                    onResume()
 //                }
-                val builder = AlertDialog.Builder(this@FaceProcessorActivity,R.style.CustomAlertDialogStyle)
+                val builder = androidx.appcompat.app.AlertDialog.Builder(this@FaceProcessorActivity,R.style.CustomAlertDialogStyle)
                 builder.setTitle("Pemberitahuan")
                 builder.setMessage("Apakah kamu ingin membatalkan presensi?")
                 builder.setPositiveButton("Iya"){ _, _ ->

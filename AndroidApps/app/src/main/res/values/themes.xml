@@ -39,14 +39,18 @@
         <item name="android:background">@drawable/bg_red_button</item>
     </style>
 
-    <style name="CustomAlertDialogStyle" parent="ThemeOverlay.MaterialComponents.MaterialAlertDialog">
-        <item name="textAppearanceButton">@style/DialogButtonTextAppearance</item>
+    <style name="CustomAlertDialogStyle" parent="ThemeOverlay.MaterialComponents.Dialog.Alert">
+        <item name="android:background">@color/white_50</item>
+        <item name="buttonBarPositiveButtonStyle">@style/PositiveButtonStyle</item>
+        <item name="buttonBarNegativeButtonStyle">@style/NegativeButtonStyle</item>
     </style>
 
-    <style name="DialogButtonTextAppearance" parent="TextAppearance.MaterialComponents.Button">
-        <item name="android:textColor">@color/green_primary</item> <!-- Warna tombol positif -->
+    <style name="PositiveButtonStyle" parent="Widget.MaterialComponents.Button.TextButton.Dialog">
+        <item name="android:textColor">@color/green_primary</item>
     </style>
 
-
+    <style name="NegativeButtonStyle" parent="Widget.MaterialComponents.Button.TextButton.Dialog">
+        <item name="android:textColor">@color/red</item>
+    </style>
 
 </resources>

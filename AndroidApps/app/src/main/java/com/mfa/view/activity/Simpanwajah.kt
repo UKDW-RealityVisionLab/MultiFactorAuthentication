@@ -83,7 +83,7 @@ class Simpanwajah : AppCompatActivity(), CameraManager.OnTakeImageCallback {
 //        }
         showInstructionDialog()
 
-        onBackPressedDispatcher.addCallback(this,object : OnBackPressedCallback(true){
+        onBackPressedDispatcher.addCallback(this,object :OnBackPressedCallback(true){
             override fun handleOnBackPressed() {
 //                showCustomDialog(
 //                    title = "Pemberitahuan",
@@ -93,11 +93,11 @@ class Simpanwajah : AppCompatActivity(), CameraManager.OnTakeImageCallback {
 //                ){
 //                    onResume()
 //                }
-                val builder = android.app.AlertDialog.Builder(this@Simpanwajah,R.style.CustomAlertDialogStyle)
+                val builder = androidx.appcompat.app.AlertDialog.Builder(this@Simpanwajah,R.style.CustomAlertDialogStyle)
                 builder.setTitle("Pemberitahuan")
-                builder.setMessage("Apakah kamu ingin membatalkan presensi?")
+                builder.setMessage("Apakah kamu ingin membatalkan simpan wajah?")
                 builder.setPositiveButton("Iya"){ _, _ ->
-                    val back = Intent(this@Simpanwajah, HomeActivity::class.java)
+                    val back = Intent(this@Simpanwajah,HomeActivity::class.java)
                     back.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
                     startActivity(back)
                 }
@@ -372,6 +372,9 @@ class Simpanwajah : AppCompatActivity(), CameraManager.OnTakeImageCallback {
         color: Int, // warna tombol
         action: () -> Unit
     ) {
+        if (isFinishing || isDestroyed) {
+            return // Jangan tampilkan dialog jika activity sedang finishing atau destroyed
+        }
         val dialog = Dialog(this).apply {
             setCancelable(false)
             setContentView(R.layout.custom_alert_dialog)

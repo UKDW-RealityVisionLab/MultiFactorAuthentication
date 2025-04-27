@@ -90,7 +90,7 @@ class QRCodeScanActivity : AppCompatActivity() {
 //                ){
 //                    onResume()
 //                }
-                val builder = AlertDialog.Builder(this@QRCodeScanActivity,R.style.CustomAlertDialogStyle)
+                val builder = androidx.appcompat.app.AlertDialog.Builder(this@QRCodeScanActivity,R.style.CustomAlertDialogStyle)
                 builder.setTitle("Pemberitahuan")
                 builder.setMessage("Apakah kamu ingin membatalkan presensi?")
                 builder.setPositiveButton("Iya"){ _, _ ->
@@ -106,7 +106,9 @@ class QRCodeScanActivity : AppCompatActivity() {
             }
         })
 
-        supportActionBar?.title = "Scan qr code"
+
+
+    supportActionBar?.title = "Scan qr code"
 
         // Check camera permission
         checkCameraPermission()
