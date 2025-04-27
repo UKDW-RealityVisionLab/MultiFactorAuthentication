@@ -12,6 +12,7 @@
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
         android:background="@color/green_primary"
+        app:navigationIcon="@drawable/arrow_left"
         android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
         app:title="Verifikasi Wajah"
         app:titleTextColor="@android:color/white"
