@@ -357,7 +357,7 @@ class Simpanwajah : AppCompatActivity(), CameraManager.OnTakeImageCallback {
     override fun onTakeImageStart() {
 //        binding.progressBar.visibility = View.VISIBLE
         // Disable tombol capture sementara
-        binding.buttonStopCamera.isEnabled = false
+        binding.buttonStopCamera.isEnabled = true
         showLoadingDialog()
 //        val loadingDialog = LoadingDialogFragment()
 //        loadingDialog.show(supportFragmentManager, "loadingDialog")
