@@ -83,13 +83,13 @@ class FaceProcessorActivity : AppCompatActivity() {
 
 
     private val allExpressions = listOf(
-        "senyum dan angkat kepala", "kaget dan miring kanan",
-        "senyum dan kedip", "senyum dan miring kiri",
-        "senyum dan miring kanan", "kaget dan miring kiri",
+        "senyum dan angkat kepala", "kaget dan miringkan kepala ke kanan",
+        "senyum dan kedip", "senyum dan miringkan kepala ke kiri",
+        "senyum dan miringkan kepala ke kanan", "kaget dan miringkan kepala ke kiri",
         "kaget", "hadap kiri",
         "hadap kanan", "angkat kepala",
         "tunduk (angguk)", "kedip dua kali",
-        "miring kanan", "miring kiri",
+        "miringkan kepala ke kanan", "miringkan kepala ke kiri",
         "senyum", "kedip",
         "tutup mata kanan", "tutup mata kiri"
     )
@@ -126,10 +126,41 @@ class FaceProcessorActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityCaptureFaceBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         ekspresiRecognizer = EkspresiRecognizer { expression -> handleDetectedExpression(expression) }
         val toolbar: Toolbar = binding.topAppBar
         setSupportActionBar(toolbar)
+//        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        toolbar.setNavigationOnClickListener {
+            onBackPressed() // Kembali ke halaman sebelumnya
+        }
+        onBackPressedDispatcher.addCallback(this,object :OnBackPressedCallback(true){
+            override fun handleOnBackPressed() {
+//                showCustomDialog(
+//                    title = "Pemberitahuan",
+//                    message = "Mohon selesaikan proses presensi",
+//                    buttonText = "Oke",
+//                    color = R.color.green_primary
+//                ){
+//                    onResume()
+//                }
+                val builder = androidx.appcompat.app.AlertDialog.Builder(this@FaceProcessorActivity,R.style.CustomAlertDialogStyle)
+                builder.setTitle("Pemberitahuan")
+                builder.setMessage("Apakah kamu ingin membatalkan presensi?")
+                builder.setPositiveButton("Iya"){ _, _ ->
+                    val back = Intent(this@FaceProcessorActivity, PresensiActivity::class.java)
+                    back.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+                    startActivity(back)
+                }
+                builder.setNegativeButton("Tidak"){ _, _->
+//                    system will handle it
+                }
+                builder.setCancelable(false)
+                builder.show()
+            }
+        })
+
 
         faceRecognizer = FaceRecognizer(assets)
         fas = FaceAntiSpoofing(assets)
@@ -180,16 +211,16 @@ class FaceProcessorActivity : AppCompatActivity() {
         // **Pastikan ekspresi pertama muncul**
         startExpressionChallenge()  // 🔥 Tambahkan ini agar perintah pertama muncul
 
-        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
-            override fun handleOnBackPressed() {
-                showCustomDialog(
-                    title = "Pemberitahuan",
-                    message = "Mohon selesaikan proses presensi",
-                    buttonText = "Oke",
-                    color = R.color.green_primary
-                ) { onResume() }
-            }
-        })
+//        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+//            override fun handleOnBackPressed() {
+//                showCustomDialog(
+//                    title = "Pemberitahuan",
+//                    message = "Mohon selesaikan proses presensi",
+//                    buttonText = "Oke",
+//                    color = R.color.green_primary
+//                ) { onResume() }
+//            }
+//        })
     }
 
 
@@ -370,7 +401,12 @@ class FaceProcessorActivity : AppCompatActivity() {
     private fun showCompletionDialog() {
         showCustomDialog(
             "Pemberitahuan",
-            "Keren, kamu telah menyelesaikan pemanasan!",
+            """Keren kamu berhasil menyelesaikan tantangan, sebelum verifikasi wajah pastikan:
+            - Rapikan rambut
+            - Ekspresi datar
+            - Tidak memakai kacamata
+            - Wajah agak dekat kamera
+        """.trimIndent(),
             "Verifikasi wajah",
             R.color.green_primary
         ) {
@@ -465,7 +501,7 @@ class FaceProcessorActivity : AppCompatActivity() {
     private fun startFaceVerification() {
         Log.d("FaceVerification", "Mulai verifikasi wajah (5 kali auto capture)...")
         runOnUiThread {
-            binding.expressionCommandText.text = "Mohon tahan posisi hp dan wajah anda \n dalam beberapa detik..."
+            binding.expressionCommandText.text = "Tolong tahan posisi HP dan wajah Anda dengan ekspresi datar, tanpa memakai kacamata, selama beberapa detik."
             binding.imageViewPreview.visibility = View.GONE
             binding.previewView.visibility = View.VISIBLE
             binding.verifyButton.visibility = View.GONE

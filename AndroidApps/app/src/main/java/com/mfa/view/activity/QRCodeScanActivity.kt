@@ -1,6 +1,7 @@
 package com.mfa.view.activity
 
 import android.Manifest
+import android.app.AlertDialog
 import android.app.Dialog
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -75,6 +76,35 @@ class QRCodeScanActivity : AppCompatActivity() {
 
         val toolbar: Toolbar = binding.topAppBar
         setSupportActionBar(toolbar)
+//        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        toolbar.setNavigationOnClickListener {
+            onBackPressed() // Kembali ke halaman sebelumnya
+        }
+        onBackPressedDispatcher.addCallback(this,object :OnBackPressedCallback(true){
+            override fun handleOnBackPressed() {
+//                showCustomDialog(
+//                    title = "Pemberitahuan",
+//                    message = "Mohon selesaikan proses presensi",
+//                    buttonText = "Oke",
+//                    color = R.color.green_primary
+//                ){
+//                    onResume()
+//                }
+                val builder = androidx.appcompat.app.AlertDialog.Builder(this@QRCodeScanActivity,R.style.CustomAlertDialogStyle)
+                builder.setTitle("Pemberitahuan")
+                builder.setMessage("Apakah kamu ingin membatalkan presensi?")
+                builder.setPositiveButton("Iya"){ _, _ ->
+                    val back = Intent(this@QRCodeScanActivity, PresensiActivity::class.java)
+                    back.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+                    startActivity(back)
+                }
+                builder.setNegativeButton("Tidak"){ _, _->
+//                    system will handle it
+                }
+                builder.setCancelable(false)
+                builder.show()
+            }
+        })
 
         supportActionBar?.title = "Scan qr code"
 
@@ -144,18 +174,18 @@ class QRCodeScanActivity : AppCompatActivity() {
             })
         })
 
-        onBackPressedDispatcher.addCallback(this,object :OnBackPressedCallback(true){
-            override fun handleOnBackPressed() {
-                showCustomDialog(
-                    title = "Pemberitahuan",
-                    message = "Mohon selesaikan proses presensi",
-                    buttonText = "Oke",
-                    color = R.color.green_primary
-                ){
-                    onResume()
-                }
-            }
-        })
+//        onBackPressedDispatcher.addCallback(this,object :OnBackPressedCallback(true){
+//            override fun handleOnBackPressed() {
+//                showCustomDialog(
+//                    title = "Pemberitahuan",
+//                    message = "Mohon selesaikan proses presensi",
+//                    buttonText = "Oke",
+//                    color = R.color.green_primary
+//                ){
+//                    onResume()
+//                }
+//            }
+//        })
     }
 
 

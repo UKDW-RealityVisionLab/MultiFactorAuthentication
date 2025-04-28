@@ -107,18 +107,18 @@ class MlKitEkspresiAnalyzer(private val onExpressionDetected: (String) -> Unit) 
 
 
                     val expression = when {
-                        mouthOpen && smilingProbability < 0.3f && face.headEulerAngleZ > 15 -> "kaget dan miring kanan"
-                        mouthOpen && smilingProbability < 0.3f && face.headEulerAngleZ < -15 -> "kaget dan miring kiri"
+                        mouthOpen && smilingProbability < 0.3f && face.headEulerAngleZ > 15 -> "kaget dan miringkan kepala ke kanan"
+                        mouthOpen && smilingProbability < 0.3f && face.headEulerAngleZ < -15 -> "kaget dan miringkan kepala ke kiri"
                         mouthOpen && smilingProbability < 0.3f &&
                                 leftEyeOpenProbability > 0.6f && rightEyeOpenProbability > 0.6f -> "kaget"
                         smilingProbability > 0.5 && pitchAngle > 15 -> "senyum dan angkat kepala"
-                        rightEyeOpenProbability < 0.4 && face.headEulerAngleZ > 15 -> "tutup mata kiri dan miring kanan"
+                        rightEyeOpenProbability < 0.4 && face.headEulerAngleZ > 15 -> "tutup mata kiri dan miringkan kepala ke kanan"
                         smilingProbability > 0.5 && eyeClosed -> "senyum dan kedip"
-                        leftEyeOpenProbability < 0.4 && face.headEulerAngleZ < -15 -> "tutup mata kanan dan miring kiri"
-                        smilingProbability > 0.5 && face.headEulerAngleZ > 15 -> "senyum dan miring kanan"
-                        smilingProbability > 0.5 && face.headEulerAngleZ < -15 -> "senyum dan miring kiri"
-                        leftEyeOpenProbability < 0.4 && face.headEulerAngleZ > 15 -> "tutup mata kanan dan miring kanan"
-                        rightEyeOpenProbability < 0.4 && face.headEulerAngleZ < -15 -> "tutup mata kiri dan miring kiri"
+                        leftEyeOpenProbability < 0.4 && face.headEulerAngleZ < -15 -> "tutup mata kanan dan miringkan kepala ke kiri"
+                        smilingProbability > 0.5 && face.headEulerAngleZ > 15 -> "senyum dan miringkan kepala ke kanan"
+                        smilingProbability > 0.5 && face.headEulerAngleZ < -15 -> "senyum dan miringkan kepala ke kiri"
+                        leftEyeOpenProbability < 0.4 && face.headEulerAngleZ > 15 -> "tutup mata kanan dan miringkan kepala ke kanan"
+                        rightEyeOpenProbability < 0.4 && face.headEulerAngleZ < -15 -> "tutup mata kiri dan miringkan kepala ke kiri"
                         yawAngle > 20 -> "hadap kiri"
                         yawAngle < -20 -> "hadap kanan"
                         pitchAngle > 15 -> "angkat kepala"
