@@ -83,13 +83,13 @@ class FaceProcessorActivity : AppCompatActivity() {
 
 
     private val allExpressions = listOf(
-        "senyum dan angkat kepala", "kaget dan miring kanan",
-        "senyum dan kedip", "senyum dan miring kiri",
-        "senyum dan miring kanan", "kaget dan miring kiri",
+        "senyum dan angkat kepala", "kaget dan miringkan kepala ke kanan",
+        "senyum dan kedip", "senyum dan miringkan kepala ke kiri",
+        "senyum dan miringkan kepala ke kanan", "kaget dan miringkan kepala ke kiri",
         "kaget", "hadap kiri",
         "hadap kanan", "angkat kepala",
         "tunduk (angguk)", "kedip dua kali",
-        "miring kanan", "miring kiri",
+        "miringkan kepala ke kanan", "miringkan kepala ke kiri",
         "senyum", "kedip",
         "tutup mata kanan", "tutup mata kiri"
     )
