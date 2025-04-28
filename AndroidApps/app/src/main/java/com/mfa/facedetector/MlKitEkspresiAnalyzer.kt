@@ -127,8 +127,8 @@ class MlKitEkspresiAnalyzer(private val onExpressionDetected: (String) -> Unit) 
                             blinkCount = 0
                             "kedip dua kali"
                         }
-                        face.headEulerAngleZ > 15 -> "miring kanan"
-                        face.headEulerAngleZ < -15 -> "miring kiri"
+                        face.headEulerAngleZ > 15 -> "miringkan kepala ke kanan"
+                        face.headEulerAngleZ < -15 -> "miringkan kepala ke kiri"
                         smilingProbability > 0.5 -> "senyum"
                         eyeClosed -> "kedip"
                         leftEyeOpenProbability < 0.4 -> "tutup mata kanan"
