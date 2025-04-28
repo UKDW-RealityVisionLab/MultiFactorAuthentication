@@ -311,7 +311,7 @@ class Simpanwajah : AppCompatActivity(), CameraManager.OnTakeImageCallback {
 
             findViewById<TextView>(R.id.tvTitle).text = "Petunjuk auto ambil foto"
             findViewById<TextView>(R.id.tvMessage).text = """
-              
+            - Rapikan rambut
             - Ekspresi datar
             - Tidak memakai kacamata
             - Wajah agak dekat kamera

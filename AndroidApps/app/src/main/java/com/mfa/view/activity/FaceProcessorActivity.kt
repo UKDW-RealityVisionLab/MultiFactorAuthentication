@@ -401,7 +401,12 @@ class FaceProcessorActivity : AppCompatActivity() {
     private fun showCompletionDialog() {
         showCustomDialog(
             "Pemberitahuan",
-            "Keren, kamu telah menyelesaikan pemanasan!",
+            """Keren kamu berhasil menyelesaikan tantangan, sebelum verifikasi wajah pastikan:
+            - Rapikan rambut
+            - Ekspresi datar
+            - Tidak memakai kacamata
+            - Wajah agak dekat kamera
+        """.trimIndent(),
             "Verifikasi wajah",
             R.color.green_primary
         ) {

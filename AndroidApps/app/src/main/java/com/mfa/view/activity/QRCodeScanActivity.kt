@@ -106,9 +106,7 @@ class QRCodeScanActivity : AppCompatActivity() {
             }
         })
 
-
-
-    supportActionBar?.title = "Scan qr code"
+        supportActionBar?.title = "Scan qr code"
 
         // Check camera permission
         checkCameraPermission()
