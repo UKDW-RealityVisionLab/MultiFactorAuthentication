@@ -66,6 +66,10 @@ class Simpanwajah : AppCompatActivity(), CameraManager.OnTakeImageCallback {
             this
         )
 
+        toolbar.setNavigationOnClickListener {
+            onBackPressed() // Kembali ke halaman sebelumnya
+        }
+
         binding.buttonTurnCamera.setOnClickListener {
             cameraManager.changeCamera()
         }
