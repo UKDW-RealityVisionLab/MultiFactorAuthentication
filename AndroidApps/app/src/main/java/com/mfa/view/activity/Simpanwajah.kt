@@ -79,6 +79,10 @@ class Simpanwajah : AppCompatActivity(), CameraManager.OnTakeImageCallback {
         binding.buttonStopCamera.setOnClickListener {
             cameraManager.onTakeImage(this)
         }
+        binding.viewCameraPreview.setOnTouchListener { _, event ->
+            cameraManager.onTouchEvent(event)
+            true
+        }
 
         onBackPressedDispatcher.addCallback(this,object : OnBackPressedCallback(true){
             override fun handleOnBackPressed() {
@@ -116,7 +120,7 @@ class Simpanwajah : AppCompatActivity(), CameraManager.OnTakeImageCallback {
 
             findViewById<TextView>(R.id.tvTitle).text = "Petunjuk ambil foto"
             findViewById<TextView>(R.id.tvMessage).text = """
-              
+            - Rapikan rambut 
             - Ekspresi datar
             - Tidak memakai kacamata
             - Wajah agak dekat kamera
