@@ -110,7 +110,7 @@ class MlKitEkspresiAnalyzer(private val onExpressionDetected: (String) -> Unit) 
                         mouthOpen && smilingProbability < 0.3f && face.headEulerAngleZ > 15 -> "kaget dan miringkan kepala ke kanan"
                         mouthOpen && smilingProbability < 0.3f && face.headEulerAngleZ < -15 -> "kaget dan miringkan kepala ke kiri"
                         mouthOpen && smilingProbability < 0.3f &&
-                                leftEyeOpenProbability > 0.6f && rightEyeOpenProbability > 0.6f -> "kaget"
+                                leftEyeOpenProbability > 0.6f && rightEyeOpenProbability > 0.6f -> "kaget (buka mulut)"
                         smilingProbability > 0.5 && pitchAngle > 15 -> "senyum dan angkat kepala"
                         rightEyeOpenProbability < 0.4 && face.headEulerAngleZ > 15 -> "tutup mata kiri dan miringkan kepala ke kanan"
                         smilingProbability > 0.5 && eyeClosed -> "senyum dan kedip"
