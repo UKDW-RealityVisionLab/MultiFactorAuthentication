@@ -72,7 +72,7 @@ class FaceProcessorActivity : AppCompatActivity() {
     private lateinit var binding: ActivityCaptureFaceBinding
     private lateinit var cameraEkspresi: CameraEkspresi
     private lateinit var ekspresiRecognizer: EkspresiRecognizer
-    private val EMBEDDING_THRESHOLD = 0.8f
+    private val EMBEDDING_THRESHOLD = 0.6f
     private lateinit var profileViewModel: ProfileViewModel
     private var expressionTimeoutHandler: Handler? = null
     private var expressionTimeoutRunnable: Runnable? = null
