@@ -72,11 +72,12 @@ class FaceProcessorActivity : AppCompatActivity() {
     private lateinit var binding: ActivityCaptureFaceBinding
     private lateinit var cameraEkspresi: CameraEkspresi
     private lateinit var ekspresiRecognizer: EkspresiRecognizer
-    private val EMBEDDING_THRESHOLD = 0.8f
+    private val EMBEDDING_THRESHOLD = 0.6f
     private lateinit var profileViewModel: ProfileViewModel
     private var expressionTimeoutHandler: Handler? = null
     private var expressionTimeoutRunnable: Runnable? = null
     private val MAX_EXPRESSION_TIME_MS = 7000L
+    private val STATIC_EXPRESSION_TIME_MS = 5000L
     private var isCameraChanging = false
     private var pausedExpression: String? = null
     private var pausedIndex = 0
@@ -86,7 +87,16 @@ class FaceProcessorActivity : AppCompatActivity() {
         "senyum dan angkat kepala", "kaget dan miringkan kepala ke kanan",
         "senyum dan kedip", "senyum dan miringkan kepala ke kiri",
         "senyum dan miringkan kepala ke kanan", "kaget dan miringkan kepala ke kiri",
-        "kaget", "hadap kiri",
+        "kaget (buka mulut)", "hadap kiri",
+        "hadap kanan", "angkat kepala",
+        "tunduk (angguk)", "kedip dua kali",
+        "miringkan kepala ke kanan", "miringkan kepala ke kiri",
+        "senyum", "kedip",
+        "tutup mata kanan", "tutup mata kiri"
+    )
+
+    private val staticExpressions = listOf(
+        "kaget (buka mulut)", "hadap kiri",
         "hadap kanan", "angkat kepala",
         "tunduk (angguk)", "kedip dua kali",
         "miringkan kepala ke kanan", "miringkan kepala ke kiri",
@@ -404,7 +414,6 @@ class FaceProcessorActivity : AppCompatActivity() {
             """Keren kamu berhasil menyelesaikan tantangan, sebelum verifikasi wajah pastikan:
             - Rapikan rambut
             - Ekspresi datar
-            - Tidak memakai kacamata
             - Wajah agak dekat kamera
         """.trimIndent(),
             "Verifikasi wajah",
@@ -501,7 +510,7 @@ class FaceProcessorActivity : AppCompatActivity() {
     private fun startFaceVerification() {
         Log.d("FaceVerification", "Mulai verifikasi wajah (5 kali auto capture)...")
         runOnUiThread {
-            binding.expressionCommandText.text = "Tolong tahan posisi HP dan wajah Anda dengan ekspresi datar, tanpa memakai kacamata, selama beberapa detik."
+            binding.expressionCommandText.text = "Tolong tahan posisi HP dan wajah Anda dengan ekspresi datar, selama beberapa detik."
             binding.imageViewPreview.visibility = View.GONE
             binding.previewView.visibility = View.VISIBLE
             binding.verifyButton.visibility = View.GONE
@@ -672,7 +681,11 @@ class FaceProcessorActivity : AppCompatActivity() {
     private fun startExpressionTimeout() {
         cancelExpressionTimeout()
 //        if (currentIndex == 0) return
-
+        val timeout = if (selectedExpressions[currentIndex] in staticExpressions) {
+            STATIC_EXPRESSION_TIME_MS  // 3 detik untuk ekspresi statis
+        } else {
+            MAX_EXPRESSION_TIME_MS  // 7 detik untuk ekspresi dinamis
+        }
         expressionTimeoutHandler = Handler(Looper.getMainLooper())
         expressionTimeoutRunnable = Runnable {
             timeoutWarningCount++
@@ -701,7 +714,7 @@ class FaceProcessorActivity : AppCompatActivity() {
                 }
             }
         }
-        expressionTimeoutHandler?.postDelayed(expressionTimeoutRunnable!!, MAX_EXPRESSION_TIME_MS)
+        expressionTimeoutHandler?.postDelayed(expressionTimeoutRunnable!!, timeout)
         Log.d("FaceProcessor", "Timeout dimulai untuk tahap ekspresi ke-${currentIndex + 1}")
     }
 
