@@ -473,7 +473,6 @@ class FaceProcessorActivity : AppCompatActivity(), CameraManager.OnTakeImageCall
             findViewById<TextView>(R.id.tvMessage).text = """
             - Rapikan rambut
             - Ekspresi datar
-            - Tidak memakai kacamata
             - Wajah agak dekat kamera
         """.trimIndent()
 
