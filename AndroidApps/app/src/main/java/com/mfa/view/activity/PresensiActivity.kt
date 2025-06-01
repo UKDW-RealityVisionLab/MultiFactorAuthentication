@@ -1,12 +1,18 @@
 package com.mfa.view.activity
 
+import android.app.Dialog
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.res.ColorStateList
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.location.Location
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.widget.Button
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
@@ -35,6 +41,9 @@ import com.mfa.view_model.LocationViewModel
 import com.mfa.view_model.ProfileViewModel
 import com.mfa.view_model.ViewModelFactory
 import kotlinx.coroutines.launch
+import java.time.LocalDate
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 
 class PresensiActivity : AppCompatActivity() {
     private lateinit var binding: ActivityPresensiBinding
@@ -100,18 +109,107 @@ class PresensiActivity : AppCompatActivity() {
 
         // Setup onClickListener for "Scan QR" button
         binding.btnPresensi.setOnClickListener {
-//            if (adapter.isvalid == true) {
-                // User is inside the classroom, allow QR code scanning
+//            val waktuText = binding.waktu.text.toString()
+//            val tglText = binding.tgl.text.toString()
+//            cekPresensi(tglText,waktuText)
+
                 val intent = Intent(this, LocationActivity::class.java)
                 val jadwal= idJadwal.substringBefore("grup").trim()
                 intent.putExtra(LocationActivity.GETJADWAL,"$jadwal")
                 startActivity(intent)
-//            } else {
-//                alertDialog(title="Pemberitahuan", text = "Anda berada di luar kelas\nsilahkan masuk kelas untuk presensi")
-//            }
+
+
         }
 
     }
+    private fun cekPresensi(tglText: String, waktuText: String) {
+        val idJadwal = intent.getStringExtra(GETJADWAL).toString()
+        try {
+            // Ambil tanggal dari binding text
+            val tanggal = tglText.substringAfter(":").trim()
+            val waktuStart = waktuText.substringAfter(":").substringBefore("-").trim()
+            val waktuEnd = waktuText.substringAfter("-").trim()
+
+            // Format
+            val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+            val timeFormatter = DateTimeFormatter.ofPattern("HH:mm")
+
+            val tanggalDariTeks = LocalDate.parse(tanggal, dateFormatter)
+            val waktuMulai = LocalTime.parse(waktuStart, timeFormatter)
+            val waktuSelesai = LocalTime.parse(waktuEnd, timeFormatter)
+
+            // Sekarang
+            val tanggalSekarang = LocalDate.now()
+            val waktuSekarang = LocalTime.now()
+            Log.d("waktu saat ini, waktu mulai, selesai", "$waktuSekarang $waktuStart $waktuEnd")
+            if (tanggalSekarang != tanggalDariTeks) {
+                Log.d("Presensi", "Tidak sesuai: tanggal beda")
+                showCustomDialog("Pemberitahuan","Bukan sesi anda!!"
+                    , buttonText = "Oke",
+                    color = R.color.red,
+                    action = {
+                    }
+                )
+            } else if (waktuSekarang.isBefore(waktuMulai)) {
+                Log.d("Presensi", "Tidak sesuai: belum masuk waktu presensi")
+                showCustomDialog("Pemberitahuan","Bukan sesi anda!!"
+                    , buttonText = "Oke",
+                    color = R.color.red,
+                    action = {
+                    }
+                )
+            } else if (waktuSekarang.isAfter(waktuSelesai)) {
+                Log.d("Presensi", "Tidak sesuai: sudah lewat waktu presensi")
+                showCustomDialog("Pemberitahuan","Bukan sesi anda!!"
+                    , buttonText = "Oke",
+                    color = R.color.red,
+                    action = {
+                    }
+                )
+            } else {
+                Log.d("Presensi", "Presensi valid! Bisa lanjut")
+                val intent = Intent(this, LocationActivity::class.java)
+                val jadwal= idJadwal.substringBefore("grup").trim()
+                intent.putExtra(LocationActivity.GETJADWAL,"$jadwal")
+                startActivity(intent)
+            }
+
+        } catch (e: Exception) {
+            Log.e("Presensi", "Gagal parsing waktu/tanggal: ${e.message}")
+        }
+    }
+
+    private fun showCustomDialog(
+        title: String,
+        message: String,
+        buttonText: String,
+        color: Int, // warna tombol
+        action: () -> Unit
+    ) {
+        val dialog = Dialog(this).apply {
+            setCancelable(false)
+            setContentView(R.layout.custom_alert_dialog)
+            window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+
+            findViewById<TextView>(R.id.tvTitle).text = title
+            findViewById<TextView>(R.id.tvMessage).text = message
+            findViewById<Button>(R.id.btnConfirm).apply {
+                text = buttonText
+                setTextColor(Color.WHITE) // Warna teks
+//                setBackgroundColor(color)
+                val buttonColor = ContextCompat.getColor(context, color)
+                backgroundTintList = ColorStateList.valueOf(buttonColor) // Warna latar
+                setOnClickListener {
+                    action()
+                    dismiss()
+                }
+            }
+        }
+        dialog.show()
+    }
+
+
+
 
     fun alertDialog(title:String,text:String){
         val builder = AlertDialog.Builder(this)
