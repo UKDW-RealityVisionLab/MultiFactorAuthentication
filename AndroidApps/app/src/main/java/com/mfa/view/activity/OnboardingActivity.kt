@@ -32,12 +32,15 @@
         private lateinit var viewPager: ViewPager2
         private lateinit var nextButton: Button
         private lateinit var indicator: SpringDotsIndicator
+
+        // start login process dan membuat state loginnya
         private val signInLauncher = registerForActivityResult(
             FirebaseAuthUIActivityResultContract()
         ) { result ->
             this.onSignInResult(result)
         }
         private lateinit var authStateListener: FirebaseAuth.AuthStateListener
+
         private val TAG = "OnboardingScreenActivity"
 
         override fun onCreate(savedInstanceState: Bundle?) {
@@ -47,6 +50,8 @@
             viewPager = findViewById(R.id.viewPager)
             nextButton = findViewById(R.id.btnNext)
             indicator = findViewById(R.id.dotsIndicator)
+
+//            user yang login
             authStateListener = FirebaseAuth.AuthStateListener { firebaseAuth ->
                 val user = firebaseAuth.currentUser
                 if (user != null) {
@@ -55,6 +60,8 @@
                     Log.d(TAG, "User is signed out")
                 }
             }
+
+//            attach isi untuk fragmentnya
             val fragments = listOf(
                 OnboardingFragment.newInstance(
                     1,
@@ -107,10 +114,11 @@
         }
         override fun onStop() {
             super.onStop()
-            // Detach AuthStateListener
+            // menghapus  AuthStateListener
             FirebaseAuth.getInstance().removeAuthStateListener(authStateListener)
         }
 
+//        Menentukan provider autentikasi menggunakan google
         private fun createSignInIntent() {
             // [START auth_fui_create_intent]
             // Choose authentication providers
@@ -125,9 +133,11 @@
             signInLauncher.launch(signInIntent)
         }
 
+//        membuat tampilan login menggunakan firebase
         private fun onSignInResult(result: FirebaseAuthUIAuthenticationResult) {
             val response = result.idpResponse
 
+//          validasi saat login
             if (response != null && response.error != null) {
                 val errorMessage = when (response.error?.errorCode) {
                     ErrorCodes.NO_NETWORK -> "Tidak ada koneksi internet. Periksa jaringan Anda."
@@ -143,6 +153,7 @@
                     Log.d("FIREBASE onboarding", "onSignInResult: ${user.email}")
                     Email.email = user.email
 
+//                    melihat apakah ada data embedding user di firebase jika ada ke home dan jika tidak ke nophoto
                     val embeddingReference = Utils.getFirebaseEmbedding(user)
                     embeddingReference?.addListenerForSingleValueEvent(object : ValueEventListener {
                         override fun onDataChange(snapshot: DataSnapshot) {
