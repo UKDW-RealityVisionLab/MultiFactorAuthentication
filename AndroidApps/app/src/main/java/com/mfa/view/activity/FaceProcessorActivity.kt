@@ -316,7 +316,7 @@ class FaceProcessorActivity : AppCompatActivity() {
         val score = fas.antiSpoofing(faceBitmap)
         val end = System.currentTimeMillis()
         Log.d(TAG, "Spoof detection process time: ${end - start} ms")
-
+        Log.d("Anti Spoof Score", "$score")
         return score < FaceAntiSpoofing.THRESHOLD
     }
 
@@ -467,7 +467,7 @@ class FaceProcessorActivity : AppCompatActivity() {
             return
         }
 
-        if (antiSpoofDetection(bitmap)) {
+        if (!antiSpoofDetection(bitmap)) {
             Log.e("Anti Spoofing", "Spoofing Gagal")
             return
         }
