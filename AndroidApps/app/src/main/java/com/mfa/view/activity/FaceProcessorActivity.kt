@@ -47,6 +47,7 @@ import com.mfa.camerax.CameraManager
 import com.mfa.databinding.ActivityCaptureFaceBinding
 import com.mfa.databinding.DialogAddFaceBinding
 import com.mfa.di.Injection
+import com.mfa.facedetector.BlurDetector
 import com.mfa.facedetector.EkspresiRecognizer
 import com.mfa.facedetector.FaceAntiSpoofing
 import com.mfa.facedetector.FaceRecognizer
@@ -98,7 +99,7 @@ class FaceProcessorActivity : AppCompatActivity() {
     private val selectedExpressions = allExpressions.shuffled().take(5).toMutableList()
     private var currentIndex = 0
     private fun startExpressionChallenge() {
-        if (currentIndex < selectedExpressions.size) {
+        if (currentIndex < selectedExpressions.size && false) {
             val currentExpression = selectedExpressions[currentIndex]
             Log.d("FaceProcessor", "Mulai tantangan ekspresi: $currentExpression") // 🔥 Log ekspresi
             binding.expressionCommandText.text = "Yuk coba berekspresi: $currentExpression"
@@ -251,7 +252,6 @@ class FaceProcessorActivity : AppCompatActivity() {
         }
     }
 
-
     val handler = Handler(Looper.getMainLooper())
     fun stop_handler(){
         //handler.removeCallbacks(runnableDetectionHandler)
@@ -303,11 +303,15 @@ class FaceProcessorActivity : AppCompatActivity() {
     //usage because photo cannot make an expression
     private fun antiSpoofDetection(faceBitmap: Bitmap): Boolean {
         val laplaceScore: Int = fas.laplacian(faceBitmap)
-        if (laplaceScore < FaceAntiSpoofing.LAPLACIAN_THRESHOLD) {
+        val blurDetector = BlurDetector()
+//        if (laplaceScore < FaceAntiSpoofing.LAPLACIAN_THRESHOLD) {
+//            Toast.makeText(this, "Image too blurry!", Toast.LENGTH_LONG).show()
+//            return false
+//        }
+        if (blurDetector.isBlurry(faceBitmap)) {
             Toast.makeText(this, "Image too blurry!", Toast.LENGTH_LONG).show()
             return false
         }
-
         val start = System.currentTimeMillis()
         val score = fas.antiSpoofing(faceBitmap)
         val end = System.currentTimeMillis()
@@ -352,9 +356,6 @@ class FaceProcessorActivity : AppCompatActivity() {
             Log.d("FaceVerification", "❌ Current index : $currentIndex Ekspresi tidak cocok: $expression, menunggu ekspresi: ${selectedExpressions[currentIndex]}")
         }
     }
-
-
-
 
     private fun handleFifthExpressionMatch() {
         Log.d("FaceVerification", "🎉 Ekspresi ke-5 cocok! Menyiapkan capture...")
@@ -448,6 +449,7 @@ class FaceProcessorActivity : AppCompatActivity() {
         }
 
         var processedBitmap = bitmap
+
         Log.d("FaceVerification", "Memproses gambar untuk ekstraksi embedding: ${processedBitmap.width}x${processedBitmap.height}")
         // Flip jika menggunakan kamera depan
         if (CameraManager.cameraOption == CameraSelector.LENS_FACING_FRONT) {
@@ -462,6 +464,11 @@ class FaceProcessorActivity : AppCompatActivity() {
         // Cek apakah gambar sudah siap untuk ekstraksi embedding
         if (processedBitmap.width == 0 || processedBitmap.height == 0) {
             Log.e("FaceVerification", "Ukuran gambar yang diproses tidak valid!")
+            return
+        }
+
+        if (antiSpoofDetection(bitmap)) {
+            Log.e("Anti Spoofing", "Spoofing Gagal")
             return
         }
 
