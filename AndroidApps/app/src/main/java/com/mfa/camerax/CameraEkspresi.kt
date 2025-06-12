@@ -20,6 +20,7 @@ import com.google.mlkit.vision.face.Face
 import com.google.mlkit.vision.face.FaceDetection
 import com.google.mlkit.vision.face.FaceDetector
 import com.google.mlkit.vision.face.FaceDetectorOptions
+import com.mfa.camerax.CameraManager.Companion.cameraOption
 import com.mfa.facedetector.EkspresiRecognizer
 import com.mfa.facedetector.MlKitEkspresiAnalyzer
 import com.mfa.utils.BitmapUtils
@@ -40,6 +41,14 @@ class CameraEkspresi(
     private lateinit var imageAnalyzer: MlKitEkspresiAnalyzer
     private lateinit var ekspresiRecognizer: EkspresiRecognizer
     private var detection_enable = true
+    var flipX: Boolean = false
+
+    private var onCameraReady: (() -> Unit)? = null
+
+    fun setOnCameraReadyListener(listener: () -> Unit) {
+        this.onCameraReady = listener
+    }
+
     val faceDetector: FaceDetector by lazy {
         val options = FaceDetectorOptions.Builder()
             .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_FAST)
@@ -64,7 +73,7 @@ class CameraEkspresi(
             {
                 cameraProvider = cameraProviderFuture.get()
                 val cameraSelector = CameraSelector.Builder()
-                    .requireLensFacing(CameraSelector.LENS_FACING_FRONT)
+                    .requireLensFacing(cameraOption)  // Use the cameraOption variable here
                     .build()
 
                 cameraProvider.unbindAll()
@@ -99,9 +108,11 @@ class CameraEkspresi(
     }
 
     private fun bindImageAnalysisUseCase(cameraSelector: CameraSelector) {
+        // Pastikan analyzer baru dibuat setiap kali kamera diubah
         imageAnalyzer = MlKitEkspresiAnalyzer { expression ->
-            onExpressionDetected(expression) // Send detected expression through the callback
+            onExpressionDetected(expression)
         }
+
         val imageAnalysis = ImageAnalysis.Builder()
             .setTargetResolution(Size(1280, 720))
             .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
@@ -109,8 +120,10 @@ class CameraEkspresi(
 
         imageAnalysis.setAnalyzer(cameraExecutor, imageAnalyzer)
         cameraProvider.bindToLifecycle(lifecycleOwner, cameraSelector, imageAnalysis)
-    }
 
+        // Panggil callback ketika kamera siap
+        onCameraReady?.invoke()
+    }
     @androidx.annotation.OptIn(ExperimentalGetImage::class)
     private fun getBitmapFromImageProxy(imageProxy: ImageProxy): Bitmap? {
         val mediaImage = imageProxy.image ?: return null
@@ -134,6 +147,7 @@ class CameraEkspresi(
             imageProxy.close()
         }
     }
+
 
     private fun rotateBitmap(source: Bitmap, degrees: Float): Bitmap {
         val matrix = Matrix().apply {
@@ -300,6 +314,32 @@ class CameraEkspresi(
         cameraExecutor.shutdown()
     }
 
+    // In CameraEkspresi.kt
+    fun changeCamera(): Boolean {
+        try {
+            // Save current state
+            val previousCameraOption = cameraOption
+
+            // Stop current camera
+            cameraStop()
+
+            // Toggle camera option
+            cameraOption = if (cameraOption == CameraSelector.LENS_FACING_BACK) {
+                CameraSelector.LENS_FACING_FRONT
+            } else {
+                CameraSelector.LENS_FACING_BACK
+            }
+
+            flipX = (cameraOption == CameraSelector.LENS_FACING_FRONT)
+
+            // Restart with new camera
+            cameraStart()
+            return true
+        } catch (e: Exception) {
+            Log.e(TAG, "Error changing camera: ${e.message}")
+            return false
+        }
+    }
     interface OnTakeImageCallback {
         //fun onTakeBitmap(bitmap:Bitmap?)
         fun onTakeImageSuccess(bitmap: Bitmap?)

@@ -126,14 +126,30 @@ class Utils {
             return dataImage
         }
 
-        fun setFirebaseEmbedding(embedingFloatList: List<String> ){
-            val mdatabase = FirebaseDatabase.getInstance().reference
-            val user = FirebaseAuth.getInstance().currentUser
-            val userName = user!!.uid + "_" + user.displayName!!.replace(" ", "")
-            //overwrites existing records instead of appending them
-            mdatabase.child("newfaceantispooflog").child(userName)
-                .child("faceEmbeddings")
-                .setValue(embedingFloatList)
+        fun setFirebaseEmbedding(embeddingFloatList: List<String>) {
+            try {
+                val user = FirebaseAuth.getInstance().currentUser
+                if (user == null) {
+                    Log.e("FirebaseEmbedding", "User not logged in")
+                    return
+                }
+
+                val userName = user.uid + "_" + (user.displayName ?: "unknown").replace(" ", "")
+                val database = FirebaseDatabase.getInstance().reference
+
+                database.child("newfaceantispooflog")
+                    .child(userName)
+                    .child("faceEmbeddings")
+                    .setValue(embeddingFloatList)
+                    .addOnSuccessListener {
+                        Log.d("FirebaseEmbedding", "Embeddings saved successfully")
+                    }
+                    .addOnFailureListener { e ->
+                        Log.e("FirebaseEmbedding", "Failed to save embeddings", e)
+                    }
+            } catch (e: Exception) {
+                Log.e("FirebaseEmbedding", "Error saving embeddings", e)
+            }
         }
 
         /**

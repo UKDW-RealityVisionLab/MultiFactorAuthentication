@@ -1,6 +1,7 @@
 package com.mfa.view.activity
 
 import android.Manifest
+import android.app.AlertDialog
 import android.app.Dialog
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -75,6 +76,35 @@ class QRCodeScanActivity : AppCompatActivity() {
 
         val toolbar: Toolbar = binding.topAppBar
         setSupportActionBar(toolbar)
+//        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        toolbar.setNavigationOnClickListener {
+            onBackPressed() // Kembali ke halaman sebelumnya
+        }
+        onBackPressedDispatcher.addCallback(this,object :OnBackPressedCallback(true){
+            override fun handleOnBackPressed() {
+//                showCustomDialog(
+//                    title = "Pemberitahuan",
+//                    message = "Mohon selesaikan proses presensi",
+//                    buttonText = "Oke",
+//                    color = R.color.green_primary
+//                ){
+//                    onResume()
+//                }
+                val builder = androidx.appcompat.app.AlertDialog.Builder(this@QRCodeScanActivity,R.style.CustomAlertDialogStyle)
+                builder.setTitle("Pemberitahuan")
+                builder.setMessage("Apakah kamu ingin membatalkan presensi?")
+                builder.setPositiveButton("Iya"){ _, _ ->
+                    val back = Intent(this@QRCodeScanActivity, PresensiActivity::class.java)
+                    back.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+                    startActivity(back)
+                }
+                builder.setNegativeButton("Tidak"){ _, _->
+//                    system will handle it
+                }
+                builder.setCancelable(false)
+                builder.show()
+            }
+        })
 
         supportActionBar?.title = "Scan qr code"
 
@@ -104,37 +134,58 @@ class QRCodeScanActivity : AppCompatActivity() {
                         "Siap, Lanjut",
                         R.color.green_primary
                     ) {
-                        val intent = Intent(this@QRCodeScanActivity, FaceProcessorActivity::class.java)
-                        startActivity(intent)
+                        showCustomDialog(
+                            "Pemberitahuan",
+                            "Sebelum verifikasi, kamu akan mengikuti tantangan ekspresi wajah terlebih dahulu.",
+                            "Oke",
+                            R.color.green_primary
+                        ) {
+                            showCustomDialog(
+                                "Pemberitahuan",
+                                "Yuk, ekspresikan dirimu! Tantangan ekspresi wajah akan dimulai sebelum proses verifikasi.",
+                                "Mulai",
+                                R.color.green_primary
+                            ) {
+                                val intent = Intent(
+                                    this@QRCodeScanActivity,
+                                    FaceProcessorActivity::class.java
+                                )
+                                startActivity(intent)
+                            }
+                        }
                     }
                 }
             }, onFailure = {
-                loadingDialog.dismiss()
+                lifecycleScope.launch {
+                    delay(3000)
+                    loadingDialog.dismiss()
 
-                showCustomDialog(
-                    title = "Hasil scan QR Code",
-                    message = "Hasil QR code yang Anda scan tidak cocok dengan yang dibuat dosen di kelas Anda saat ini atau telah expired",
-                    buttonText = "Coba Lagi",
-                    color = R.color.red,
-                    action = {
-                        onResume()
-                    }
-                )
+                    showCustomDialog(
+                        title = "Hasil scan QR Code",
+                        message = "Hasil QR code yang Anda scan tidak cocok dengan yang dibuat dosen di kelas Anda saat ini atau telah expired",
+                        buttonText = "Coba Lagi",
+                        color = R.color.red,
+                        action = {
+                            onResume()
+                        }
+                    )
+                }
+
             })
         })
 
-        onBackPressedDispatcher.addCallback(this,object :OnBackPressedCallback(true){
-            override fun handleOnBackPressed() {
-                showCustomDialog(
-                    title = "Pemberitahuan",
-                    message = "Mohon selesaikan proses presensi",
-                    buttonText = "Oke",
-                    color = R.color.green_primary
-                ){
-                    onResume()
-                }
-            }
-        })
+//        onBackPressedDispatcher.addCallback(this,object :OnBackPressedCallback(true){
+//            override fun handleOnBackPressed() {
+//                showCustomDialog(
+//                    title = "Pemberitahuan",
+//                    message = "Mohon selesaikan proses presensi",
+//                    buttonText = "Oke",
+//                    color = R.color.green_primary
+//                ){
+//                    onResume()
+//                }
+//            }
+//        })
     }
 
 

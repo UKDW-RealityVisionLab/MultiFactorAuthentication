@@ -13,6 +13,7 @@
         android:background="@color/green_primary"
         android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
         app:title="RPLBO Grup A"
+        app:navigationIcon="@drawable/arrow_left"
         app:titleTextColor="@android:color/white"
         app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
         app:layout_constraintTop_toTopOf="parent" />
