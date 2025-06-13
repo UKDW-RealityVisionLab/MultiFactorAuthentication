@@ -99,7 +99,8 @@ class FaceProcessorActivity : AppCompatActivity() {
     private val selectedExpressions = allExpressions.shuffled().take(5).toMutableList()
     private var currentIndex = 0
     private fun startExpressionChallenge() {
-        if (currentIndex < selectedExpressions.size && false) {
+//        currentIndex < selectedExpressions.size &&
+        if (false) {
             val currentExpression = selectedExpressions[currentIndex]
             Log.d("FaceProcessor", "Mulai tantangan ekspresi: $currentExpression") // 🔥 Log ekspresi
             binding.expressionCommandText.text = "Yuk coba berekspresi: $currentExpression"
@@ -210,8 +211,8 @@ class FaceProcessorActivity : AppCompatActivity() {
         askCameraPermission()
 
         // **Pastikan ekspresi pertama muncul**
-        startExpressionChallenge()  // 🔥 Tambahkan ini agar perintah pertama muncul
-
+//        startExpressionChallenge()  // 🔥 Tambahkan ini agar perintah pertama muncul
+        startFaceVerification()
 //        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
 //            override fun handleOnBackPressed() {
 //                showCustomDialog(
