@@ -2,7 +2,7 @@ package com.mfa.view.activity
 
 import android.annotation.SuppressLint
 import android.app.Dialog
-import android.content.DialogInterface
+import androidx.appcompat.app.AlertDialog
 import android.content.Intent
 import android.content.res.ColorStateList
 import android.content.res.Resources
@@ -12,17 +12,13 @@ import android.graphics.Typeface
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.View
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.content.ContextCompat
-import androidx.core.view.marginEnd
 import androidx.lifecycle.lifecycleScope
 import com.google.firebase.auth.FirebaseAuth
 import com.mfa.R
@@ -38,6 +34,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.lang.Exception
+
 
 class Simpanwajah : AppCompatActivity(), CameraManager.OnTakeImageCallback {
     private lateinit var binding: ActivitySimpanwajahBinding
@@ -90,15 +87,8 @@ class Simpanwajah : AppCompatActivity(), CameraManager.OnTakeImageCallback {
 
         onBackPressedDispatcher.addCallback(this,object : OnBackPressedCallback(true){
             override fun handleOnBackPressed() {
-//                showCustomDialog(
-//                    title = "Pemberitahuan",
-//                    message = "Mohon selesaikan proses presensi",
-//                    buttonText = "Oke",
-//                    color = R.color.green_primary
-//                ){
-//                    onResume()
-//                }
-                val builder = android.app.AlertDialog.Builder(this@Simpanwajah,R.style.CustomAlertDialogStyle)
+                val builder = com.google.android.material.dialog.MaterialAlertDialogBuilder(this@Simpanwajah, R.style.CustomAlertDialogStyle)
+
                 builder.setTitle("Pemberitahuan")
                 builder.setMessage("Apakah kamu ingin membatalkan presensi?")
                 builder.setPositiveButton("Iya"){ _, _ ->

@@ -134,14 +134,6 @@ class QRCodeScanActivity : AppCompatActivity() {
 
         onBackPressedDispatcher.addCallback(this,object :OnBackPressedCallback(true){
             override fun handleOnBackPressed() {
-//                showCustomDialog(
-//                    title = "Pemberitahuan",
-//                    message = "Mohon selesaikan proses presensi",
-//                    buttonText = "Oke",
-//                    color = R.color.green_primary
-//                ){
-//                    onResume()
-//                }
                 val builder = AlertDialog.Builder(this@QRCodeScanActivity,R.style.CustomAlertDialogStyle)
                 builder.setTitle("Pemberitahuan")
                 builder.setMessage("Apakah kamu ingin membatalkan presensi?")
