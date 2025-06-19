@@ -14,7 +14,7 @@
         android:layout_height="?attr/actionBarSize"
         android:background="@color/green_primary"
         android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
-        app:title="AbzennDW"
+        app:title="PresentDW"
         app:titleTextColor="@android:color/white"
         app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
         app:layout_constraintTop_toTopOf="parent" />

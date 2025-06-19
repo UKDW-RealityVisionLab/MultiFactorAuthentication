@@ -66,7 +66,7 @@
                 OnboardingFragment.newInstance(
                     1,
                     "Selamat datang",
-                    "AbzennDW adalah aplikasi presensi yang menjamin keamanan tinggi! Untuk memastikan kehadiran yang sah, Anda harus melewati tiga lapisan verifikasi: cek lokasi, scan QR code, dan verifikasi wajah. Praktis, akurat, dan anti-kecurangan!"
+                    "PresentDW adalah aplikasi presensi yang menjamin keamanan tinggi! Untuk memastikan kehadiran yang sah, Anda harus melewati tiga lapisan verifikasi: cek lokasi, scan QR code, dan verifikasi wajah. Praktis, akurat, dan anti-kecurangan!"
                 ),
                 OnboardingFragment.newInstance(
                     2,

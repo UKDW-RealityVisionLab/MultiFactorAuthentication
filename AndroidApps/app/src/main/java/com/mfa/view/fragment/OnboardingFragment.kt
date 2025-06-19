@@ -54,7 +54,7 @@ class OnboardingFragment : Fragment() {
         when (pageNumber) {
             1 -> ivIllustration.setImageResource(R.drawable.human_greeting)
             2 -> ivIllustration.visibility=View.GONE
-            3 -> ivIllustration.setImageResource(R.drawable.logo_png)
+            3 -> ivIllustration.setImageResource(R.drawable.logo_baru)
         }
 
         // Show/hide steps
