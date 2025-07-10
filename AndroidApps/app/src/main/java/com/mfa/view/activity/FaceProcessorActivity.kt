@@ -565,13 +565,16 @@ class FaceProcessorActivity : AppCompatActivity() {
                     // Proses gambar (crop + konversi ke grayscale)
                     processCapturedImage(bitmap) { processedBitmap ->
                         verify_counter++
-
                         if (verify_counter < 5) {
                             Handler(Looper.getMainLooper()).postDelayed(
                                 { autoCaptureForVerification() },
                                 1000
                             )
                         } else {
+                            val bd = BlurDetector()
+                            if (bd.isBlurry(processedBitmap)) {
+                                Toast.makeText(this@FaceProcessorActivity, "Gambar Terlalu Buram!", Toast.LENGTH_LONG).show()
+                            }
                             verifyFace(processedBitmap)
                         }
                     }
