@@ -1,7 +1,6 @@
 package com.mfa.facedetector
 
 import android.graphics.Bitmap
-import android.util.Log
 import com.mfa.preprocessor.PreprocessingUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -11,9 +10,8 @@ import kotlinx.coroutines.withContext
 
 class BlurDetector {
     fun isBlurry(pixels: Array<IntArray>): Boolean {
-        val threshold = 1.0
+        val threshold = 1.2
         val variance = calculateLaplaceScore(pixels)
-        Log.d("Is BLUR", "$variance")
         return variance < threshold
     }
 
